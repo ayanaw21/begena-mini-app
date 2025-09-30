@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+// import { auth } from "@/auth";
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { UploadThingError } from "uploadthing/server";
 
@@ -18,21 +18,22 @@ export const ourFileRouter = {
       maxFileCount: 1,
     },
   })
-    // Set permissions and file types for this FileRoute
-    .middleware(async ({ req }) => {
-      // This code runs on your server before upload
-      const session = await auth();
+
+    // // Set permissions and file types for this FileRoute
+    // .middleware(async ({ req }) => {
+    //   // This code runs on your server before upload
+    //   const session = await auth();
       
 
-      // If you throw, the user will not be able to upload
-      if (!session || !session?.user) throw new UploadThingError("Unauthorized");
+    //   // If you throw, the user will not be able to upload
+    //   if (!session || !session?.user) throw new UploadThingError("Unauthorized");
 
-      // Whatever is returned here is accessible in onUploadComplete as `metadata`
-      return { userId: session?.user?.id };
-    })
+    //   // Whatever is returned here is accessible in onUploadComplete as `metadata`
+    //   return { userId: session?.user?.id };
+    // })
     .onUploadComplete(async ({ metadata, file }) => {
       // This code RUNS ON YOUR SERVER after upload
-      console.log("Upload complete for userId:", metadata.userId);
+      // console.log("Upload complete for userId:", metadata.userId);
 
       console.log("file url", file.ufsUrl);
 
