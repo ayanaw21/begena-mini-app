@@ -239,13 +239,14 @@ const Payment = () => {
 								/>
 							)}
 						</div>
-						<div className="">
-							<h2>የክፍያ መመሪያ</h2>
-							<p>ወርሃዊ የተማሪ ክፍይ ወደ የሚከተለው የባንክ አካውንት ያሰልፉት。</p>
-							<div>
-								<p>ባንክ: የኢትዮጵያ ንግድ ባንክ</p>
-								<p>የአካውንት ስም: Ayanaw Mengesha and/or Motuma Kidanu</p>
-								<p>የአካውንት ቀጥር: 1000720480337</p>
+						<div className="text-white p-4">
+							<h2 className="text-amber-400 text-2xl">የክፍያ መመሪያ</h2>
+							<p className="pb-2">ወርሃዊ የተማሪ ክፍይ ወደ የሚከተለው የባንክ አካውንት ያሰልፉት。</p>
+							<div className="bg-gray-900 p-5 rounded-md">
+								<p>ባንክ: <span className="text-amber-400"> የኢትዮጵያ ንግድ ባንክ</span>
+								</p>
+								<p>የአካውንት ስም: <span className="text-amber-400"> Ayanaw Mengesha and/or Motuma Kidanu</span></p>
+								<p>የአካውንት ቀጥር: <span className="text-amber-400" >1000720480337</span></p>
 							</div>
 							
 
