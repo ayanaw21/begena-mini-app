@@ -1,17 +1,13 @@
-// AdminSidebar.tsx
 "use client";
 import Link from "next/link";
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import React from "react";
 
-export default function AdminSidebar() {
-  const [isOpen, setIsOpen] = useState(false);
+interface AdminSidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
 
-  const toggleSidebar = () => {
-    setIsOpen(!isOpen);
-  };
-
+export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const menuItems = [
     { href: "/admin", label: "Dashboard" },
     { href: "/admin/students", label: "Students" },
@@ -23,20 +19,10 @@ export default function AdminSidebar() {
 
   return (
     <>
-      <Button
-        variant="outline"
-        size="sm"
-        className="lg:hidden fixed top-4 left-4 z-50 bg-gray-800 border-amber-400 text-amber-400 h-10 w-10 p-0 flex items-center justify-center"
-        onClick={toggleSidebar}
-      >
-        {isOpen ? <X size={20} /> : <Menu size={20} />}
-      </Button>
-
-      {/* Overlay */}
       {isOpen && (
         <div
           className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
-          onClick={toggleSidebar}
+          onClick={onClose}
         />
       )}
 
@@ -46,11 +32,10 @@ export default function AdminSidebar() {
           w-64 bg-gray-800 p-4 border-r border-gray-700
           transform transition-transform duration-300 ease-in-out
           ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
-          lg:ml-0
+          overflow-y-auto
         `}
       >
-        <div className="lg:hidden mb-6 pt-12">
-          {" "}
+        <div className="lg:hidden mb-6 pt-4">
           <h2 className="text-amber-400 text-lg font-bold">Menu</h2>
         </div>
 
@@ -60,7 +45,7 @@ export default function AdminSidebar() {
               <Link
                 href={item.href}
                 className="text-amber-400 hover:text-amber-600 block py-2 px-3 rounded-lg hover:bg-gray-700 transition-colors duration-200 text-sm sm:text-base"
-                onClick={() => setIsOpen(false)}
+                onClick={onClose}
               >
                 {item.label}
               </Link>
