@@ -29,9 +29,9 @@ export default function AnnouncementsPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [announcementToDelete, setAnnouncementToDelete] =
-    useState<Announcement | null>(null);
+  useState<Announcement | null>(null);
   const [announcementToEdit, setAnnouncementToEdit] =
-    useState<Announcement | null>(null);
+  useState<Announcement | null>(null);
 
   // Search & filter state
   const [searchQuery, setSearchQuery] = useState("");

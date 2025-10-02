@@ -7,12 +7,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import UserAnnouncement from "@/components/userAnnouncement";
 import Link from "next/link";
 import React from "react";
 
 const Home = () => {
   return (
     <div className="w-full max-w-[750px] mx-auto min-h-screen bg-gray-900 md:border md:border-gray-800">
+		<UserAnnouncement/>
       <nav className="h-30 border-b border-gray-700 w-full flex justify-between items-center px-10">
         <h1 className="text-3xl text-amber-400 font-bold ">በገና</h1>
         <div className="flex items-center">

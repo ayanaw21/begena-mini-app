@@ -6,7 +6,7 @@ import logo from "../../public/begena.jpg";
 import Footer from "@/components/footer";
 const lists = [
   { zemari: "ደምሴ ደስታ", link: "https://t.me/aastugibibuaebegena/4" },
-  { zemari: "አለቃ ተሰማ ወልደ አማኑኤል(አባ በገና)", link: "t.me/aastugibibuaebegena/6" },
+  { zemari: "አለቃ ተሰማ ወልደ አማኑኤል(አባ በገና)", link: "https://t.me/aastugibibuaebegena/6" },
   { zemari: "መጋቤ ስብሃት አለሙ አጋ", link: "https://t.me/aastugibibuaebegena/2" },
   { zemari: "ዲ/ን አቤል ተስፋዬ", link: "https://t.me/aastugibibuaebegena/18" },
   { zemari: "ዘርፉ ደምሴ", link: "https://t.me/aastugibibuaebegena/214" },
