@@ -8,6 +8,7 @@ import { useState, useTransition } from "react";
 import { UploadButton } from "@uploadthing/react";
 import Image from "next/image";
 import { sendPayment } from "@/lib/actions/payment";
+import Footer from "@/components/footer";
 
 const Payment = () => {
 	const [isPending, startTransition] = useTransition();
@@ -341,6 +342,7 @@ const Payment = () => {
 					</form>
 				</CardContent>
 			</Card>
+			<Footer/>
 		</div>
 	);
 };

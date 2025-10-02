@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 import logo from "../../public/begena.jpg";
+import Footer from "@/components/footer";
 const lists = [
 	{ zemari: "ደምሴ ደስታ", link: "https://t.me/aastugibibuaebegena/4" },
 	{ zemari: "አለቃ ተሰማ ወልደ አማኑኤል(አባ በገና)", link: "t.me/aastugibibuaebegena/6" },
@@ -72,6 +73,7 @@ const MezmurList = () => {
 					ለበገና ትምህርት መስፋፋት እጅጉን ትልቁን ድርሻ የተወጡ ናቸው፡፡
 				</p>
 			</div>
+            <Footer/>
 		</div>
 	);
 };
