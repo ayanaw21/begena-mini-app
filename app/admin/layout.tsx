@@ -1,4 +1,3 @@
-// AdminLayoutClient.tsx
 "use client";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -16,6 +15,9 @@ export default function AdminLayoutClient({
   const pathname = usePathname();
   const [isChecking, setIsChecking] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Sidebar state
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     const token = getToken();
@@ -42,10 +44,22 @@ export default function AdminLayoutClient({
 
   return (
     <div className="flex min-h-screen bg-gray-900 text-white">
-      {isAuthenticated && <AdminSidebar />}
-      <div className="flex-1 flex flex-col lg:ml-0 min-w-0">
-        {isAuthenticated && <AdminNavbar />}
-        <main className="p-4 sm:p-6 overflow-auto">{children}</main>
+      {/* Sidebar */}
+      {isAuthenticated && (
+        <AdminSidebar
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      <div className="flex-1 flex flex-col min-w-0">
+        {isAuthenticated && (
+          <AdminNavbar
+            onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
+            isSidebarOpen={isSidebarOpen}
+          />
+        )}
+        <main className="flex-1 p-4 sm:p-6 overflow-auto">{children}</main>
       </div>
     </div>
   );
