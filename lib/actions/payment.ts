@@ -46,6 +46,7 @@ export const sendPayment = async (formData: FormData) => {
 				const errorData = await response.json();
 				errorDetails = errorData.message || errorDetails;
 			} catch (jsonError) {
+				console.error("Error parsing JSON:", jsonError);
 				errorDetails = `Server returned status ${response.status}`;
 			}
 
@@ -56,7 +57,7 @@ export const sendPayment = async (formData: FormData) => {
 		console.log("Payment submitted successfully:", result);
 	} catch (error) {
 		console.error("API Submission Error:", error);
-		throw error; // Re-throw to handle in component
+		throw error; 
 	}
 
 	redirect("/");
