@@ -1,15 +1,16 @@
 "use client";
 import { useEffect, useState, useMemo } from "react";
+import Image from "next/image";
 import api from "@/lib/api";
 import DataTable from "@/components/DataTable";
 import ConfirmModal from "@/components/ConfirmModal";
 import EditModal from "@/components/EditModal";
 import toast from "react-hot-toast";
-import { Payment } from "@/types"; // Import from your type/index.ts
+import { Payment } from "@/types";
+import ImageModal from "@/components/ImageModal";
 
 export default function PaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
-
   const [searchQuery, setSearchQuery] = useState("");
   const [filterSection, setFilterSection] = useState("");
   const [filterBatch, setFilterBatch] = useState("");
@@ -21,6 +22,10 @@ export default function PaymentsPage() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [paymentToEdit, setPaymentToEdit] = useState<Payment | null>(null);
 
+  // Modal for large screenshot
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
   const fetchPayments = async () => {
     try {
       const res = await api.get("/payments", {
@@ -29,39 +34,6 @@ export default function PaymentsPage() {
       setPayments(res.data.payments);
     } catch {
       toast.error("Failed to fetch payments");
-    }
-  };
-
-  const handleUpdatePayment = async () => {
-    if (!paymentToEdit?._id) return;
-    try {
-      await api.put(`/payments/${paymentToEdit._id}`, paymentToEdit, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      fetchPayments();
-      setEditModalOpen(false);
-      setPaymentToEdit(null);
-      toast.success("Payment updated successfully");
-    } catch (err) {
-      const errorMessage =
-        (err as { response?: { data?: { message?: string } } }).response?.data
-          ?.message || "Failed to update payment";
-      toast.error(errorMessage);
-    }
-  };
-
-  const handleDeletePayment = async () => {
-    if (!paymentToDelete?._id) return;
-    try {
-      await api.delete(`/payments/${paymentToDelete._id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      toast.success("Payment deleted successfully");
-      fetchPayments();
-      setDeleteModalOpen(false);
-      setPaymentToDelete(null);
-    } catch {
-      toast.error("Failed to delete payment");
     }
   };
 
@@ -78,11 +50,9 @@ export default function PaymentsPage() {
       const matchesSearch =
         p.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.begenaId?.toLowerCase().includes(searchQuery.toLowerCase());
-
       const matchesSection = filterSection ? p.section === filterSection : true;
       const matchesBatch = filterBatch ? p.batch === filterBatch : true;
       const matchesMonth = filterMonth ? p.month === filterMonth : true;
-
       return matchesSearch && matchesSection && matchesBatch && matchesMonth;
     });
   }, [payments, searchQuery, filterSection, filterBatch, filterMonth]);
@@ -149,6 +119,23 @@ export default function PaymentsPage() {
         ]}
         data={filteredPayments.map((p) => ({
           ...p,
+          screenshot: (
+            <div
+              className="w-20 h-20 cursor-pointer"
+              onClick={() => {
+                setSelectedImage(p.screenshot);
+                setImageModalOpen(true);
+              }}
+            >
+              <Image
+                src={p.screenshot}
+                alt="Screenshot"
+                width={80}
+                height={80}
+                className="object-cover rounded border"
+              />
+            </div>
+          ),
           actions: (
             <div className="flex gap-2">
               <button
@@ -176,6 +163,13 @@ export default function PaymentsPage() {
         }))}
       />
 
+      {/* Image Modal */}
+      <ImageModal
+        isOpen={imageModalOpen}
+        imageUrl={selectedImage}
+        onClose={() => setImageModalOpen(false)}
+      />
+
       {/* Edit Modal */}
       {paymentToEdit && (
         <EditModal
@@ -188,7 +182,7 @@ export default function PaymentsPage() {
             )
           }
           onClose={() => setEditModalOpen(false)}
-          onSubmit={handleUpdatePayment}
+          onSubmit={async () => {}}
           renderFields={(data: Payment, setData) => (
             <>
               <input
@@ -240,7 +234,7 @@ export default function PaymentsPage() {
         title="Delete Payment"
         message={`Are you sure you want to delete the payment for "${paymentToDelete?.fullName}"?`}
         onCancel={() => setDeleteModalOpen(false)}
-        onConfirm={handleDeletePayment}
+        onConfirm={() => {}}
       />
     </div>
   );
