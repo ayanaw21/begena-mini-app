@@ -14,7 +14,8 @@ const Payment = () => {
 	const [imageUrl, setImageUrl] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [selectedSection, setSelectedSection] = useState("");
-	const [selectedMonth,setSelectedMonth] = useState("")
+	const [selectedMonth, setSelectedMonth] = useState("");
+	const [selectedBatch, setSelectedBatch] = useState<number | null>(null);
 	const months = [
 		{
 			value: "September",
@@ -31,23 +32,32 @@ const Payment = () => {
 		{
 			value: "December",
 			label: "December",
-		},{
+		},
+		{
 			value: "January",
 			label: "January",
-		},{
+		},
+		{
 			value: "February",
 			label: "February",
-		},{
+		},
+		{
 			value: "March",
 			label: "March",
-		},{
+		},
+		{
 			value: "April",
 			label: "April",
-		},{
+		},
+		{
 			value: "May",
 			label: "May",
 		},
 	];
+	const batches = Array.from({ length: 10 }, (_, i) => ({
+		value: i + 1,
+		label: `Batch ${i + 1}`,
+	}));
 	const sections = [
 		{ value: "basic-a", label: "Basic A" },
 		{ value: "begena-b", label: "Basic B" },
@@ -59,6 +69,7 @@ const Payment = () => {
 
 	const handleSubmit = (formData: FormData) => {
 		setError(null); // Clear previous errors
+		console.log(imageUrl);
 
 		// Client-side validation
 		if (!imageUrl) {
@@ -119,7 +130,26 @@ const Payment = () => {
 								disabled={isPending}
 							/>
 						</div>
-
+						<div className="mb-4">
+							<label
+								htmlFor="begenaId"
+								className="block text-xl font-medium text-amber-400 mb-2"
+							>
+								የበገና ID
+							</label>
+							<input
+								type="text"
+								id="begenaId"
+								name="begenaId"
+								required
+								placeholder="Enter your Begena ID"
+								className={cn(
+									"w-full border border-gray-600 px-3 py-2 bg-gray-700 text-gray-100",
+									"rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+								)}
+								disabled={isPending}
+							/>
+						</div>
 						<div className="mb-4">
 							<label
 								htmlFor="section"
@@ -155,14 +185,46 @@ const Payment = () => {
 
 						<div className="mb-4">
 							<label
+								htmlFor="batch"
+								className="block text-xl font-medium text-amber-400 mb-2"
+							>
+								Batch
+							</label>
+							<select
+								id="batch"
+								name="batch"
+								required
+								value={selectedBatch || ""}
+								onChange={(e) =>
+									setSelectedBatch(e.target.value ? Number(e.target.value) : null)
+								}
+								disabled={isPending}
+								className={cn(
+									"w-full border border-gray-600 px-3 py-2 bg-gray-700 text-gray-100",
+									"rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+								)}
+							>
+								<option value="">Select a batch</option>
+								{batches.map((batch) => (
+									<option
+										key={batch.value}
+										value={batch.value}
+									>
+										{batch.label}
+									</option>
+								))}
+							</select>
+						</div>
+						<div className="mb-4">
+							<label
 								htmlFor="month"
 								className="block text-xl font-medium text-amber-400 mb-2"
 							>
-								Section
+								Month
 							</label>
 							<select
-								id="section"
-								name="section"
+								id="month"
+								name="month"
 								required
 								value={selectedMonth}
 								onChange={(e) =>
@@ -240,16 +302,34 @@ const Payment = () => {
 							)}
 						</div>
 						<div className="text-white p-4">
-							<h2 className="text-amber-400 text-2xl">የክፍያ መመሪያ</h2>
-							<p className="pb-2">ወርሃዊ የተማሪ ክፍይ ወደ የሚከተለው የባንክ አካውንት ያሰልፉት。</p>
+							<h2 className="text-amber-400 text-2xl">
+								የክፍያ መመሪያ
+							</h2>
+							<p className="pb-2">
+								ወርሃዊ የተማሪ ክፍይ ወደ የሚከተለው የባንክ አካውንት ያሰልፉት。
+							</p>
 							<div className="bg-gray-900 p-5 rounded-md">
-								<p>ባንክ: <span className="text-amber-400"> የኢትዮጵያ ንግድ ባንክ</span>
+								<p>
+									ባንክ:{" "}
+									<span className="text-amber-400">
+										{" "}
+										የኢትዮጵያ ንግድ ባንክ
+									</span>
 								</p>
-								<p>የአካውንት ስም: <span className="text-amber-400"> Ayanaw Mengesha and/or Motuma Kidanu</span></p>
-								<p>የአካውንት ቀጥር: <span className="text-amber-400" >1000720480337</span></p>
+								<p>
+									የአካውንት ስም:{" "}
+									<span className="text-amber-400">
+										{" "}
+										Ayanaw Mengesha and/or Motuma Kidanu
+									</span>
+								</p>
+								<p>
+									የአካውንት ቀጥር:{" "}
+									<span className="text-amber-400">
+										1000720480337
+									</span>
+								</p>
 							</div>
-							
-
 						</div>
 						<Button
 							type="submit"
@@ -259,7 +339,6 @@ const Payment = () => {
 							{isPending ? "Submitting..." : "Submit Payment"}
 						</Button>
 					</form>
-					
 				</CardContent>
 			</Card>
 		</div>
