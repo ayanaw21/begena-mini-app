@@ -4,6 +4,7 @@ import Link from "next/link";
 import React from "react";
 import logo from "../../public/begena.jpg";
 import Footer from "@/components/footer";
+import Navbar from "@/components/Navbar";
 const lists = [
   { zemari: "ደምሴ ደስታ", link: "https://t.me/aastugibibuaebegena/4" },
   { zemari: "አለቃ ተሰማ ወልደ አማኑኤል(አባ በገና)", link: "https://t.me/aastugibibuaebegena/6" },
@@ -18,19 +19,7 @@ const lists = [
 const MezmurList = () => {
   return (
     <div className='"w-full max-w-[750px] mx-auto min-h-screen bg-gray-900'>
-      <nav className="h-30 border-b border-gray-700 w-full flex justify-between items-center px-10">
-        <div className="flex">
-          {/* <Image src={'https://g96xkr7zoc.ufs.sh/f/p0mpb6xeXkhSD7sdTLidP3VtyE9BnNsGgb2co7IuAFYKMaq5'} width={20} height={20} alt="begena" /> */}
-          <h1 className="text-xl text-amber-400 font-bold">በገና</h1>
-        </div>
-        <div className="flex items-center">
-          <Link href={"/"}>
-            <Button className="font-bold text-amber-400 border border-amber-900 bg-gray-900 hover:bg-amber-900">
-              Back to Home
-            </Button>
-          </Link>
-        </div>
-      </nav>
+      <Navbar/>
       <div className="my-6">
         <h1 className="text-4xl font-bold text-amber-400 text-center">
           የበገና ደርዳሪወች ዝርዝር

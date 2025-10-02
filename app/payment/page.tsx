@@ -9,6 +9,7 @@ import { UploadButton } from "@uploadthing/react";
 import Image from "next/image";
 import { sendPayment } from "@/lib/actions/payment";
 import Footer from "@/components/footer";
+import Navbar from "@/components/Navbar";
 
 const Payment = () => {
   const [isPending, startTransition] = useTransition();
@@ -91,16 +92,7 @@ const Payment = () => {
 
   return (
     <div className="w-full max-w-[750px] mx-auto min-h-screen bg-gray-900">
-      <nav className="h-30 border-b border-gray-700 w-full flex justify-between items-center px-10">
-        <h1 className="text-xl text-amber-400 font-bold">በገና</h1>
-        <div className="flex items-center">
-          <Link href={"/"}>
-            <Button className="font-bold text-amber-400 border border-amber-900 bg-gray-900 hover:bg-amber-900">
-              Back to Home
-            </Button>
-          </Link>
-        </div>
-      </nav>
+      <Navbar/>
 
       <h1 className="mt-10 text-center text-2xl sm:text-4xl text-amber-400 font-bold">
         Submit Payment Proof
