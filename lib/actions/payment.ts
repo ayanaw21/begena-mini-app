@@ -7,6 +7,9 @@ export const sendPayment = async (formData: FormData) => {
 	const section = formData.get("section")?.toString();
 	const imageUrl = formData.get("imageUrl")?.toString();
 	const month = formData.get("month")?.toString();
+	const begenaId = formData.get("begenaId")?.toString();
+	const batch = formData.get("batch")?.toString();
+	// Validation
 	if (!fullName?.trim()) {
 		throw new Error("Full name is required");
 	}
@@ -17,7 +20,8 @@ export const sendPayment = async (formData: FormData) => {
 
 	if (!imageUrl) {
 		throw new Error("Payment screenshot is required");
-	}if (!month) {
+	}
+	if (!month) {
 		throw new Error("Month is required");
 	}
 
@@ -30,6 +34,8 @@ export const sendPayment = async (formData: FormData) => {
 				section,
 				screenshot: imageUrl,
 				month,
+				begenaId,
+				batch,
 			}),
 		});
 
