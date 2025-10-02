@@ -6,6 +6,7 @@ import ModalForm from "@/components/ModalForm";
 import ConfirmModal from "@/components/ConfirmModal";
 import EditModal from "@/components/EditModal";
 import toast from "react-hot-toast";
+import { AxiosError } from "axios";
 
 interface Announcement {
   _id?: string;
@@ -42,7 +43,7 @@ export default function AnnouncementsPage() {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       setAnnouncements(res.data.announcements);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err);
       toast.error("Failed to fetch announcements");
     }
@@ -56,9 +57,10 @@ export default function AnnouncementsPage() {
       fetchAnnouncements();
       setFormData({ title: "", body: "", date: "", time: "" });
       toast.success("Announcement created successfully");
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const axiosError = err as AxiosError<{ message?: string }>;
       toast.error(
-        err.response?.data?.message || "Failed to create announcement"
+        axiosError.response?.data?.message || "Failed to create announcement"
       );
     }
   };
@@ -82,9 +84,10 @@ export default function AnnouncementsPage() {
       setEditModalOpen(false);
       setAnnouncementToEdit(null);
       toast.success("Announcement updated successfully");
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const axiosError = err as AxiosError<{ message?: string }>;
       toast.error(
-        err.response?.data?.message || "Failed to update announcement"
+        axiosError.response?.data?.message || "Failed to update announcement"
       );
     }
   };
@@ -99,7 +102,7 @@ export default function AnnouncementsPage() {
       fetchAnnouncements();
       setDeleteModalOpen(false);
       setAnnouncementToDelete(null);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err);
       toast.error("Failed to delete announcement");
     }
@@ -213,13 +216,17 @@ export default function AnnouncementsPage() {
         }))}
       />
 
-      {/* Edit Modal */}
       {announcementToEdit && (
-        <EditModal
+        <EditModal<Announcement>
           isOpen={editModalOpen}
           data={announcementToEdit}
           formData={announcementToEdit}
-          setFormData={setAnnouncementToEdit as any}
+          setFormData={(update: Announcement) =>
+            setAnnouncementToEdit((prev) => ({
+              ...prev!,
+              ...update,
+            }))
+          }
           onClose={() => setEditModalOpen(false)}
           onSubmit={handleUpdateAnnouncement}
           renderFields={(data, setData) => (
@@ -234,7 +241,9 @@ export default function AnnouncementsPage() {
                 className="w-full p-2 rounded bg-gray-700 text-white"
                 placeholder="Body"
                 value={data.body}
-                onChange={(e) => setData({ ...data, body: e.target.value })}
+                onChange={(e) =>
+                  setData({ ...data, body: e.target.value || "" })
+                }
               />
               <input
                 className="w-full p-2 rounded bg-gray-700 text-white"

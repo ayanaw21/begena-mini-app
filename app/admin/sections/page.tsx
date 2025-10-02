@@ -18,10 +18,9 @@ export default function SectionsPage() {
   });
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterSection, setFilterSection] = useState(""); // dropdown filter by section
-  const [filterTeacher, setFilterTeacher] = useState(""); // optional teacher filter
+  const [filterSection, setFilterSection] = useState("");
+  const [filterTeacher, setFilterTeacher] = useState("");
 
-  // Modals state
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [sectionToDelete, setSectionToDelete] = useState<Section | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -33,8 +32,8 @@ export default function SectionsPage() {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       setSections(res.data.sections);
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
       toast.error("Failed to fetch sections");
     }
   };
@@ -52,13 +51,14 @@ export default function SectionsPage() {
         classTime: "",
       });
       toast.success("Section created successfully");
-    } catch (err: any) {
+    } catch (error) {
+      const err = error as { response?: { data?: { message?: string } } };
       toast.error(err.response?.data?.message || "Failed to create section");
     }
   };
 
   const handleUpdateSection = async () => {
-    if (!sectionToEdit?._id || !sectionToEdit) return;
+    if (!sectionToEdit?._id) return;
 
     try {
       await api.put(
@@ -78,7 +78,8 @@ export default function SectionsPage() {
       setEditModalOpen(false);
       setSectionToEdit(null);
       toast.success("Section updated successfully");
-    } catch (err: any) {
+    } catch (error) {
+      const err = error as { response?: { data?: { message?: string } } };
       toast.error(err.response?.data?.message || "Failed to update section");
     }
   };
@@ -93,8 +94,8 @@ export default function SectionsPage() {
       fetchSections();
       setDeleteModalOpen(false);
       setSectionToDelete(null);
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
       toast.error("Failed to delete section");
     }
   };
@@ -122,7 +123,6 @@ export default function SectionsPage() {
     <div>
       <h1 className="text-amber-400 text-2xl font-bold mb-4">Sections</h1>
 
-      {/* Filters */}
       <div className="flex gap-2 mb-4">
         <input
           type="text"
@@ -161,7 +161,6 @@ export default function SectionsPage() {
         </select>
       </div>
 
-      {/* Add Section Modal */}
       <ModalForm title="Add Section" onSubmit={handleCreateSection}>
         <input
           className="w-full p-2 rounded bg-gray-700 text-white"
@@ -211,7 +210,6 @@ export default function SectionsPage() {
         />
       </ModalForm>
 
-      {/* Data Table */}
       <DataTable
         columns={[
           { key: "section", label: "Section" },
@@ -248,16 +246,22 @@ export default function SectionsPage() {
         }))}
       />
 
-      {/* Edit Modal */}
       {sectionToEdit && (
         <EditModal
           isOpen={editModalOpen}
           data={sectionToEdit}
           formData={sectionToEdit}
-          setFormData={setSectionToEdit as any}
+          setFormData={
+            setSectionToEdit as React.Dispatch<
+              React.SetStateAction<Section | null>
+            >
+          }
           onClose={() => setEditModalOpen(false)}
           onSubmit={handleUpdateSection}
-          renderFields={(data, setData) => (
+          renderFields={(
+            data: Section,
+            setData: React.Dispatch<React.SetStateAction<Section>>
+          ) => (
             <>
               <input
                 className="w-full p-2 rounded bg-gray-700 text-white"
@@ -308,7 +312,6 @@ export default function SectionsPage() {
         />
       )}
 
-      {/* Delete Confirm Modal */}
       <ConfirmModal
         isOpen={deleteModalOpen}
         title="Delete Section"

@@ -6,12 +6,13 @@ import ModalForm from "@/components/ModalForm";
 import ConfirmModal from "@/components/ConfirmModal";
 import EditModal from "@/components/EditModal";
 import toast from "react-hot-toast";
+import { AxiosError } from "axios";
 
 interface Schedule {
   _id?: string;
   type: string;
   section: string;
-  date: string; // This will store the day name
+  date: string;
   time: string;
 }
 
@@ -37,21 +38,19 @@ export default function SchedulesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("");
   const [filterSection, setFilterSection] = useState("");
-  const [filterDay, setFilterDay] = useState(""); // Filter by day
+  const [filterDay, setFilterDay] = useState("");
 
-  // Delete modal state
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [scheduleToDelete, setScheduleToDelete] = useState<Schedule | null>(
     null
   );
 
-  // Edit modal state
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [scheduleToEdit, setScheduleToEdit] = useState<Schedule | null>(null);
 
   const fetchSchedules = async () => {
     try {
-      const res = await api.get("/class-schedules", {
+      const res = await api.get<{ schedules: Schedule[] }>("/class-schedules", {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       setSchedules(res.data.schedules);
@@ -66,11 +65,14 @@ export default function SchedulesPage() {
       await api.post("/class-schedules", formData, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
-      fetchSchedules();
+      await fetchSchedules();
       setFormData({ type: "", section: "", date: "", time: "" });
       toast.success("Schedule created successfully");
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to create schedule");
+    } catch (err) {
+      const axiosErr = err as AxiosError<{ message?: string }>;
+      toast.error(
+        axiosErr.response?.data?.message || "Failed to create schedule"
+      );
     }
   };
 
@@ -80,12 +82,15 @@ export default function SchedulesPage() {
       await api.put(`/class-schedules/${scheduleToEdit._id}`, scheduleToEdit, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
-      fetchSchedules();
+      await fetchSchedules();
       setEditModalOpen(false);
       setScheduleToEdit(null);
       toast.success("Schedule updated successfully");
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to update schedule");
+    } catch (err) {
+      const axiosErr = err as AxiosError<{ message?: string }>;
+      toast.error(
+        axiosErr.response?.data?.message || "Failed to update schedule"
+      );
     }
   };
 
@@ -96,7 +101,7 @@ export default function SchedulesPage() {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       toast.success("Schedule deleted successfully");
-      fetchSchedules();
+      await fetchSchedules();
       setDeleteModalOpen(false);
       setScheduleToDelete(null);
     } catch (err) {
@@ -130,7 +135,6 @@ export default function SchedulesPage() {
         Class Schedules
       </h1>
 
-      {/* Search & Filter */}
       <div className="flex gap-2 mb-4 flex-wrap">
         <input
           type="text"
@@ -140,35 +144,32 @@ export default function SchedulesPage() {
           onChange={(e) => setSearchQuery(e.target.value)}
         />
 
-        {/* Type Filter Dropdown */}
         <select
           className="p-2 rounded bg-gray-700 text-white"
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
         >
           <option value="">All Types</option>
-          {uniqueTypes.map((type, idx) => (
-            <option key={`${type}-${idx}`} value={type}>
+          {uniqueTypes.map((type) => (
+            <option key={type} value={type}>
               {type}
             </option>
           ))}
         </select>
 
-        {/* Section Filter Dropdown */}
         <select
           className="p-2 rounded bg-gray-700 text-white"
           value={filterSection}
           onChange={(e) => setFilterSection(e.target.value)}
         >
           <option value="">All Sections</option>
-          {uniqueSections.map((section, idx) => (
-            <option key={`${section}-${idx}`} value={section}>
+          {uniqueSections.map((section) => (
+            <option key={section} value={section}>
               {section}
             </option>
           ))}
         </select>
 
-        {/* Day Filter Dropdown */}
         <select
           className="p-2 rounded bg-gray-700 text-white"
           value={filterDay}
@@ -183,7 +184,6 @@ export default function SchedulesPage() {
         </select>
       </div>
 
-      {/* Add Schedule Form */}
       <ModalForm title="Add Schedule" onSubmit={handleCreateSchedule}>
         <select
           className="w-full p-2 rounded bg-gray-700 text-white"
@@ -217,7 +217,6 @@ export default function SchedulesPage() {
           ))}
         </select>
 
-        {/* Time as text input */}
         <input
           className="w-full p-2 rounded bg-gray-700 text-white"
           placeholder="Time (e.g., 2:30pm - 3:30pm)"
@@ -226,7 +225,6 @@ export default function SchedulesPage() {
         />
       </ModalForm>
 
-      {/* Data Table */}
       <DataTable
         columns={[
           { key: "type", label: "Type" },
@@ -238,7 +236,7 @@ export default function SchedulesPage() {
         data={filteredSchedules.map((s) => ({
           ...s,
           actions: (
-            <div className="flex gap-2">
+            <div className="flex gap-2" key={s._id ?? `${s.section}-${s.type}`}>
               <button
                 className="text-blue-500 hover:text-blue-700"
                 onClick={() => {
@@ -262,16 +260,19 @@ export default function SchedulesPage() {
         }))}
       />
 
-      {/* Edit Modal */}
       {scheduleToEdit && (
         <EditModal
           isOpen={editModalOpen}
           data={scheduleToEdit}
           formData={scheduleToEdit}
-          setFormData={setScheduleToEdit as any}
+          setFormData={(update: React.SetStateAction<Schedule>) =>
+            setScheduleToEdit((prev) =>
+              typeof update === "function" ? update(prev as Schedule) : update
+            )
+          }
           onClose={() => setEditModalOpen(false)}
           onSubmit={handleUpdateSchedule}
-          renderFields={(data, setData) => (
+          renderFields={(data: Schedule, setData) => (
             <>
               <select
                 className="w-full p-2 rounded bg-gray-700 text-white"
@@ -314,7 +315,6 @@ export default function SchedulesPage() {
         />
       )}
 
-      {/* Confirm Modal */}
       <ConfirmModal
         isOpen={deleteModalOpen}
         title="Delete Schedule"

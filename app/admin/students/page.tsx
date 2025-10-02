@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import api from "@/lib/api";
 import { Student } from "@/types";
 import DataTable from "@/components/DataTable";
@@ -23,13 +23,12 @@ export default function StudentsPage() {
   const [filterBatch, setFilterBatch] = useState("");
   const [filterSection, setFilterSection] = useState("");
 
-  // Modals state
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [studentToEdit, setStudentToEdit] = useState<Student | null>(null);
 
-  const fetchStudents = async () => {
+  const fetchStudents = useCallback(async () => {
     try {
       const res = await api.get("/students", {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -39,7 +38,7 @@ export default function StudentsPage() {
       console.error(err);
       toast.error("Failed to fetch students");
     }
-  };
+  }, []);
 
   const handleCreateStudent = async () => {
     try {
@@ -56,13 +55,20 @@ export default function StudentsPage() {
         phoneNumber: "",
       });
       toast.success("Student created successfully");
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to create student");
+    } catch (err: unknown) {
+      if (err instanceof Error && "response" in err) {
+        const apiErr = err as { response?: { data?: { message?: string } } };
+        toast.error(
+          apiErr.response?.data?.message || "Failed to create student"
+        );
+      } else {
+        toast.error("Failed to create student");
+      }
     }
   };
 
   const handleUpdateStudent = async () => {
-    if (!studentToEdit?._id || !formData) return;
+    if (!studentToEdit?._id) return;
 
     try {
       await api.put(
@@ -92,8 +98,15 @@ export default function StudentsPage() {
         phoneNumber: "",
       });
       toast.success("Student updated successfully");
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to update student");
+    } catch (err: unknown) {
+      if (err instanceof Error && "response" in err) {
+        const apiErr = err as { response?: { data?: { message?: string } } };
+        toast.error(
+          apiErr.response?.data?.message || "Failed to update student"
+        );
+      } else {
+        toast.error("Failed to update student");
+      }
     }
   };
 
@@ -115,7 +128,7 @@ export default function StudentsPage() {
 
   useEffect(() => {
     fetchStudents();
-  }, []);
+  }, [fetchStudents]);
 
   const uniqueBatches = Array.from(new Set(students.map((s) => s.batch)));
   const uniqueSections = Array.from(new Set(students.map((s) => s.section)));
@@ -138,7 +151,6 @@ export default function StudentsPage() {
     <div>
       <h1 className="text-amber-400 text-2xl font-bold mb-4">Students</h1>
 
-      {/* Search & Filter */}
       <div className="flex gap-2 mb-4 flex-wrap">
         <input
           type="text"
@@ -173,7 +185,6 @@ export default function StudentsPage() {
         </select>
       </div>
 
-      {/* Add Student Modal */}
       <ModalForm title="Add Student" onSubmit={handleCreateStudent}>
         <input
           className="w-full p-2 rounded bg-gray-700 text-white"
@@ -223,7 +234,6 @@ export default function StudentsPage() {
         />
       </ModalForm>
 
-      {/* Data Table */}
       <DataTable
         columns={[
           { key: "fullName", label: "Full Name" },
@@ -237,8 +247,9 @@ export default function StudentsPage() {
         data={filteredStudents.map((s) => ({
           ...s,
           actions: (
-            <div className="flex gap-2">
+            <div className="flex gap-2" key={s._id}>
               <button
+                type="button"
                 className="text-blue-500 hover:text-blue-700"
                 onClick={() => {
                   setStudentToEdit(s);
@@ -250,6 +261,7 @@ export default function StudentsPage() {
               </button>
 
               <button
+                type="button"
                 className="text-red-500 hover:text-red-700"
                 onClick={() => {
                   setStudentToDelete(s);
@@ -263,16 +275,18 @@ export default function StudentsPage() {
         }))}
       />
 
-      {/* Edit Modal */}
       {studentToEdit && (
         <EditModal
           isOpen={editModalOpen}
           data={studentToEdit}
-          formData={studentToEdit}
-          setFormData={setStudentToEdit as any}
+          formData={formData}
+          setFormData={setFormData}
           onClose={() => setEditModalOpen(false)}
           onSubmit={handleUpdateStudent}
-          renderFields={(data, setData) => (
+          renderFields={(
+            data: Student,
+            setData: React.Dispatch<React.SetStateAction<Student>>
+          ) => (
             <>
               <input
                 className="w-full p-2 rounded bg-gray-700 text-white"
@@ -319,7 +333,6 @@ export default function StudentsPage() {
         />
       )}
 
-      {/* Delete Confirm Modal */}
       <ConfirmModal
         isOpen={deleteModalOpen}
         title="Delete Student"

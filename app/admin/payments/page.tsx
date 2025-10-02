@@ -5,7 +5,7 @@ import DataTable from "@/components/DataTable";
 import ConfirmModal from "@/components/ConfirmModal";
 import EditModal from "@/components/EditModal";
 import toast from "react-hot-toast";
-import { Payment } from "@/type"; // Import from your type/index.ts
+import { Payment } from "@/types"; // Import from your type/index.ts
 
 export default function PaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -15,11 +15,9 @@ export default function PaymentsPage() {
   const [filterBatch, setFilterBatch] = useState("");
   const [filterMonth, setFilterMonth] = useState("");
 
-  // Confirm modal state
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [paymentToDelete, setPaymentToDelete] = useState<Payment | null>(null);
 
-  // Edit modal state
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [paymentToEdit, setPaymentToEdit] = useState<Payment | null>(null);
 
@@ -29,8 +27,7 @@ export default function PaymentsPage() {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       setPayments(res.data.payments);
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error("Failed to fetch payments");
     }
   };
@@ -45,8 +42,11 @@ export default function PaymentsPage() {
       setEditModalOpen(false);
       setPaymentToEdit(null);
       toast.success("Payment updated successfully");
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to update payment");
+    } catch (err) {
+      const errorMessage =
+        (err as { response?: { data?: { message?: string } } }).response?.data
+          ?.message || "Failed to update payment";
+      toast.error(errorMessage);
     }
   };
 
@@ -60,8 +60,7 @@ export default function PaymentsPage() {
       fetchPayments();
       setDeleteModalOpen(false);
       setPaymentToDelete(null);
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error("Failed to delete payment");
     }
   };
@@ -77,8 +76,8 @@ export default function PaymentsPage() {
   const filteredPayments = useMemo(() => {
     return payments.filter((p) => {
       const matchesSearch =
-        p.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.begenaId.toLowerCase().includes(searchQuery.toLowerCase());
+        p.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.begenaId?.toLowerCase().includes(searchQuery.toLowerCase());
 
       const matchesSection = filterSection ? p.section === filterSection : true;
       const matchesBatch = filterBatch ? p.batch === filterBatch : true;
@@ -92,7 +91,6 @@ export default function PaymentsPage() {
     <div>
       <h1 className="text-amber-400 text-2xl font-bold mb-4">Payments</h1>
 
-      {/* Search & Filter */}
       <div className="flex gap-2 mb-4 flex-wrap">
         <input
           type="text"
@@ -154,6 +152,7 @@ export default function PaymentsPage() {
           actions: (
             <div className="flex gap-2">
               <button
+                type="button"
                 className="text-blue-500 hover:text-blue-700"
                 onClick={() => {
                   setPaymentToEdit(p);
@@ -163,6 +162,7 @@ export default function PaymentsPage() {
                 Edit
               </button>
               <button
+                type="button"
                 className="text-red-500 hover:text-red-700"
                 onClick={() => {
                   setPaymentToDelete(p);
@@ -182,10 +182,14 @@ export default function PaymentsPage() {
           isOpen={editModalOpen}
           data={paymentToEdit}
           formData={paymentToEdit}
-          setFormData={setPaymentToEdit as any}
+          setFormData={(update: React.SetStateAction<Payment>) =>
+            setPaymentToEdit((prev) =>
+              typeof update === "function" ? update(prev as Payment) : update
+            )
+          }
           onClose={() => setEditModalOpen(false)}
           onSubmit={handleUpdatePayment}
-          renderFields={(data, setData) => (
+          renderFields={(data: Payment, setData) => (
             <>
               <input
                 className="w-full p-2 rounded bg-gray-700 text-white"
