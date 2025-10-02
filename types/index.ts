@@ -44,7 +44,7 @@ export interface Announcement {
 
 export interface ClassSchedule {
   _id?: string;
-  type: string; // Lecture/Lab
+  type: string; 
   section: string;
   date: string; // YYYY-MM-DD
   time: string; // HH:MM AM/PM

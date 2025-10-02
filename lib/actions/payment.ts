@@ -7,7 +7,6 @@ export const sendPayment = async (formData: FormData) => {
 	const section = formData.get("section")?.toString();
 	const imageUrl = formData.get("imageUrl")?.toString();
 	const month = formData.get("month")?.toString();
-	// Validation
 	if (!fullName?.trim()) {
 		throw new Error("Full name is required");
 	}
@@ -41,6 +40,7 @@ export const sendPayment = async (formData: FormData) => {
 				const errorData = await response.json();
 				errorDetails = errorData.message || errorDetails;
 			} catch (jsonError) {
+				console.error("Error parsing JSON:", jsonError);
 				errorDetails = `Server returned status ${response.status}`;
 			}
 
@@ -51,7 +51,7 @@ export const sendPayment = async (formData: FormData) => {
 		console.log("Payment submitted successfully:", result);
 	} catch (error) {
 		console.error("API Submission Error:", error);
-		throw error; // Re-throw to handle in component
+		throw error; 
 	}
 
 	redirect("/");
