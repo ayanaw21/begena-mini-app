@@ -10,9 +10,11 @@ import toast from "react-hot-toast";
 export default function AdminLogin() {
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const handleLogin = async () => {
+    setIsLoading(true);
     try {
       const res = await api.post("/auth/admin/login", { fullName, password });
       setToken(res.data.token);
@@ -20,6 +22,8 @@ export default function AdminLogin() {
     } catch (err) {
       console.error(err);
       toast.error("Login failed. Check your credentials.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -37,6 +41,7 @@ export default function AdminLogin() {
             placeholder="Full Name"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
+            disabled={isLoading} // disable during loading
           />
           <input
             className="p-2 rounded bg-gray-700 text-white"
@@ -44,12 +49,14 @@ export default function AdminLogin() {
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            disabled={isLoading} // disable during loading
           />
           <Button
             className="bg-amber-600 hover:bg-amber-700"
             onClick={handleLogin}
+            disabled={isLoading} // disable during loading
           >
-            Login
+            {isLoading ? "Logging in..." : "Login"}
           </Button>
         </CardContent>
       </Card>

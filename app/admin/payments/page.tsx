@@ -22,9 +22,12 @@ export default function PaymentsPage() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [paymentToEdit, setPaymentToEdit] = useState<Payment | null>(null);
 
-  // Modal for large screenshot
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  // CRUD button states
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const fetchPayments = async () => {
     try {
@@ -56,6 +59,47 @@ export default function PaymentsPage() {
       return matchesSearch && matchesSection && matchesBatch && matchesMonth;
     });
   }, [payments, searchQuery, filterSection, filterBatch, filterMonth]);
+
+  // DELETE payment
+  const handleDelete = async () => {
+    if (!paymentToDelete) return;
+    setIsDeleting(true);
+    try {
+      await api.delete(`/payments/${paymentToDelete._id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      setPayments((prev) => prev.filter((p) => p._id !== paymentToDelete._id));
+      toast.success("Payment deleted successfully");
+      setDeleteModalOpen(false);
+      setPaymentToDelete(null);
+    } catch {
+      toast.error("Failed to delete payment");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // EDIT payment
+  const handleEdit = async (updatedPayment: Payment) => {
+    if (!paymentToEdit) return;
+    setIsEditing(true);
+    try {
+      await api.put(`/payments/${paymentToEdit._id}`, updatedPayment, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+
+      setPayments((prev) =>
+        prev.map((p) => (p._id === paymentToEdit._id ? updatedPayment : p))
+      );
+      toast.success("Payment updated successfully");
+      setEditModalOpen(false);
+      setPaymentToEdit(null);
+    } catch {
+      toast.error("Failed to update payment");
+    } finally {
+      setIsEditing(false);
+    }
+  };
 
   return (
     <div>
@@ -140,37 +184,41 @@ export default function PaymentsPage() {
             <div className="flex gap-2">
               <button
                 type="button"
-                className="text-blue-500 hover:text-blue-700"
+                className="text-blue-500 hover:text-blue-700 disabled:opacity-50"
+                disabled={isEditing && paymentToEdit?._id === p._id}
                 onClick={() => {
                   setPaymentToEdit(p);
                   setEditModalOpen(true);
                 }}
               >
-                Edit
+                {isEditing && paymentToEdit?._id === p._id
+                  ? "Editing..."
+                  : "Edit"}
               </button>
               <button
                 type="button"
-                className="text-red-500 hover:text-red-700"
+                className="text-red-500 hover:text-red-700 disabled:opacity-50"
+                disabled={isDeleting && paymentToDelete?._id === p._id}
                 onClick={() => {
                   setPaymentToDelete(p);
                   setDeleteModalOpen(true);
                 }}
               >
-                Delete
+                {isDeleting && paymentToDelete?._id === p._id
+                  ? "Deleting..."
+                  : "Delete"}
               </button>
             </div>
           ),
         }))}
       />
 
-      {/* Image Modal */}
       <ImageModal
         isOpen={imageModalOpen}
         imageUrl={selectedImage}
         onClose={() => setImageModalOpen(false)}
       />
 
-      {/* Edit Modal */}
       {paymentToEdit && (
         <EditModal
           isOpen={editModalOpen}
@@ -182,8 +230,8 @@ export default function PaymentsPage() {
             )
           }
           onClose={() => setEditModalOpen(false)}
-          onSubmit={async () => {}}
-          renderFields={(data: Payment, setData) => (
+          onSubmit={() => handleEdit(paymentToEdit)}
+          renderFields={(data: Payment, setData: (p: Payment) => void) => (
             <>
               <input
                 className="w-full p-2 rounded bg-gray-700 text-white"
@@ -228,13 +276,12 @@ export default function PaymentsPage() {
         />
       )}
 
-      {/* Confirm Modal */}
       <ConfirmModal
         isOpen={deleteModalOpen}
         title="Delete Payment"
         message={`Are you sure you want to delete the payment for "${paymentToDelete?.fullName}"?`}
         onCancel={() => setDeleteModalOpen(false)}
-        onConfirm={() => {}}
+        onConfirm={handleDelete}
       />
     </div>
   );
