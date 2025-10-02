@@ -1,3 +1,4 @@
+// AdminLayoutClient.tsx
 "use client";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -42,9 +43,9 @@ export default function AdminLayoutClient({
   return (
     <div className="flex min-h-screen bg-gray-900 text-white">
       {isAuthenticated && <AdminSidebar />}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col lg:ml-0 min-w-0">
         {isAuthenticated && <AdminNavbar />}
-        <main className="p-6">{children}</main>
+        <main className="p-4 sm:p-6 overflow-auto">{children}</main>
       </div>
     </div>
   );
