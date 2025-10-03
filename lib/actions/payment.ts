@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import toast from "react-hot-toast";
 
 const BASE_URL = "https://begena-backend.onrender.com/api/payments";
 
@@ -55,6 +56,7 @@ export const sendPayment = async (formData: FormData) => {
 
 		const result = await response.json();
 		console.log("Payment submitted successfully:", result);
+		toast.success("Payment submitted successfully!");
 	} catch (error) {
 		console.error("API Submission Error:", error);
 		throw error; 
