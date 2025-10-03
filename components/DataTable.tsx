@@ -14,14 +14,14 @@ interface DataTableProps {
 
 const DataTable: React.FC<DataTableProps> = ({ columns, data }) => {
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-700 bg-gray-800 p-2">
-      <table className="w-full text-left text-white">
+    <div className="w-full overflow-x-auto rounded-lg border border-gray-700 bg-gray-800 p-2">
+      <table className="w-full min-w-[500px] text-left text-white text-sm sm:text-base">
         <thead>
           <tr>
             {columns.map((col) => (
               <th
                 key={col.key}
-                className="px-4 py-2 bg-gray-900 text-gray-200 font-semibold"
+                className="px-3 sm:px-4 py-2 bg-gray-900 text-gray-200 font-semibold whitespace-nowrap"
               >
                 {col.label}
               </th>
@@ -47,7 +47,10 @@ const DataTable: React.FC<DataTableProps> = ({ columns, data }) => {
                 }`}
               >
                 {columns.map((col) => (
-                  <td key={col.key} className="px-4 py-2">
+                  <td
+                    key={col.key}
+                    className="px-3 sm:px-4 py-2 whitespace-nowrap"
+                  >
                     {row[col.key]}
                   </td>
                 ))}
