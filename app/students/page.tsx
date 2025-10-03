@@ -16,16 +16,15 @@ const StudentsPage = () => {
 	const sections = getUniqueSections();
     const toggleSection = (section: string) => {
         setExpandedSection(prev => {
-            // If clicking the same section, close it
+          
             if (prev === section) {
                 return null;
             }
-            // Otherwise, expand the new section
             return section;
         });
     };
 
-	// Check if a section is expanded
+	
 	const isSectionExpanded = (section: string) => {
     return expandedSection === section;
 };
