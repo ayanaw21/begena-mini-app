@@ -1,7 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import Link from "next/link";
 import React from "react";
 import { cn } from "@/lib/utils";
 import { useState, useTransition } from "react";
@@ -10,6 +9,7 @@ import Image from "next/image";
 import { sendPayment } from "@/lib/actions/payment";
 import Footer from "@/components/footer";
 import Navbar from "@/components/Navbar";
+import toast from "react-hot-toast";
 
 const Payment = () => {
   const [isPending, startTransition] = useTransition();
@@ -83,6 +83,10 @@ const Payment = () => {
 
     startTransition(async () => {
       await sendPayment(formData);
+      setImageUrl(null);
+      setSelectedBatch(null);
+      setSelectedMonth("");
+      setSelectedSection("");
     });
   };
 
@@ -92,7 +96,7 @@ const Payment = () => {
 
   return (
     <div className="w-full max-w-[750px] mx-auto min-h-screen bg-gray-900">
-      <Navbar/>
+      <Navbar />
 
       <h1 className="mt-10 text-center text-2xl sm:text-4xl text-amber-400 font-bold">
         Submit Payment Proof

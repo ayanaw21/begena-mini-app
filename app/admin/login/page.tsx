@@ -63,6 +63,12 @@ export default function AdminLogin() {
           >
             {isLoading ? "Logging in..." : "Login"}
           </Button>
+          <button
+            className="mt-2 text-sm text-gray-400 hover:underline"
+            onClick={() => router.push("/")}
+          >
+            Back to Home
+          </button>
         </CardContent>
       </Card>
     </div>
