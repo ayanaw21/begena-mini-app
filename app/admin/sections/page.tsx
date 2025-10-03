@@ -16,7 +16,7 @@ export default function SectionsPage() {
     classDate: "",
     classTime: "",
   });
-
+  
   const [searchQuery, setSearchQuery] = useState("");
   const [filterSection, setFilterSection] = useState("");
   const [filterTeacher, setFilterTeacher] = useState("");
@@ -32,6 +32,7 @@ export default function SectionsPage() {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       setSections(res.data.sections);
+      console.log(`sections : ${sections}`)
     } catch (error) {
       console.error(error);
       toast.error("Failed to fetch sections");

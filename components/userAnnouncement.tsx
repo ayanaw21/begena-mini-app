@@ -10,7 +10,7 @@ const UserAnnouncement = () => {
 	const fetchAnnouncements = async () => {
 		try {
 			const res = await api.get("/announcements");
-			console.log(res);
+			console.log("success");
 			setAnnouncements(res.data.announcements);
 		} catch (err: unknown) {
 			console.error(err);
@@ -19,10 +19,7 @@ const UserAnnouncement = () => {
 	};
 	useEffect(() => {
 		fetchAnnouncements();
-	}, []); // Empty dependency array = run once on mount
-
-	// console.log(announcements);
-	console.log(announcements);
+	}, []); 
 	return (
 		<div className="text-gray-300 mt-6">
 			{announcements.length  > 0 && (
