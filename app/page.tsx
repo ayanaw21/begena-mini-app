@@ -82,7 +82,7 @@ const Home = () => {
                 የትምህርት ክፍለ-ጊዜ ለማየት
               </Button>
             </Link>
-            <Link href={"/student_list"}>
+            <Link href={"/students"}>
               <Button className=" bg-amber-600 hover:bg-amber-700 h-25 py-3 px-3 whitespace-normal break-words min-h-[60px]">
                 የተማሪዎች ሊስት
               </Button>
