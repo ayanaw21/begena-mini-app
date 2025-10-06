@@ -17,7 +17,7 @@ const Schedule = () => {
 	const fetchSchedules = async () => {
 		try {
 			const res = await api.get("/class-schedules");
-			console.log(res);
+			// console.log(res);
 			setSchedules(res.data.schedules);
 		} catch (err: unknown) {
 			console.error(err);
@@ -61,7 +61,7 @@ const Schedule = () => {
 			<div className="flex justify-between items-center mt-10 px-8">
 				<h1 className="text-4xl text-amber-400">የትምህርት ሰዓት</h1>
 				<div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
-					<Link href="/student_list">
+					<Link href="/students">
 						<Button className="text-2xl text-amber-400 bg-gray-700 border-amber-400">
 							Students
 						</Button>
@@ -130,25 +130,27 @@ const Schedule = () => {
 			</div>
 
 			{/* Display Schedules */}
-			<div className="p-8">
-				<h2 className="text-2xl text-amber-400 mb-4 text-center">
+			<div className="bg-gray-800 border border-amber-950 p-8 m-8 rounded-md">
+				<h2 className="bg-amber-900 rounded-t-md p-3 text-center text-xl text-white">
 					{isBasic ? "ቤዚክ" : "አድቫንስ"} የትምህርት ሰዓት{" "}
 					{selectedSection !== "All" ? `- ${selectedSection}` : ""}
 				</h2>
-				{filteredSchedules.map((schedule) => (
-					<div
-						key={schedule._id}
-						className="bg-gray-800 p-6 rounded-lg mb-4 text-white border border-amber-950"
-					>
-						<h3 className="text-amber-400 text-xl mb-2">
-							ምድብ: {schedule.section}
-						</h3>
-						<p className="text-lg">ቀን: {schedule.date}</p>
-						<p className="text-lg">ሰዓት: {schedule.time}</p>
-					</div>
-				))}
+				
+					{filteredSchedules.map((schedule) => (
+						<div
+							key={schedule._id}
+							className="bg-gray-700 p-6 rounded-b-lg mb-4 text-white"
+						>
+							<h3 className="text-amber-400 text-xl mb-2">
+								Section: {schedule.section}
+							</h3>
+							<p className="text-lg">ቀን: {schedule.date}</p>
+							<p className="text-lg">ሰዓት: {schedule.time}</p>
+						</div>
+					))}
+			
 				{filteredSchedules.length === 0 && (
-					<p className="text-white text-center text-xl">
+					<p className="text-white text-center text-xl bg-gray-700 p-6 rounded-b-lg mb-4">
 						ለዚህ ምድብ የትምህርት ሰዓት አልተገኘም
 					</p>
 				)}

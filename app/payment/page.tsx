@@ -275,7 +275,8 @@ const Payment = () => {
                       fontWeight: "bold",
                     },
                     container: {
-                      width: "100%",
+                      width: "30%",
+                      margin:"auto"
                     },
                     allowedContent: {
                       color: "#9CA3AF",
