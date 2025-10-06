@@ -9,7 +9,6 @@ import Image from "next/image";
 import { sendPayment } from "@/lib/actions/payment";
 import Footer from "@/components/footer";
 import Navbar from "@/components/Navbar";
-import toast from "react-hot-toast";
 
 const Payment = () => {
   const [isPending, startTransition] = useTransition();
