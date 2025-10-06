@@ -12,7 +12,9 @@ const useStudentStore = create<StudentState>((set, get) => ({
 	fetchStudents: async () => {
 		set({ loading: true, error: null });
 		try {
-			const res = await api.get<{ students: Student[] }>("/students");
+			const res = await api.get<{ students: Student[] }>("/students",{
+				 headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+			});
 			set({ students: res.data.students, loading: false });
 		} catch (err) {
 			console.log(err);

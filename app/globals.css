@@ -120,3 +120,7 @@
     @apply bg-background text-foreground;
   }
 }
+
+[data-ut-allowed-content] {
+  display: none !important;
+}
