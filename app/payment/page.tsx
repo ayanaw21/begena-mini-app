@@ -151,7 +151,7 @@ const Payment = () => {
                 htmlFor="section"
                 className="block text-xl font-medium text-amber-400 mb-2"
               >
-                Section
+                ክፍል(Section)
               </label>
               <select
                 id="section"
@@ -179,7 +179,7 @@ const Payment = () => {
                 htmlFor="batch"
                 className="block text-xl font-medium text-amber-400 mb-2"
               >
-                Batch
+                ዙር
               </label>
               <select
                 id="batch"
@@ -210,7 +210,7 @@ const Payment = () => {
                 htmlFor="month"
                 className="block text-xl font-medium text-amber-400 mb-2"
               >
-                Month
+                የሚከፍሉበት ወር
               </label>
               <select
                 id="month"
@@ -235,7 +235,7 @@ const Payment = () => {
 
             <div className="mb-6">
               <label className="block text-xl font-medium text-amber-400 mb-2">
-                Payment Screenshot
+                የክፍያ Screenshot
               </label>
 
               {imageUrl ? (
@@ -272,19 +272,26 @@ const Payment = () => {
                     button: {
                       backgroundColor: "rgb(251 191 36)",
                       color: "rgb(31 41 55)",
-                      fontWeight: "bold",
+                      fontWeight: "600",
+                      fontSize: "0.875rem", // ✅ Slightly smaller text (14px)
+                      padding: "8px 14px", // ✅ Slightly tighter padding for balance
+                      borderRadius: "8px",
+                      cursor: "pointer",
                     },
                     container: {
-                      width: "30%",
-                      margin:"auto"
+                      width: "40%",
+                      margin: "auto",
+                      textAlign: "center",
                     },
                     allowedContent: {
                       color: "#9CA3AF",
+                      fontSize: "0.75rem", // smaller helper text (12px)
                     },
                   }}
                 />
               )}
             </div>
+
             <div className="text-white p-4">
               <h2 className="text-amber-400 text-2xl">የክፍያ መመሪያ</h2>
               <p className="pb-2">ወርሃዊ የተማሪ ክፍይ ወደ የሚከተለው የባንክ አካውንት ያሰልፉት。</p>
