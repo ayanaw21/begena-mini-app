@@ -292,7 +292,7 @@ const Payment = () => {
 
             <div className="text-white p-4">
               <h2 className="text-amber-400 text-2xl">የክፍያ መመሪያ</h2>
-              <p className="pb-2">ወርሃዊ የተማሪ ክፍይ ወደ የሚከተለው የባንክ አካውንት ያሰልፉት。</p>
+              <p className="pb-2">ወርሃዊ የተማሪ ክፍይ ወደ የሚከተለው የባንክ አካውንት ያሰተላልፉት!</p>
               <div className="bg-gray-900 p-5 rounded-md">
                 <p>
                   ባንክ: <span className="text-amber-400"> የኢትዮጵያ ንግድ ባንክ</span>
