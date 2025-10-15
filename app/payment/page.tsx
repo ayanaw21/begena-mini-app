@@ -18,52 +18,50 @@ const Payment = () => {
   const [selectedMonth, setSelectedMonth] = useState("");
   const [selectedBatch, setSelectedBatch] = useState<number | null>(null);
   const months = [
-    {
-      value: "September",
-      label: "September",
-    },
+    
     {
       value: "October",
-      label: "October",
+      label: "ጥቅምት",
     },
     {
       value: "November",
-      label: "November",
+      label: "ሕዳር",
     },
     {
       value: "December",
-      label: "December",
+      label: "ታሕሳስ",
     },
     {
       value: "January",
-      label: "January",
+      label: "ጥር",
     },
     {
       value: "February",
-      label: "February",
+      label: "የካቲት",
     },
     {
       value: "March",
-      label: "March",
+      label: "መጋቢት",
     },
     {
       value: "April",
-      label: "April",
+      label: "ሚያዚያ",
     },
     {
       value: "May",
-      label: "May",
+      label: "ግንቦት",
     },
   ];
   const batches = Array.from({ length: 10 }, (_, i) => ({
     value: i + 1,
-    label: `Batch ${i + 1}`,
+    label: `${i + 1}ኛ ዙር`,
   }));
   const sections = [
     { value: "basic-a", label: "Basic A" },
     { value: "begena-b", label: "Basic B" },
     { value: "begena-c", label: "Basic C" },
     { value: "basic-d", label: "Basic D" },
+    { value: "basic-e", label: "Basic E" },
     { value: "advanced-a", label: "Advanced A" },
     { value: "advanced-b", label: "Advanced B" },
   ];
@@ -272,20 +270,20 @@ const Payment = () => {
                     button: {
                       backgroundColor: "rgb(251 191 36)",
                       color: "rgb(31 41 55)",
-                      fontWeight: "600",
-                      fontSize: "0.875rem", // ✅ Slightly smaller text (14px)
-                      padding: "8px 14px", // ✅ Slightly tighter padding for balance
+                      fontWeight: "500",
+                      fontSize: "0.75rem", // ✅ Slightly smaller text (14px)
+                      padding: "4px 8px", // ✅ Slightly tighter padding for balance
                       borderRadius: "8px",
                       cursor: "pointer",
                     },
                     container: {
-                      width: "40%",
+                      width: "10%",
                       margin: "auto",
                       textAlign: "center",
                     },
                     allowedContent: {
                       color: "#9CA3AF",
-                      fontSize: "0.75rem", // smaller helper text (12px)
+                      fontSize: "0.5rem", // smaller helper text (12px)
                     },
                   }}
                 />

@@ -66,11 +66,7 @@ const Schedule = () => {
 							Students
 						</Button>
 					</Link>
-					<Link href="/">
-						<Button className="text-2xl text-gray-100 bg-gray-700 border-amber-400 ">
-							<MoveLeft /> ለመመለስ
-						</Button>
-					</Link>
+					
 				</div>
 			</div>
 

@@ -90,7 +90,7 @@ const Home = () => {
           </CardContent>
         </Card>
       </div>
-      <div className="mt-5 py-6">
+      {/* <div className="mt-5 py-6">
         <h1 className="text-amber-400 text-center text-2xl break-words font-bold">
           ሳምንታዊ የበገና ቤቱ <br /> መርሐ-ግብሮች
         </h1>
@@ -109,7 +109,7 @@ const Home = () => {
             </div>
           </Card>
         </div>
-      </div>
+      </div> */}
       <div className="px-10 mt-10">
         <h1 className="text-center text-2xl text-amber-400 font-bold mb-10">
           ስለ በገና ክፍሉ

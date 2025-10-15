@@ -8,7 +8,6 @@ import { ChevronDown, ChevronUp, Loader2, MoveLeft, Users } from "lucide-react";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
 
-
 const LoadingSpinner = () => (
 	<div className="flex flex-col items-center justify-center py-16 px-4 text-center">
 		<Loader2 size={64} className="text-amber-400 animate-spin mb-4" />
@@ -64,11 +63,6 @@ const StudentsPage = () => {
 					<Link href="/schedule">
 						<Button className="text-2xl text-amber-400 bg-gray-700 border-amber-400">
 							Schedules
-						</Button>
-					</Link>
-					<Link href="/">
-						<Button className="text-2xl text-gray-100 bg-gray-700 border-amber-400 ">
-							<MoveLeft /> ለመመለስ
 						</Button>
 					</Link>
 				</div>
