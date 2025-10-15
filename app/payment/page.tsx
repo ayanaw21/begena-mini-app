@@ -14,7 +14,7 @@ import toast from "react-hot-toast";
 import { Section } from "@/types";
 
 const Payment = () => {
-	const [sections, setSections] = useState<Section[]>([]);
+	// const [sections, setSections] = useState<Section[]>([]);
 	const [isPending, startTransition] = useTransition();
 	const [imageUrl, setImageUrl] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
@@ -59,31 +59,31 @@ const Payment = () => {
 		value: i + 1,
 		label: `${i + 1}ኛ ዙር`,
 	}));
-	// const sections = [
-	//   { value: "basic-a", label: "Basic A" },
-	//   { value: "begena-b", label: "Basic B" },
-	//   { value: "begena-c", label: "Basic C" },
-	//   { value: "basic-d", label: "Basic D" },
-	//   { value: "basic-e", label: "Basic E" },
-	//   { value: "advanced-a", label: "Advanced A" },
-	//   { value: "advanced-b", label: "Advanced B" },
-	// ];
+	const sections = [
+	  { value: "basic-a", label: "Basic A" },
+	  { value: "basic-b", label: "Basic B" },
+	  { value: "basic-c", label: "Basic C" },
+	  { value: "basic-d", label: "Basic D" },
+	  { value: "basic-e", label: "Basic E" },
+	  { value: "advanced-a", label: "Advanced A" },
+	  { value: "advanced-b", label: "Advanced B" },
+	];
 
-	 const fetchSections = async () => {
-    try {
-      const res = await api.get("/sections", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      setSections(res.data.sections);
-      console.log(`sections : ${sections}`)
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to fetch sections");
-    }
-  };
-   useEffect(() => {
-      fetchSections();
-    }, []);
+	//  const fetchSections = async () => {
+  //   try {
+  //     const res = await api.get("/sections", {
+  //       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+  //     });
+  //     setSections(res.data.sections);
+  //     console.log(`sections : ${sections}`)
+  //   } catch (error) {
+  //     console.error(error);
+  //     toast.error("Failed to fetch sections");
+  //   }
+  // };
+  //  useEffect(() => {
+  //     fetchSections();
+  //   }, []);
 
 	const handleSubmit = (formData: FormData) => {
 		setError(null); // Clear previous errors
@@ -187,10 +187,10 @@ const Payment = () => {
 								<option value="">Select a section</option>
 								{sections.map((section) => (
 									<option
-										key={section.section}
-										value={section.section}
+										key={section.value}
+										value={section.value}
 									>
-										{section.section}
+										{section.label}
 									</option>
 								))}
 							</select>
