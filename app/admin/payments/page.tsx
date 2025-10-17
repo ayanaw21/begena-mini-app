@@ -15,7 +15,7 @@ export default function PaymentsPage() {
   const [filterSection, setFilterSection] = useState("");
   const [filterBatch, setFilterBatch] = useState("");
   const [filterMonth, setFilterMonth] = useState("");
-
+  console.log(payments.length)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [paymentToDelete, setPaymentToDelete] = useState<Payment | null>(null);
 
@@ -104,6 +104,8 @@ export default function PaymentsPage() {
   return (
     <div>
       <h1 className="text-amber-400 text-2xl font-bold mb-4">Payments</h1>
+      <p className="text-lg p-3 ">የከፈሉ ተማሪዎች ብዛት <span className="text-amber-400 px-4">{filteredPayments.length}</span></p>
+      <br />
 
       <div className="flex gap-2 mb-4 flex-wrap">
         <input
