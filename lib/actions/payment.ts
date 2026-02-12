@@ -10,21 +10,12 @@ export const sendPayment = async (formData: FormData) => {
 	const month = formData.get("month")?.toString();
 	const begenaId = formData.get("begenaId")?.toString();
 	const batch = formData.get("batch")?.toString();
-	// Validation
-	if (!fullName?.trim()) {
-		throw new Error("Full name is required");
-	}
 
-	if (!section) {
-		throw new Error("Section is required");
-	}
-
-	if (!imageUrl) {
-		throw new Error("Payment screenshot is required");
-	}
-	if (!month) {
-		throw new Error("Month is required");
-	}
+	// Client-side validation
+	if (!fullName?.trim()) throw new Error("Full name is required");
+	if (!section) throw new Error("Section is required");
+	if (!imageUrl) throw new Error("Payment screenshot is required");
+	if (!month) throw new Error("Month is required");
 
 	try {
 		const response = await fetch(BASE_URL, {
@@ -40,27 +31,16 @@ export const sendPayment = async (formData: FormData) => {
 			}),
 		});
 
+		const data = await response.json();
+
 		if (!response.ok) {
-			let errorDetails = "Submission failed on the server";
-
-			try {
-				const errorData = await response.json();
-				errorDetails = errorData.message || errorDetails;
-			} catch (jsonError) {
-				console.error("Error parsing JSON:", jsonError);
-				errorDetails = `Server returned status ${response.status}`;
-			}
-
-			throw new Error(errorDetails);
+			throw new Error(data.message || "Submission failed on the server");
 		}
 
-		const result = await response.json();
-		console.log("Payment submitted successfully:", result);
-		toast.success("Payment submitted successfully!");
+		return data;
 	} catch (error) {
 		console.error("API Submission Error:", error);
 		throw error; 
 	}
-
-	redirect("/");
 };
+
