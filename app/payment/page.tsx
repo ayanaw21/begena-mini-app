@@ -86,23 +86,28 @@ const Payment = () => {
   //   }, []);
 
 	const handleSubmit = (formData: FormData) => {
-		setError(null); // Clear previous errors
-		console.log(imageUrl);
-
-		// Client-side validation
+		setError(null);
+	
 		if (!imageUrl) {
-			setError("Please upload a payment screenshot");
+			toast.error("Please upload a payment screenshot");
 			return;
 		}
-
+	
 		formData.append("imageUrl", imageUrl);
-
+	
 		startTransition(async () => {
-			await sendPayment(formData);
-			setImageUrl(null);
-			setSelectedBatch(null);
-			setSelectedMonth("");
-			setSelectedSection("");
+			try {
+				await sendPayment(formData);
+	
+				toast.success("Payment submitted successfully!");
+	
+				setImageUrl(null);
+				setSelectedBatch(null);
+				setSelectedMonth("");
+				setSelectedSection("");
+			} catch (err: any) {
+				toast.error(err.message || "Something went wrong");
+			}
 		});
 	};
 
