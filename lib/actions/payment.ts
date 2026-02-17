@@ -34,24 +34,16 @@ export const sendPayment = async (formData: FormData) => {
 		const data = await response.json();
 
 		if (!response.ok) {
-			let errorDetails = "Submission failed on the server";
-
-			try {
-				const errorData = await response.json();
-				errorDetails = errorData.message || errorDetails;
-			} catch (jsonError) {
-				console.error("Error parsing JSON:", jsonError);
-				errorDetails = `Server returned status ${response.status}`;
-			}
-			toast.error(`${errorDetails} please contact the admins"`);
-			redirect("/");
+			return { error: data.message || `Server error: ${response.status}` };
 
 		}
+		
 
 		return data;
 	} catch (error) {
 		console.error("API Submission Error:", error);
-		throw error; 
+		return { error: "Could not connect to the server. Please check your connection." }; 
 	}
+	redirect("/")
 };
 

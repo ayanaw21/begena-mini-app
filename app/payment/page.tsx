@@ -60,53 +60,36 @@ const Payment = () => {
 		label: `${i + 1}ኛ ዙር`,
 	}));
 	const sections = [
-	  { value: "basic-a", label: "Basic A" },
-	  { value: "basic-b", label: "Basic B" },
-	  { value: "basic-c", label: "Basic C" },
-	  { value: "basic-d", label: "Basic D" },
-	  { value: "basic-e", label: "Basic E" },
-	  { value: "advanced-a", label: "Advanced A" },
-	  { value: "advanced-b", label: "Advanced B" },
+		{ value: "basic-a", label: "Basic A" },
+		{ value: "basic-b", label: "Basic B" },
+		{ value: "basic-c", label: "Basic C" },
+		{ value: "basic-d", label: "Basic D" },
+		{ value: "basic-e", label: "Basic E" },
+		{ value: "advanced-a", label: "Advanced A" },
+		{ value: "advanced-b", label: "Advanced B" },
 	];
-
-	//  const fetchSections = async () => {
-  //   try {
-  //     const res = await api.get("/sections", {
-  //       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-  //     });
-  //     setSections(res.data.sections);
-  //     console.log(`sections : ${sections}`)
-  //   } catch (error) {
-  //     console.error(error);
-  //     toast.error("Failed to fetch sections");
-  //   }
-  // };
-  //  useEffect(() => {
-  //     fetchSections();
-  //   }, []);
 
 	const handleSubmit = (formData: FormData) => {
 		setError(null);
-	
+
 		if (!imageUrl) {
 			toast.error("Please upload a payment screenshot");
 			return;
 		}
-	
+
 		formData.append("imageUrl", imageUrl);
-	
+
 		startTransition(async () => {
-			try {
-				await sendPayment(formData);
-	
+			const result = await sendPayment(formData);
+			if (result?.error) {
+				toast.error(`${result.error}. Please contact the admins.`);
+			} else {
 				toast.success("Payment submitted successfully!");
-	
+
 				setImageUrl(null);
 				setSelectedBatch(null);
 				setSelectedMonth("");
 				setSelectedSection("");
-			} catch (err: any) {
-				toast.error(err.message || "Something went wrong");
 			}
 		});
 	};
@@ -143,7 +126,7 @@ const Payment = () => {
 								placeholder="Enter your full name"
 								className={cn(
 									"w-full border border-gray-600 px-3 py-2 bg-gray-700 text-gray-100",
-									"rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+									"rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500",
 								)}
 								disabled={isPending}
 							/>
@@ -163,7 +146,7 @@ const Payment = () => {
 								placeholder="Enter your Begena ID"
 								className={cn(
 									"w-full border border-gray-600 px-3 py-2 bg-gray-700 text-gray-100",
-									"rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+									"rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500",
 								)}
 								disabled={isPending}
 							/>
@@ -186,7 +169,7 @@ const Payment = () => {
 								disabled={isPending}
 								className={cn(
 									"w-full border border-gray-600 px-3 py-2 bg-gray-700 text-gray-100",
-									"rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+									"rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500",
 								)}
 							>
 								<option value="">Select a section</option>
@@ -217,13 +200,13 @@ const Payment = () => {
 									setSelectedBatch(
 										e.target.value
 											? Number(e.target.value)
-											: null
+											: null,
 									)
 								}
 								disabled={isPending}
 								className={cn(
 									"w-full border border-gray-600 px-3 py-2 bg-gray-700 text-gray-100",
-									"rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+									"rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500",
 								)}
 							>
 								<option value="">Select a batch</option>
@@ -255,7 +238,7 @@ const Payment = () => {
 								disabled={isPending}
 								className={cn(
 									"w-full border border-gray-600 px-3 py-2 bg-gray-700 text-gray-100",
-									"rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+									"rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500",
 								)}
 							>
 								<option value="">Select a month</option>
@@ -304,7 +287,7 @@ const Payment = () => {
 									}}
 									onUploadError={(error: Error) => {
 										setError(
-											`Upload failed: ${error.message}`
+											`Upload failed: ${error.message}`,
 										);
 									}}
 									appearance={{
