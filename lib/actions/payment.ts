@@ -50,8 +50,9 @@ export const sendPayment = async (formData: FormData) => {
 				console.error("Error parsing JSON:", jsonError);
 				errorDetails = `Server returned status ${response.status}`;
 			}
+			toast.error(`${errorDetails} please contact the admins"`);
+			redirect("/");
 
-			throw new Error(errorDetails);
 		}
 
 		const result = await response.json();
