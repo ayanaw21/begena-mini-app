@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import React, { useState, useEffect, useTransition, useCallback } from "react";
+import React, { useState, useTransition, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { sendPayment } from "@/lib/actions/payment";

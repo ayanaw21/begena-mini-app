@@ -4,7 +4,6 @@ import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import api from "@/lib/api";
 import { ClassSchedule } from "@/types";
-import { MoveLeft } from "lucide-react";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";

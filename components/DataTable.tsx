@@ -9,6 +9,7 @@ interface Column {
 
 interface DataTableProps {
   columns: Column[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any[]; // Each row is an object with keys matching columns
 }
 

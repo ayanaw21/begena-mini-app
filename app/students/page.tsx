@@ -4,7 +4,7 @@ import NoSectionsFound from "@/components/NoSectionsFound";
 import NoStudentsFound from "@/components/NoStudentsFound";
 import { Button } from "@/components/ui/button";
 import useStudentStore from "@/stores/studentStore";
-import { ChevronDown, ChevronUp, Loader2, MoveLeft, Users } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, Users } from "lucide-react";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
 
@@ -81,7 +81,7 @@ const StudentsPage = () => {
 						{/* Show sections when both students and sections exist */}
 						{hasStudents &&
 							hasSections &&
-							sections.map((section, index) => {
+							sections.map((section) => {
 								const isExpanded = isSectionExpanded(section);
 								const sectionStudents =
 									getStudentsBySection(section);
