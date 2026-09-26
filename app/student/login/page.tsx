@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,13 @@ export default function StudentLogin() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem("studentToken");
+    if (token) {
+      router.replace("/student/dashboard");
+    }
+  }, [router]);
 
   const handleLogin = async () => {
     if (!studentId || !password) {

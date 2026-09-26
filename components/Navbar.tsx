@@ -1,11 +1,21 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const Navbar = () => {
   const pathname = usePathname();
+  const [studentHref, setStudentHref] = useState("/student/login");
+
+  useEffect(() => {
+    const token = localStorage.getItem("studentToken");
+    if (token) {
+      setStudentHref("/student/dashboard");
+    } else {
+      setStudentHref("/student/login");
+    }
+  }, [pathname]);
 
   return (
     <nav className="h-16 border-b border-gray-700 w-full flex justify-between items-center px-3 sm:px-6 bg-gray-900 sticky top-0 z-50">
@@ -22,7 +32,7 @@ const Navbar = () => {
           </Link>
         )}
 
-        <Link href="/student/login">
+        <Link href={studentHref}>
           <Button className="text-[11px] sm:text-xs font-bold text-amber-400 bg-gray-800 border border-amber-900 hover:bg-amber-900/60 px-2 sm:px-3 py-1.5 h-auto">
             🎓 ተማሪ
           </Button>

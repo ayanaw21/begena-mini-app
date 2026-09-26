@@ -1,10 +1,10 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { setToken } from "@/lib/auth";
+import { setToken, getToken } from "@/lib/auth";
 import toast from "react-hot-toast";
 
 export default function AdminLogin() {
@@ -12,6 +12,13 @@ export default function AdminLogin() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    const token = getToken();
+    if (token) {
+      router.replace("/admin");
+    }
+  }, [router]);
 
   const handleLogin = async () => {
     if (!fullName || !password) {
