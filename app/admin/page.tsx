@@ -39,16 +39,17 @@ export default function AdminHome() {
     <div className="flex min-h-screen bg-gray-900 text-white">
       <div className="flex-1 flex flex-col">
         <main className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <h1 className="text-2xl font-bold text-amber-400 mb-6">Admin Control Panel</h1>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card className="bg-gray-800 border-amber-950 hover:border-amber-400">
               <CardHeader>
-                <CardTitle className="text-amber-400">Students</CardTitle>
-                <CardDescription>Manage student information</CardDescription>
+                <CardTitle className="text-amber-400">Programs</CardTitle>
+                <CardDescription>Manage Begena, Masinko, Kirar & instruments</CardDescription>
               </CardHeader>
               <CardContent>
-                <Link href="/admin/students">
-                  <Button className="bg-amber-600 hover:bg-amber-700">
-                    View Students
+                <Link href="/admin/programs">
+                  <Button className="bg-amber-600 hover:bg-amber-700 w-full">
+                    Manage Programs
                   </Button>
                 </Link>
               </CardContent>
@@ -56,13 +57,41 @@ export default function AdminHome() {
 
             <Card className="bg-gray-800 border-amber-950 hover:border-amber-400">
               <CardHeader>
-                <CardTitle className="text-amber-400">Sections</CardTitle>
-                <CardDescription>Manage sections and teachers</CardDescription>
+                <CardTitle className="text-amber-400">Students</CardTitle>
+                <CardDescription>In-person registration & student ID records</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link href="/admin/students">
+                  <Button className="bg-amber-600 hover:bg-amber-700 w-full">
+                    Manage Students
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-800 border-amber-950 hover:border-amber-400">
+              <CardHeader>
+                <CardTitle className="text-amber-400">Sections & Teachers</CardTitle>
+                <CardDescription>Main & Assistant teacher assignments</CardDescription>
               </CardHeader>
               <CardContent>
                 <Link href="/admin/sections">
-                  <Button className="bg-amber-600 hover:bg-amber-700">
-                    View Sections
+                  <Button className="bg-amber-600 hover:bg-amber-700 w-full">
+                    Manage Sections
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-800 border-amber-950 hover:border-amber-400">
+              <CardHeader>
+                <CardTitle className="text-amber-400">Staff & Instructors</CardTitle>
+                <CardDescription>Manage admins, main & assistant staff</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link href="/admin/staff">
+                  <Button className="bg-amber-600 hover:bg-amber-700 w-full">
+                    Manage Staff
                   </Button>
                 </Link>
               </CardContent>
@@ -71,12 +100,40 @@ export default function AdminHome() {
             <Card className="bg-gray-800 border-amber-950 hover:border-amber-400">
               <CardHeader>
                 <CardTitle className="text-amber-400">Payments</CardTitle>
-                <CardDescription>View and manage payments</CardDescription>
+                <CardDescription>Verify slips, Approve / Reject</CardDescription>
               </CardHeader>
               <CardContent>
                 <Link href="/admin/payments">
-                  <Button className="bg-amber-600 hover:bg-amber-700">
-                    View Payments
+                  <Button className="bg-amber-600 hover:bg-amber-700 w-full">
+                    Manage Payments
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-800 border-amber-950 hover:border-amber-400">
+              <CardHeader>
+                <CardTitle className="text-amber-400">Attendance Sheet</CardTitle>
+                <CardDescription>Track Present, Absent & Risk Decision Center</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link href="/admin/attendance">
+                  <Button className="bg-amber-600 hover:bg-amber-700 w-full">
+                    Track Attendance
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-800 border-amber-950 hover:border-amber-400">
+              <CardHeader>
+                <CardTitle className="text-amber-400">Class Schedules</CardTitle>
+                <CardDescription>Flexible 1x, 2x, Nx weekly timetables</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link href="/admin/schedules">
+                  <Button className="bg-amber-600 hover:bg-amber-700 w-full">
+                    Manage Schedules
                   </Button>
                 </Link>
               </CardContent>
@@ -85,28 +142,12 @@ export default function AdminHome() {
             <Card className="bg-gray-800 border-amber-950 hover:border-amber-400">
               <CardHeader>
                 <CardTitle className="text-amber-400">Announcements</CardTitle>
-                <CardDescription>Manage announcements</CardDescription>
+                <CardDescription>Broadcast notices to students</CardDescription>
               </CardHeader>
               <CardContent>
                 <Link href="/admin/announcements">
-                  <Button className="bg-amber-600 hover:bg-amber-700">
-                    View Announcements
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gray-800 border-amber-950 hover:border-amber-400">
-              <CardHeader>
-                <CardTitle className="text-amber-400">
-                  Class Schedules
-                </CardTitle>
-                <CardDescription>Manage class schedules</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Link href="/admin/schedules">
-                  <Button className="bg-amber-600 hover:bg-amber-700">
-                    View Schedules
+                  <Button className="bg-amber-600 hover:bg-amber-700 w-full">
+                    Manage Announcements
                   </Button>
                 </Link>
               </CardContent>

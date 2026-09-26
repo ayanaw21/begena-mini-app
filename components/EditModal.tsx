@@ -8,7 +8,7 @@ interface EditModalProps<T> {
   setFormData: (data: T) => void;
   onClose: () => void;
   onSubmit: () => Promise<void>;
-  renderFields: (formData: T, setFormData: (data: T) => void) => JSX.Element;
+  renderFields: (formData: T, setFormData: (data: T) => void) => React.ReactNode;
 }
 
 export default function EditModal<T>({

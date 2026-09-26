@@ -10,11 +10,14 @@ interface AdminSidebarProps {
 export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const menuItems = [
     { href: "/admin", label: "Dashboard" },
+    { href: "/admin/programs", label: "Programs" },
     { href: "/admin/students", label: "Students" },
     { href: "/admin/sections", label: "Sections" },
+    { href: "/admin/staff", label: "Staff & Teachers" },
     { href: "/admin/payments", label: "Payments" },
-    { href: "/admin/announcements", label: "Announcements" },
+    { href: "/admin/attendance", label: "Attendance Sheet" },
     { href: "/admin/schedules", label: "Class Schedules" },
+    { href: "/admin/announcements", label: "Announcements" },
   ];
 
   return (

@@ -6,20 +6,24 @@ const nextConfig: NextConfig = {
     },eslint:{
       ignoreDuringBuilds:true,
     },
-  /* config options here */ images: {
+  images: {
     domains: [
-      'g96xkr7zoc.ufs.sh', // Your UploadThing domain
-      'utfs.io', // UploadThing's main domain
-      'uploadthing.com', // UploadThing's main domain
+      'res.cloudinary.com',
+      'g96xkr7zoc.ufs.sh',
+      'utfs.io',
     ],
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '*.ufs.sh', // Allow all UploadThing subdomains
+        hostname: 'res.cloudinary.com',
       },
       {
         protocol: 'https',
-        hostname: 'utfs.io', // UploadThing's CDN
+        hostname: '*.ufs.sh',
+      },
+      {
+        protocol: 'https',
+        hostname: 'utfs.io',
       },
     ],
   },

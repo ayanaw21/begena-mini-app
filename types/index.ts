@@ -1,17 +1,30 @@
 export interface Admin {
 	id: string;
 	fullName: string;
-	role: "admin";
+	role: "admin" | "teacher";
+	phoneNumber?: string;
+}
+
+export interface Program {
+	_id?: string;
+	name: string;
+	code: string;
+	description?: string;
+	isActive?: boolean;
 }
 
 export interface Student {
 	_id?: string;
 	fullName: string;
+	studentId?: string;
 	begenaId: string;
+	program?: string;
 	batch: string;
 	section: string;
 	department: string;
 	phoneNumber: string;
+	registrationYear?: number;
+	academicStatus?: "Active" | "Graduated" | "Suspended" | "Warning";
 }
 
 export interface StudentState {
@@ -29,22 +42,51 @@ export interface StudentState {
 	getUniqueSections?: () => string[];
 	getStudentsBySection?: (section: string) => Student[];
 }
+
 export interface Section {
 	_id?: string;
 	section: string;
-	assignedTeacher: string;
-	classDate: string; // YYYY-MM-DD
-	classTime: string; // HH:MM AM/PM
+	program?: string;
+	mainTeacher?: string;
+	mainTeacherName?: string;
+	assistantTeacher?: string;
+	assistantTeacherName?: string;
+	assignedTeacher?: string;
+	capacity?: number;
+	classDate?: string;
+	classTime?: string;
+}
+
+export interface ScheduleSession {
+	day: string;
+	startTime: string;
+	endTime: string;
+	room?: string;
+}
+
+export interface ClassSchedule {
+	_id?: string;
+	program?: string;
+	type?: string;
+	section: string;
+	sessions?: ScheduleSession[];
+	date?: string;
+	time?: string;
 }
 
 export interface Payment {
 	_id?: string;
 	fullName: string;
-	section: string;
-	screenshot: string;
-	month: string;
+	studentId?: string;
 	begenaId: string;
+	program?: string;
+	section: string;
 	batch: string;
+	month: string;
+	year?: string;
+	screenshot: string;
+	status?: "Pending" | "Approved" | "Rejected";
+	adminNotes?: string;
 	createdAt?: string;
 	updatedAt?: string;
 }
@@ -53,14 +95,21 @@ export interface Announcement {
 	_id?: string;
 	title: string;
 	body: string;
-	date: string; // YYYY-MM-DD
-	time: string; // HH:MM AM/PM
+	date: string;
+	time: string;
 }
 
-export interface ClassSchedule {
-	_id?: string;
-	type: string;
+export interface AttendanceSummaryItem {
+	studentIdObj: string;
+	studentId: string;
+	fullName: string;
+	program: string;
 	section: string;
-	date: string; // YYYY-MM-DD
-	time: string; // HH:MM AM/PM
+	academicStatus: "Active" | "Graduated" | "Suspended" | "Warning";
+	totalSessions: number;
+	presentCount: number;
+	absentCount: number;
+	permissionCount: number;
+	attendanceRate: number;
+	riskLevel: string;
 }
