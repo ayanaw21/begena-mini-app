@@ -150,92 +150,94 @@ const Payment = () => {
 		<div className="min-h-screen bg-gray-900 text-white flex flex-col w-full">
 			<Navbar />
 
-			<main className="flex-1 w-full max-w-2xl mx-auto px-4 py-8">
-				<h1 className="text-center text-3xl sm:text-4xl text-amber-400 font-bold mb-2">
+			<main className="flex-1 w-full max-w-2xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
+				<h1 className="text-center text-2xl sm:text-4xl text-amber-400 font-bold mb-1.5 sm:mb-2">
 					Submit Payment Proof
 				</h1>
-				<p className="text-center text-gray-400 text-sm mb-6">
+				<p className="text-center text-gray-400 text-xs sm:text-sm mb-4 sm:mb-6">
 					ተማሪዎች የክፍያ ደረሰኝ በ ID ብቻ የሚያስገቡበት ገጽ
 				</p>
 
 				<Card className="bg-gray-800 border border-amber-950/60 shadow-xl">
-					<CardContent className="pt-6">
-						<form onSubmit={handleSubmit} className="space-y-6">
+					<CardContent className="p-3.5 sm:p-6 pt-5 sm:pt-6">
+						<form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
 							{/* Step 1: Student ID Input */}
 							<div>
-								<div className="flex justify-between items-center mb-2">
+								<div className="flex justify-between items-center mb-1.5 sm:mb-2">
 									<label
 										htmlFor="begenaId"
-										className="block text-lg font-bold text-amber-400"
+										className="block text-base sm:text-lg font-bold text-amber-400"
 									>
 										የተማሪ ID (Student ID)
 									</label>
 									{isLookingUp && (
 										<span className="text-xs text-amber-400 animate-pulse">
-											Verifying Student ID...
+											Verifying...
 										</span>
 									)}
 								</div>
 
-								<div className="flex gap-2">
-									<input
-										type="text"
-										id="begenaId"
-										name="begenaId"
-										required
-										value={begenaId}
-										onChange={(e) => {
-											setBegenaId(e.target.value);
-										}}
-										onBlur={() => performStudentLookup(begenaId)}
-										placeholder="Enter Student ID (e.g. BG2026-0001, MS2026-0001)"
-										className={cn(
-											"flex-1 border border-gray-600 px-4 py-3 bg-gray-700 text-gray-100 font-mono text-lg",
-											"rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500",
-										)}
-										disabled={isPending}
-									/>
+								<div className="flex flex-col sm:flex-row gap-2">
+									<div className="relative flex-1 min-w-0">
+										<input
+											type="text"
+											id="begenaId"
+											name="begenaId"
+											required
+											value={begenaId}
+											onChange={(e) => {
+												setBegenaId(e.target.value);
+											}}
+											onBlur={() => performStudentLookup(begenaId)}
+											placeholder="Student ID (e.g. BG2026-0001)"
+											className={cn(
+												"w-full border border-gray-600 px-3.5 py-2.5 sm:px-4 sm:py-3 bg-gray-700 text-gray-100 font-mono text-base sm:text-lg min-w-0",
+												"rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500",
+											)}
+											disabled={isPending}
+										/>
+									</div>
 									<button
 										type="button"
 										onClick={() => performStudentLookup(begenaId)}
-										className="px-5 py-3 bg-amber-600 hover:bg-amber-700 text-gray-950 font-bold text-sm rounded-md transition-colors"
+										className="w-full sm:w-auto px-5 py-2.5 sm:py-3 bg-amber-600 hover:bg-amber-700 text-gray-950 font-bold text-sm sm:text-base rounded-md transition-colors whitespace-nowrap shrink-0 flex items-center justify-center"
 									>
 										Verify ID
 									</button>
 								</div>
-								<p className="text-xs text-gray-400 mt-1">
+								<p className="text-[11px] sm:text-xs text-gray-400 mt-1.5">
 									Enter your assigned Student ID to auto-link your program, section & full name.
 								</p>
 							</div>
 
 							{/* Verified Student Details Card */}
 							{foundStudent ? (
-								<div className="p-4 bg-gradient-to-r from-green-950/90 to-gray-800 border border-green-600/80 rounded-lg space-y-2 shadow-md">
+								<div className="p-3 sm:p-4 bg-gradient-to-r from-green-950/90 to-gray-800 border border-green-600/80 rounded-lg space-y-2 shadow-md">
 									<div className="flex items-center justify-between">
 										<div className="flex items-center gap-2">
 											<span className="bg-green-500 text-gray-950 p-1 rounded-full text-xs font-bold">✓</span>
-											<span className="font-bold text-green-300 text-sm">Verified Student Found</span>
+											<span className="font-bold text-green-300 text-xs sm:text-sm">Verified Student Found</span>
 										</div>
 										<span className="text-[11px] bg-green-900/80 text-green-200 px-2 py-0.5 rounded border border-green-700 font-mono">
 											{foundStudent.studentId}
 										</span>
 									</div>
 
-									<div className="grid grid-cols-2 gap-2 text-sm pt-1 border-t border-green-900/60">
+									<div className="grid grid-cols-2 gap-2 text-xs sm:text-sm pt-1 border-t border-green-900/60">
 										<div>
-											<span className="text-gray-400 text-xs block">Full Name:</span>
+											<span className="text-gray-400 text-[11px] block">Full Name:</span>
 											<span className="font-semibold text-white">{foundStudent.fullName}</span>
 										</div>
 										<div>
-											<span className="text-gray-400 text-xs block">Program:</span>
+											<span className="text-gray-400 text-[11px] block">Program:</span>
 											<span className="font-semibold text-amber-400">{foundStudent.program}</span>
 										</div>
 										<div>
-											<span className="text-gray-400 text-xs block">Section:</span>
+											<span className="text-gray-400 text-[11px] block">Section:</span>
 											<span className="font-semibold text-white">{foundStudent.section}</span>
 										</div>
 										<div>
-											<span className="text-gray-400 text-xs block">Batch:</span>
+											<span className="text-gray-400 text-[11px] block">Batch:</span>
 											<span className="font-semibold text-white">{foundStudent.batch}</span>
 										</div>
 									</div>
@@ -249,7 +251,7 @@ const Payment = () => {
 										<button
 											type="button"
 											onClick={() => setManualMode(!manualMode)}
-											className="text-amber-400 underline font-semibold hover:text-amber-300 ml-2"
+											className="text-amber-400 underline font-semibold hover:text-amber-300 ml-2 whitespace-nowrap"
 										>
 											{manualMode ? "Hide Form" : "Enter Name"}
 										</button>
