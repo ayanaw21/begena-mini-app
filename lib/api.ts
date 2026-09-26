@@ -5,9 +5,13 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  if (!config.headers.Authorization && typeof window !== "undefined") {
+    const studentToken = localStorage.getItem("studentToken");
+    const adminToken = localStorage.getItem("token");
+    const token = studentToken || adminToken;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
   }
   return config;
 });

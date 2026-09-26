@@ -47,11 +47,17 @@ export default function StudentDashboard() {
         setSchedules(res.data.schedules || []);
         setAttendance(res.data.attendance || []);
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Portal Fetch Error:", err);
-      toast.error("Session expired. Please log in again.");
-      localStorage.removeItem("studentToken");
-      router.push("/student/login");
+      const apiErr = err as { response?: { status?: number; data?: { message?: string } } };
+      const status = apiErr?.response?.status;
+      if (status === 401 || status === 403) {
+        toast.error("Session expired. Please log in again.");
+        localStorage.removeItem("studentToken");
+        router.push("/student/login");
+      } else {
+        toast.error(apiErr?.response?.data?.message || "Failed to load portal data. Retrying...");
+      }
     } finally {
       setLoading(false);
     }
