@@ -6,7 +6,28 @@ import DataTable from "@/components/DataTable";
 import ModalForm from "@/components/ModalForm";
 import ConfirmModal from "@/components/ConfirmModal";
 import EditModal from "@/components/EditModal";
+import RowActions from "@/components/RowActions";
+import { Badge } from "@/components/ui/badge";
+import { Field, PageHeader } from "@/components/ui/page";
 import toast from "react-hot-toast";
+
+type AcademicStatus = "Active" | "Graduated" | "Suspended" | "Warning";
+
+const academicStatuses: AcademicStatus[] = [
+  "Active",
+  "Warning",
+  "Suspended",
+  "Graduated",
+];
+
+const statusTone = (status?: string) =>
+  status === "Warning"
+    ? "warning"
+    : status === "Suspended"
+      ? "danger"
+      : status === "Graduated"
+        ? "info"
+        : "success";
 
 export default function StudentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
@@ -173,7 +194,7 @@ export default function StudentsPage() {
       const matchesSearch =
         s.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         idStr.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        s.phoneNumber.includes(searchQuery);
+        (s.phoneNumber || "").includes(searchQuery);
 
       const matchesProgram = filterProgram ? s.program === filterProgram : true;
       const matchesBatch = filterBatch ? s.batch === filterBatch : true;
@@ -184,24 +205,134 @@ export default function StudentsPage() {
   }, [students, searchQuery, filterProgram, filterBatch, filterSection]);
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-amber-400 text-2xl font-bold mb-4">Student Management</h1>
+    <div className="space-y-6">
+      <PageHeader
+        title="Students"
+        description={`${filteredStudents.length} of ${students.length} students shown.`}
+        action={
+          <ModalForm
+            title="Add Student"
+            triggerText="Add Student"
+            onSubmit={handleCreateStudent}
+          >
+            <Field label="Full Name" htmlFor="studentFullName" required>
+              <input
+                id="studentFullName"
+                placeholder="Full name"
+                value={formData.fullName}
+                onChange={(e) =>
+                  setFormData({ ...formData, fullName: e.target.value })
+                }
+              />
+            </Field>
 
-      {/* Filter Bar */}
-      <div className="flex gap-2 mb-4 flex-wrap">
+            <Field
+              label="Student ID"
+              htmlFor="studentIdInput"
+              hint="Use the program code prefix, e.g. BG2026-0001."
+              required
+            >
+              <input
+                id="studentIdInput"
+                className="font-mono"
+                placeholder="BG2026-0001"
+                value={formData.studentId || formData.begenaId}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    studentId: e.target.value,
+                    begenaId: e.target.value,
+                  })
+                }
+              />
+            </Field>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Enrolled Program" htmlFor="studentProgram">
+                <select
+                  id="studentProgram"
+                  value={formData.program}
+                  onChange={(e) =>
+                    setFormData({ ...formData, program: e.target.value })
+                  }
+                >
+                  {programs.map((p) => (
+                    <option key={p._id || p.code} value={p.name}>
+                      {p.name} ({p.code})
+                    </option>
+                  ))}
+                </select>
+              </Field>
+
+              <Field label="Assigned Section" htmlFor="studentSection">
+                <select
+                  id="studentSection"
+                  value={formData.section}
+                  onChange={(e) =>
+                    setFormData({ ...formData, section: e.target.value })
+                  }
+                >
+                  <option value="">Choose section</option>
+                  {sections.map((sec) => (
+                    <option key={sec._id} value={sec.section}>
+                      {sec.section} ({sec.program || "General"})
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Phone Number" htmlFor="studentPhone">
+                <input
+                  id="studentPhone"
+                  inputMode="tel"
+                  placeholder="0911223344"
+                  value={formData.phoneNumber}
+                  onChange={(e) =>
+                    setFormData({ ...formData, phoneNumber: e.target.value })
+                  }
+                />
+              </Field>
+
+              <Field label="Academic Status" htmlFor="studentStatus">
+                <select
+                  id="studentStatus"
+                  value={formData.academicStatus || "Active"}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      academicStatus: e.target.value as AcademicStatus,
+                    })
+                  }
+                >
+                  {academicStatuses.map((status) => (
+                    <option key={status} value={status}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            </div>
+          </ModalForm>
+        }
+      />
+
+      {/* Filters */}
+      <div className="flex flex-wrap gap-3">
         <input
-          type="text"
+          type="search"
           placeholder="Search by name, ID or phone..."
-          className="p-2 rounded bg-gray-700 text-white flex-1 min-w-[200px]"
+          className="min-w-60 flex-1"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
         <select
-          className="p-2 rounded bg-gray-700 text-white"
+          className="w-auto"
           value={filterProgram}
           onChange={(e) => setFilterProgram(e.target.value)}
         >
-          <option value="">All Programs</option>
+          <option value="">All programs</option>
           {programs.map((p) => (
             <option key={p._id || p.code} value={p.name}>
               {p.name} ({p.code})
@@ -209,11 +340,11 @@ export default function StudentsPage() {
           ))}
         </select>
         <select
-          className="p-2 rounded bg-gray-700 text-white"
+          className="w-auto"
           value={filterBatch}
           onChange={(e) => setFilterBatch(e.target.value)}
         >
-          <option value="">All Batches</option>
+          <option value="">All batches</option>
           {uniqueBatches.map((batch) => (
             <option key={batch} value={batch}>
               {batch}
@@ -221,11 +352,11 @@ export default function StudentsPage() {
           ))}
         </select>
         <select
-          className="p-2 rounded bg-gray-700 text-white"
+          className="w-auto"
           value={filterSection}
           onChange={(e) => setFilterSection(e.target.value)}
         >
-          <option value="">All Sections</option>
+          <option value="">All sections</option>
           {uniqueSections.map((sec) => (
             <option key={sec} value={sec}>
               {sec}
@@ -233,77 +364,6 @@ export default function StudentsPage() {
           ))}
         </select>
       </div>
-
-      <ModalForm title="Add Student (In-Person Registration)" onSubmit={handleCreateStudent}>
-        <input
-          className="w-full p-2 rounded bg-gray-700 text-white"
-          placeholder="Full Name"
-          value={formData.fullName}
-          onChange={(e) =>
-            setFormData({ ...formData, fullName: e.target.value })
-          }
-        />
-        <input
-          className="w-full p-2 rounded bg-gray-700 text-white"
-          placeholder="Student ID (e.g., BG2026-0001, MS2026-0001)"
-          value={formData.studentId || formData.begenaId}
-          onChange={(e) =>
-            setFormData({ ...formData, studentId: e.target.value, begenaId: e.target.value })
-          }
-        />
-        <div>
-          <label className="block text-xs text-amber-400 mb-1">Enrolled Program</label>
-          <select
-            className="w-full p-2 rounded bg-gray-700 text-white"
-            value={formData.program}
-            onChange={(e) => setFormData({ ...formData, program: e.target.value })}
-          >
-            {programs.map((p) => (
-              <option key={p._id || p.code} value={p.name}>
-                {p.name} ({p.code})
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs text-amber-400 mb-1">Assigned Section</label>
-          <select
-            className="w-full p-2 rounded bg-gray-700 text-white"
-            value={formData.section}
-            onChange={(e) => setFormData({ ...formData, section: e.target.value })}
-          >
-            <option value="">Choose Section</option>
-            {sections.map((sec) => (
-              <option key={sec._id} value={sec.section}>
-                {sec.section} ({sec.program || "General"})
-              </option>
-            ))}
-          </select>
-        </div>
-        <input
-          className="w-full p-2 rounded bg-gray-700 text-white"
-          placeholder="Phone Number"
-          value={formData.phoneNumber}
-          onChange={(e) =>
-            setFormData({ ...formData, phoneNumber: e.target.value })
-          }
-        />
-        <div>
-          <label className="block text-xs text-amber-400 mb-1">Academic Status</label>
-          <select
-            className="w-full p-2 rounded bg-gray-700 text-white"
-            value={formData.academicStatus || "Active"}
-            onChange={(e) =>
-              setFormData({ ...formData, academicStatus: e.target.value as "Active" | "Graduated" | "Suspended" | "Warning" })
-            }
-          >
-            <option value="Active">Active</option>
-            <option value="Warning">Warning</option>
-            <option value="Suspended">Suspended</option>
-            <option value="Graduated">Graduated</option>
-          </select>
-        </div>
-      </ModalForm>
 
       <DataTable
         columns={[
@@ -313,51 +373,33 @@ export default function StudentsPage() {
           { key: "section", label: "Section" },
           { key: "phoneNumber", label: "Phone" },
           { key: "academicStatusDisplay", label: "Status" },
-          { key: "actions", label: "Actions" },
+          { key: "actions", label: "" },
         ]}
         data={filteredStudents.map((s) => ({
           ...s,
-          studentIdDisplay: <span className="font-mono font-bold text-amber-400">{s.studentId || s.begenaId}</span>,
-          academicStatusDisplay: (
-            <span
-              className={`px-2 py-1 rounded text-xs font-bold ${
-                s.academicStatus === "Active"
-                  ? "bg-green-900/60 text-green-300 border border-green-700"
-                  : s.academicStatus === "Warning"
-                  ? "bg-amber-900/60 text-amber-300 border border-amber-700"
-                  : s.academicStatus === "Suspended"
-                  ? "bg-red-900/60 text-red-300 border border-red-700"
-                  : "bg-blue-900/60 text-blue-300 border border-blue-700"
-              }`}
-            >
-              {s.academicStatus || "Active"}
+          studentIdDisplay: (
+            <span className="text-primary font-mono text-xs">
+              {s.studentId || s.begenaId}
             </span>
           ),
+          academicStatusDisplay: (
+            <Badge tone={statusTone(s.academicStatus)}>
+              {s.academicStatus || "Active"}
+            </Badge>
+          ),
           actions: (
-            <div className="flex gap-2" key={s._id}>
-              <button
-                type="button"
-                className="text-blue-500 hover:text-blue-700 font-semibold"
-                onClick={() => {
-                  setStudentToEdit(s);
-                  setFormData({ ...s, studentId: s.studentId || s.begenaId });
-                  setEditModalOpen(true);
-                }}
-              >
-                Edit
-              </button>
-
-              <button
-                type="button"
-                className="text-red-500 hover:text-red-700 font-semibold"
-                onClick={() => {
-                  setStudentToDelete(s);
-                  setDeleteModalOpen(true);
-                }}
-              >
-                Delete
-              </button>
-            </div>
+            <RowActions
+              key={s._id}
+              onEdit={() => {
+                setStudentToEdit(s);
+                setFormData({ ...s, studentId: s.studentId || s.begenaId });
+                setEditModalOpen(true);
+              }}
+              onDelete={() => {
+                setStudentToDelete(s);
+                setDeleteModalOpen(true);
+              }}
+            />
           ),
         }))}
       />
@@ -375,69 +417,96 @@ export default function StudentsPage() {
             setData: React.Dispatch<React.SetStateAction<Student>>
           ) => (
             <>
-              <input
-                className="w-full p-2 rounded bg-gray-700 text-white"
-                placeholder="Full Name"
-                value={data.fullName}
-                onChange={(e) => setData({ ...data, fullName: e.target.value })}
-              />
-              <input
-                className="w-full p-2 rounded bg-gray-700 text-white"
-                placeholder="Student ID"
-                value={data.studentId || data.begenaId}
-                onChange={(e) => setData({ ...data, studentId: e.target.value, begenaId: e.target.value })}
-              />
-              <div>
-                <label className="block text-xs text-amber-400 mb-1">Enrolled Program</label>
-                <select
-                  className="w-full p-2 rounded bg-gray-700 text-white"
-                  value={data.program}
-                  onChange={(e) => setData({ ...data, program: e.target.value })}
-                >
-                  {programs.map((p) => (
-                    <option key={p._id || p.code} value={p.name}>
-                      {p.name} ({p.code})
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs text-amber-400 mb-1">Assigned Section</label>
-                <select
-                  className="w-full p-2 rounded bg-gray-700 text-white"
-                  value={data.section}
-                  onChange={(e) => setData({ ...data, section: e.target.value })}
-                >
-                  <option value="">Choose Section</option>
-                  {sections.map((sec) => (
-                    <option key={sec._id} value={sec.section}>
-                      {sec.section}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <input
-                className="w-full p-2 rounded bg-gray-700 text-white"
-                placeholder="Phone Number"
-                value={data.phoneNumber}
-                onChange={(e) =>
-                  setData({ ...data, phoneNumber: e.target.value })
-                }
-              />
-              <div>
-                <label className="block text-xs text-amber-400 mb-1">Academic Status</label>
-                <select
-                  className="w-full p-2 rounded bg-gray-700 text-white"
-                  value={data.academicStatus || "Active"}
+              <Field label="Full Name" htmlFor="editStudentName">
+                <input
+                  id="editStudentName"
+                  value={data.fullName}
                   onChange={(e) =>
-                    setData({ ...data, academicStatus: e.target.value as "Active" | "Graduated" | "Suspended" | "Warning" })
+                    setData({ ...data, fullName: e.target.value })
                   }
-                >
-                  <option value="Active">Active</option>
-                  <option value="Warning">Warning</option>
-                  <option value="Suspended">Suspended</option>
-                  <option value="Graduated">Graduated</option>
-                </select>
+                />
+              </Field>
+
+              <Field label="Student ID" htmlFor="editStudentId">
+                <input
+                  id="editStudentId"
+                  className="font-mono"
+                  value={data.studentId || data.begenaId}
+                  onChange={(e) =>
+                    setData({
+                      ...data,
+                      studentId: e.target.value,
+                      begenaId: e.target.value,
+                    })
+                  }
+                />
+              </Field>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Enrolled Program" htmlFor="editStudentProgram">
+                  <select
+                    id="editStudentProgram"
+                    value={data.program}
+                    onChange={(e) =>
+                      setData({ ...data, program: e.target.value })
+                    }
+                  >
+                    {programs.map((p) => (
+                      <option key={p._id || p.code} value={p.name}>
+                        {p.name} ({p.code})
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+
+                <Field label="Assigned Section" htmlFor="editStudentSection">
+                  <select
+                    id="editStudentSection"
+                    value={data.section}
+                    onChange={(e) =>
+                      setData({ ...data, section: e.target.value })
+                    }
+                  >
+                    <option value="">Choose section</option>
+                    {sections.map((sec) => (
+                      <option key={sec._id} value={sec.section}>
+                        {sec.section}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Phone Number" htmlFor="editStudentPhone">
+                  <input
+                    id="editStudentPhone"
+                    inputMode="tel"
+                    value={data.phoneNumber}
+                    onChange={(e) =>
+                      setData({ ...data, phoneNumber: e.target.value })
+                    }
+                  />
+                </Field>
+
+                <Field label="Academic Status" htmlFor="editStudentStatus">
+                  <select
+                    id="editStudentStatus"
+                    value={data.academicStatus || "Active"}
+                    onChange={(e) =>
+                      setData({
+                        ...data,
+                        academicStatus: e.target.value as AcademicStatus,
+                      })
+                    }
+                  >
+                    {academicStatuses.map((status) => (
+                      <option key={status} value={status}>
+                        {status}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
               </div>
             </>
           )}
@@ -447,7 +516,7 @@ export default function StudentsPage() {
       <ConfirmModal
         isOpen={deleteModalOpen}
         title="Delete Student"
-        message={`Are you sure you want to delete "${studentToDelete?.fullName}"?`}
+        message={`Are you sure you want to delete "${studentToDelete?.fullName}"? This cannot be undone.`}
         onCancel={() => setDeleteModalOpen(false)}
         onConfirm={handleDeleteStudent}
       />

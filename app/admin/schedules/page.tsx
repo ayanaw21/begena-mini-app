@@ -2,10 +2,13 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import api from "@/lib/api";
 import { Section, Program } from "@/types";
-import DataTable from "@/components/DataTable";
+import DataCards from "@/components/DataCards";
 import ModalForm from "@/components/ModalForm";
 import ConfirmModal from "@/components/ConfirmModal";
 import EditModal from "@/components/EditModal";
+import RowActions from "@/components/RowActions";
+import { Badge } from "@/components/ui/badge";
+import { Field, PageHeader } from "@/components/ui/page";
 import toast from "react-hot-toast";
 
 interface Schedule {
@@ -26,6 +29,8 @@ const daysOfWeek = [
   "Saturday",
   "Sunday",
 ];
+
+const scheduleTypes = ["basic", "intermediate", "advanced"];
 
 export default function SchedulesPage() {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -192,64 +197,150 @@ export default function SchedulesPage() {
   }, [schedules, searchQuery, filterProgram, filterType, filterSection, filterDay]);
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-amber-400 text-2xl font-bold mb-4">Class Schedules</h1>
+    <div className="space-y-6">
+      <PageHeader
+        title="Class Schedules"
+        description="Weekly session times published to students per section."
+        action={
+          <ModalForm
+            title="Add Class Schedule"
+            triggerText="Add Schedule"
+            onSubmit={handleCreateSchedule}
+          >
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Program" htmlFor="scheduleProgram">
+                <select
+                  id="scheduleProgram"
+                  value={formData.program || "በገና (Begena)"}
+                  onChange={(e) =>
+                    setFormData({ ...formData, program: e.target.value })
+                  }
+                >
+                  {programs.map((p) => (
+                    <option key={p._id || p.code} value={p.name}>
+                      {p.name} ({p.code})
+                    </option>
+                  ))}
+                </select>
+              </Field>
 
-      {/* Filter bar */}
-      <div className="flex gap-2 mb-4 flex-wrap">
+              <Field label="Section" htmlFor="scheduleSection" required>
+                <select
+                  id="scheduleSection"
+                  value={formData.section}
+                  onChange={(e) =>
+                    setFormData({ ...formData, section: e.target.value })
+                  }
+                >
+                  <option value="">Choose section</option>
+                  {sections.map((sec) => (
+                    <option key={sec._id} value={sec.section}>
+                      {sec.section} ({sec.program || "General"})
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            </div>
+
+            <Field label="Batch Level / Type" htmlFor="scheduleType">
+              <select
+                id="scheduleType"
+                value={formData.type || "basic"}
+                onChange={(e) =>
+                  setFormData({ ...formData, type: e.target.value })
+                }
+              >
+                {scheduleTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </Field>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Session Day" htmlFor="scheduleDay">
+                <select
+                  id="scheduleDay"
+                  value={formData.date || "Monday"}
+                  onChange={(e) =>
+                    setFormData({ ...formData, date: e.target.value })
+                  }
+                >
+                  {daysOfWeek.map((day) => (
+                    <option key={day} value={day}>
+                      {day}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+
+              <Field label="Session Time" htmlFor="scheduleTime">
+                <input
+                  id="scheduleTime"
+                  placeholder="17:00 - 19:00"
+                  value={formData.time || "17:00 - 19:00"}
+                  onChange={(e) =>
+                    setFormData({ ...formData, time: e.target.value })
+                  }
+                />
+              </Field>
+            </div>
+          </ModalForm>
+        }
+      />
+
+      {/* Filters */}
+      <div className="flex flex-wrap gap-3">
         <input
-          type="text"
+          type="search"
           placeholder="Search by section or type..."
-          className="p-2 rounded bg-gray-700 text-white flex-1 min-w-[200px]"
+          className="min-w-60 flex-1"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-
         <select
-          className="p-2 rounded bg-gray-700 text-white"
+          className="w-auto"
           value={filterProgram}
           onChange={(e) => setFilterProgram(e.target.value)}
         >
-          <option value="">All Programs</option>
+          <option value="">All programs</option>
           {programs.map((p) => (
             <option key={p._id || p.code} value={p.name}>
               {p.name} ({p.code})
             </option>
           ))}
         </select>
-
         <select
-          className="p-2 rounded bg-gray-700 text-white"
+          className="w-auto"
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
         >
-          <option value="">All Types</option>
+          <option value="">All types</option>
           {uniqueTypes.map((type) => (
             <option key={type} value={type}>
               {type}
             </option>
           ))}
         </select>
-
         <select
-          className="p-2 rounded bg-gray-700 text-white"
+          className="w-auto"
           value={filterSection}
           onChange={(e) => setFilterSection(e.target.value)}
         >
-          <option value="">All Sections</option>
+          <option value="">All sections</option>
           {uniqueSections.map((section) => (
             <option key={section} value={section}>
               {section}
             </option>
           ))}
         </select>
-
         <select
-          className="p-2 rounded bg-gray-700 text-white"
+          className="w-auto"
           value={filterDay}
           onChange={(e) => setFilterDay(e.target.value)}
         >
-          <option value="">All Days</option>
+          <option value="">All days</option>
           {daysOfWeek.map((day) => (
             <option key={day} value={day}>
               {day}
@@ -258,111 +349,29 @@ export default function SchedulesPage() {
         </select>
       </div>
 
-      <ModalForm title="Add Class Schedule" onSubmit={handleCreateSchedule}>
-        <div>
-          <label className="block text-xs text-amber-400 mb-1">Select Program</label>
-          <select
-            className="w-full p-2 rounded bg-gray-700 text-white"
-            value={formData.program || "በገና (Begena)"}
-            onChange={(e) => setFormData({ ...formData, program: e.target.value })}
-          >
-            {programs.map((p) => (
-              <option key={p._id || p.code} value={p.name}>
-                {p.name} ({p.code})
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-xs text-amber-400 mb-1">Select Section</label>
-          <select
-            className="w-full p-2 rounded bg-gray-700 text-white"
-            value={formData.section}
-            onChange={(e) => setFormData({ ...formData, section: e.target.value })}
-          >
-            <option value="">Choose Section</option>
-            {sections.map((sec) => (
-              <option key={sec._id} value={sec.section}>
-                {sec.section} ({sec.program || "General"})
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-xs text-amber-400 mb-1">Batch Level / Type</label>
-          <select
-            className="w-full p-2 rounded bg-gray-700 text-white"
-            value={formData.type || "basic"}
-            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-          >
-            <option value="basic">basic</option>
-            <option value="intermediate">intermediate</option>
-            <option value="advanced">advanced</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-xs text-amber-400 mb-1">Session Day</label>
-          <select
-            className="w-full p-2 rounded bg-gray-700 text-white"
-            value={formData.date || "Monday"}
-            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-          >
-            {daysOfWeek.map((day) => (
-              <option key={day} value={day}>
-                {day}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-xs text-amber-400 mb-1">Session Time</label>
-          <input
-            className="w-full p-2 rounded bg-gray-700 text-white"
-            placeholder="Time (e.g., 17:00 - 19:00)"
-            value={formData.time || "17:00 - 19:00"}
-            onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-          />
-        </div>
-      </ModalForm>
-
-      <DataTable
-        columns={[
-          { key: "program", label: "Program" },
-          { key: "section", label: "Section" },
-          { key: "type", label: "Type" },
-          { key: "date", label: "Day" },
-          { key: "time", label: "Time" },
-          { key: "actions", label: "Actions" },
-        ]}
-        data={filteredSchedules.map((s) => ({
-          ...s,
+      <DataCards
+        emptyTitle="No schedules found"
+        emptyDescription="Add a class schedule, or clear the filters above."
+        items={filteredSchedules.map((s) => ({
+          id: s._id ?? `${s.section}-${s.type}`,
+          title: s.section,
+          subtitle: s.program,
+          badge: <Badge tone="primary">{s.type || "basic"}</Badge>,
+          fields: [
+            { label: "Day", value: s.date || "—" },
+            { label: "Time", value: s.time || "—" },
+          ],
           actions: (
-            <div className="flex gap-2" key={s._id ?? `${s.section}-${s.type}`}>
-              <button
-                type="button"
-                className="text-blue-500 hover:text-blue-700 font-semibold"
-                onClick={() => {
-                  setScheduleToEdit(s);
-                  setEditModalOpen(true);
-                }}
-              >
-                Edit
-              </button>
-              <button
-                type="button"
-                className="text-red-500 hover:text-red-700 font-semibold"
-                onClick={() => {
-                  setScheduleToDelete(s);
-                  setDeleteModalOpen(true);
-                }}
-              >
-                Delete
-              </button>
-            </div>
+            <RowActions
+              onEdit={() => {
+                setScheduleToEdit(s);
+                setEditModalOpen(true);
+              }}
+              onDelete={() => {
+                setScheduleToDelete(s);
+                setDeleteModalOpen(true);
+              }}
+            />
           ),
         }))}
       />
@@ -381,73 +390,78 @@ export default function SchedulesPage() {
           onSubmit={handleUpdateSchedule}
           renderFields={(data: Schedule, setData) => (
             <>
-              <div>
-                <label className="block text-xs text-amber-400 mb-1">Select Program</label>
-                <select
-                  className="w-full p-2 rounded bg-gray-700 text-white"
-                  value={data.program || "በገና (Begena)"}
-                  onChange={(e) => setData({ ...data, program: e.target.value })}
-                >
-                  {programs.map((p) => (
-                    <option key={p._id || p.code} value={p.name}>
-                      {p.name} ({p.code})
-                    </option>
-                  ))}
-                </select>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Program" htmlFor="editScheduleProgram">
+                  <select
+                    id="editScheduleProgram"
+                    value={data.program || "በገና (Begena)"}
+                    onChange={(e) =>
+                      setData({ ...data, program: e.target.value })
+                    }
+                  >
+                    {programs.map((p) => (
+                      <option key={p._id || p.code} value={p.name}>
+                        {p.name} ({p.code})
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+
+                <Field label="Section" htmlFor="editScheduleSection">
+                  <select
+                    id="editScheduleSection"
+                    value={data.section}
+                    onChange={(e) =>
+                      setData({ ...data, section: e.target.value })
+                    }
+                  >
+                    <option value="">Choose section</option>
+                    {sections.map((sec) => (
+                      <option key={sec._id} value={sec.section}>
+                        {sec.section}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
               </div>
 
-              <div>
-                <label className="block text-xs text-amber-400 mb-1">Select Section</label>
+              <Field label="Batch Level / Type" htmlFor="editScheduleType">
                 <select
-                  className="w-full p-2 rounded bg-gray-700 text-white"
-                  value={data.section}
-                  onChange={(e) => setData({ ...data, section: e.target.value })}
-                >
-                  <option value="">Choose Section</option>
-                  {sections.map((sec) => (
-                    <option key={sec._id} value={sec.section}>
-                      {sec.section}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs text-amber-400 mb-1">Batch Level / Type</label>
-                <select
-                  className="w-full p-2 rounded bg-gray-700 text-white"
+                  id="editScheduleType"
                   value={data.type || "basic"}
                   onChange={(e) => setData({ ...data, type: e.target.value })}
                 >
-                  <option value="basic">basic</option>
-                  <option value="intermediate">intermediate</option>
-                  <option value="advanced">advanced</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs text-amber-400 mb-1">Session Day</label>
-                <select
-                  className="w-full p-2 rounded bg-gray-700 text-white"
-                  value={data.date || "Monday"}
-                  onChange={(e) => setData({ ...data, date: e.target.value })}
-                >
-                  {daysOfWeek.map((day) => (
-                    <option key={day} value={day}>
-                      {day}
+                  {scheduleTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
                     </option>
                   ))}
                 </select>
-              </div>
+              </Field>
 
-              <div>
-                <label className="block text-xs text-amber-400 mb-1">Session Time</label>
-                <input
-                  className="w-full p-2 rounded bg-gray-700 text-white"
-                  placeholder="Time (e.g., 17:00 - 19:00)"
-                  value={data.time || "17:00 - 19:00"}
-                  onChange={(e) => setData({ ...data, time: e.target.value })}
-                />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Session Day" htmlFor="editScheduleDay">
+                  <select
+                    id="editScheduleDay"
+                    value={data.date || "Monday"}
+                    onChange={(e) => setData({ ...data, date: e.target.value })}
+                  >
+                    {daysOfWeek.map((day) => (
+                      <option key={day} value={day}>
+                        {day}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+
+                <Field label="Session Time" htmlFor="editScheduleTime">
+                  <input
+                    id="editScheduleTime"
+                    placeholder="17:00 - 19:00"
+                    value={data.time || "17:00 - 19:00"}
+                    onChange={(e) => setData({ ...data, time: e.target.value })}
+                  />
+                </Field>
               </div>
             </>
           )}
@@ -457,7 +471,7 @@ export default function SchedulesPage() {
       <ConfirmModal
         isOpen={deleteModalOpen}
         title="Delete Schedule"
-        message={`Are you sure you want to delete the schedule for "${scheduleToDelete?.section}"?`}
+        message={`Are you sure you want to delete the schedule for "${scheduleToDelete?.section}"? This cannot be undone.`}
         onCancel={() => setDeleteModalOpen(false)}
         onConfirm={handleDeleteSchedule}
       />

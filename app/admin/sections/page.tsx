@@ -2,10 +2,13 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import api from "@/lib/api";
 import { Section, Program, Admin } from "@/types";
-import DataTable from "@/components/DataTable";
+import DataCards from "@/components/DataCards";
 import ModalForm from "@/components/ModalForm";
 import ConfirmModal from "@/components/ConfirmModal";
 import EditModal from "@/components/EditModal";
+import RowActions from "@/components/RowActions";
+import { Badge } from "@/components/ui/badge";
+import { Field, PageHeader } from "@/components/ui/page";
 import toast from "react-hot-toast";
 
 export default function SectionsPage() {
@@ -147,26 +150,101 @@ export default function SectionsPage() {
   }, [sections, searchQuery, filterProgram]);
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
-        <h1 className="text-amber-400 text-2xl font-bold">Sections & Teachers</h1>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Sections & Teachers"
+        description="Class sections and the teachers assigned to each one."
+        action={
+          <ModalForm
+            title="Create New Section"
+            triggerText="Add Section"
+            onSubmit={handleCreateSection}
+          >
+            <Field label="Program" htmlFor="sectionProgram" required>
+              <select
+                id="sectionProgram"
+                value={formData.program}
+                onChange={(e) =>
+                  setFormData({ ...formData, program: e.target.value })
+                }
+              >
+                {programs.map((prog) => (
+                  <option key={prog._id} value={prog.name}>
+                    {prog.name} ({prog.code})
+                  </option>
+                ))}
+              </select>
+            </Field>
 
-      <div className="flex gap-2 mb-4 flex-wrap">
+            <Field label="Section Name" htmlFor="sectionName" required>
+              <input
+                id="sectionName"
+                placeholder="Basic A, Advanced B"
+                value={formData.section}
+                onChange={(e) =>
+                  setFormData({ ...formData, section: e.target.value })
+                }
+              />
+            </Field>
+
+            <Field label="Main Teacher (ዋና መምህር)" htmlFor="sectionMainTeacher">
+              <select
+                id="sectionMainTeacher"
+                value={formData.mainTeacherName}
+                onChange={(e) =>
+                  setFormData({ ...formData, mainTeacherName: e.target.value })
+                }
+              >
+                <option value="">Select main teacher</option>
+                {staffList.map((staff) => (
+                  <option key={staff.id || staff.fullName} value={staff.fullName}>
+                    {staff.fullName} ({staff.role})
+                  </option>
+                ))}
+              </select>
+            </Field>
+
+            <Field
+              label="Assistant Teacher (ረዳት መምህር)"
+              htmlFor="sectionAssistantTeacher"
+              hint="Optional."
+            >
+              <select
+                id="sectionAssistantTeacher"
+                value={formData.assistantTeacherName}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    assistantTeacherName: e.target.value,
+                  })
+                }
+              >
+                <option value="">Select assistant teacher</option>
+                {staffList.map((staff) => (
+                  <option key={staff.id || staff.fullName} value={staff.fullName}>
+                    {staff.fullName} ({staff.role})
+                  </option>
+                ))}
+              </select>
+            </Field>
+          </ModalForm>
+        }
+      />
+
+      <div className="flex flex-wrap gap-3">
         <input
-          type="text"
+          type="search"
           placeholder="Search by section name"
-          className="p-2 rounded bg-gray-700 text-white flex-1 min-w-[200px]"
+          className="min-w-60 flex-1"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-
         <select
-          className="p-2 rounded bg-gray-700 text-white"
+          className="w-auto"
           value={filterProgram}
           onChange={(e) => setFilterProgram(e.target.value)}
         >
-          <option value="">All Programs</option>
+          <option value="">All programs</option>
           {programs.map((prog) => (
             <option key={prog._id} value={prog.name}>
               {prog.name}
@@ -175,104 +253,43 @@ export default function SectionsPage() {
         </select>
       </div>
 
-      <ModalForm title="Create New Section" triggerText="Add Section" onSubmit={handleCreateSection}>
-        <div>
-          <label className="block text-xs text-amber-400 mb-1">Select Program</label>
-          <select
-            className="w-full p-2 rounded bg-gray-700 text-white"
-            value={formData.program}
-            onChange={(e) => setFormData({ ...formData, program: e.target.value })}
-          >
-            {programs.map((prog) => (
-              <option key={prog._id} value={prog.name}>
-                {prog.name} ({prog.code})
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <input
-          className="w-full p-2 rounded bg-gray-700 text-white"
-          placeholder="Section Name (e.g. Basic A, Advanced B)"
-          value={formData.section}
-          onChange={(e) => setFormData({ ...formData, section: e.target.value })}
-        />
-
-        <div>
-          <label className="block text-xs text-amber-400 mb-1">Main Teacher (ዋና መምህር)</label>
-          <select
-            className="w-full p-2 rounded bg-gray-700 text-white"
-            value={formData.mainTeacherName}
-            onChange={(e) => setFormData({ ...formData, mainTeacherName: e.target.value })}
-          >
-            <option value="">Select Main Teacher</option>
-            {staffList.map((staff) => (
-              <option key={staff.id || staff.fullName} value={staff.fullName}>
-                {staff.fullName} ({staff.role})
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-xs text-amber-400 mb-1">Assistant Teacher (ረዳት መምህር)</label>
-          <select
-            className="w-full p-2 rounded bg-gray-700 text-white"
-            value={formData.assistantTeacherName}
-            onChange={(e) => setFormData({ ...formData, assistantTeacherName: e.target.value })}
-          >
-            <option value="">Select Assistant Teacher (Optional)</option>
-            {staffList.map((staff) => (
-              <option key={staff.id || staff.fullName} value={staff.fullName}>
-                {staff.fullName} ({staff.role})
-              </option>
-            ))}
-          </select>
-        </div>
-      </ModalForm>
-
-      <DataTable
-        columns={[
-          { key: "section", label: "Section" },
-          { key: "program", label: "Program" },
-          { key: "mainTeacherName", label: "Main Teacher" },
-          { key: "assistantTeacherName", label: "Assistant Teacher" },
-          { key: "actions", label: "Actions" },
-        ]}
-        data={filteredSections.map((s) => ({
-          ...s,
-          program: <span className="text-xs bg-amber-950 text-amber-300 px-2 py-0.5 rounded border border-amber-900">{s.program || "Begena"}</span>,
-          mainTeacherName: s.mainTeacherName || s.assignedTeacher || "TBA",
-          assistantTeacherName: s.assistantTeacherName || "None",
+      <DataCards
+        emptyTitle="No sections found"
+        emptyDescription="Create a section, or clear the filters above."
+        items={filteredSections.map((s) => ({
+          id: s._id ?? s.section,
+          title: s.section,
+          badge: <Badge tone="primary">{s.program || "Begena"}</Badge>,
+          fields: [
+            {
+              label: "Main teacher",
+              value: s.mainTeacherName || s.assignedTeacher || "TBA",
+              wide: true,
+            },
+            {
+              label: "Assistant teacher",
+              value: s.assistantTeacherName || "—",
+              wide: true,
+            },
+          ],
           actions: (
-            <div className="flex gap-2" key={s._id}>
-              <button
-                className="text-blue-500 hover:text-blue-700 text-sm font-semibold"
-                onClick={() => {
-                  setSectionToEdit(s);
-                  setFormData({
-                    section: s.section,
-                    program: s.program || "Begena",
-                    mainTeacherName: s.mainTeacherName || s.assignedTeacher || "",
-                    assistantTeacherName: s.assistantTeacherName || "",
-                    capacity: s.capacity || 30,
-                  });
-                  setEditModalOpen(true);
-                }}
-              >
-                Edit
-              </button>
-
-              <button
-                className="text-red-500 hover:text-red-700 text-sm font-semibold"
-                onClick={() => {
-                  setSectionToDelete(s);
-                  setDeleteModalOpen(true);
-                }}
-              >
-                Delete
-              </button>
-            </div>
+            <RowActions
+              onEdit={() => {
+                setSectionToEdit(s);
+                setFormData({
+                  section: s.section,
+                  program: s.program || "Begena",
+                  mainTeacherName: s.mainTeacherName || s.assignedTeacher || "",
+                  assistantTeacherName: s.assistantTeacherName || "",
+                  capacity: s.capacity || 30,
+                });
+                setEditModalOpen(true);
+              }}
+              onDelete={() => {
+                setSectionToDelete(s);
+                setDeleteModalOpen(true);
+              }}
+            />
           ),
         }))}
       />
@@ -290,10 +307,9 @@ export default function SectionsPage() {
             setData: React.Dispatch<React.SetStateAction<Section>>
           ) => (
             <>
-              <div>
-                <label className="block text-xs text-amber-400 mb-1">Select Program</label>
+              <Field label="Program" htmlFor="editSectionProgram">
                 <select
-                  className="w-full p-2 rounded bg-gray-700 text-white"
+                  id="editSectionProgram"
                   value={data.program || "Begena"}
                   onChange={(e) => setData({ ...data, program: e.target.value })}
                 >
@@ -303,46 +319,58 @@ export default function SectionsPage() {
                     </option>
                   ))}
                 </select>
-              </div>
+              </Field>
 
-              <input
-                className="w-full p-2 rounded bg-gray-700 text-white"
-                placeholder="Section Name"
-                value={data.section}
-                onChange={(e) => setData({ ...data, section: e.target.value })}
-              />
+              <Field label="Section Name" htmlFor="editSectionName">
+                <input
+                  id="editSectionName"
+                  value={data.section}
+                  onChange={(e) => setData({ ...data, section: e.target.value })}
+                />
+              </Field>
 
-              <div>
-                <label className="block text-xs text-amber-400 mb-1">Main Teacher</label>
+              <Field label="Main Teacher" htmlFor="editSectionMainTeacher">
                 <select
-                  className="w-full p-2 rounded bg-gray-700 text-white"
+                  id="editSectionMainTeacher"
                   value={data.mainTeacherName || ""}
-                  onChange={(e) => setData({ ...data, mainTeacherName: e.target.value })}
+                  onChange={(e) =>
+                    setData({ ...data, mainTeacherName: e.target.value })
+                  }
                 >
-                  <option value="">Select Main Teacher</option>
+                  <option value="">Select main teacher</option>
                   {staffList.map((staff) => (
-                    <option key={staff.id || staff.fullName} value={staff.fullName}>
+                    <option
+                      key={staff.id || staff.fullName}
+                      value={staff.fullName}
+                    >
                       {staff.fullName}
                     </option>
                   ))}
                 </select>
-              </div>
+              </Field>
 
-              <div>
-                <label className="block text-xs text-amber-400 mb-1">Assistant Teacher</label>
+              <Field
+                label="Assistant Teacher"
+                htmlFor="editSectionAssistantTeacher"
+              >
                 <select
-                  className="w-full p-2 rounded bg-gray-700 text-white"
+                  id="editSectionAssistantTeacher"
                   value={data.assistantTeacherName || ""}
-                  onChange={(e) => setData({ ...data, assistantTeacherName: e.target.value })}
+                  onChange={(e) =>
+                    setData({ ...data, assistantTeacherName: e.target.value })
+                  }
                 >
-                  <option value="">Select Assistant Teacher</option>
+                  <option value="">Select assistant teacher</option>
                   {staffList.map((staff) => (
-                    <option key={staff.id || staff.fullName} value={staff.fullName}>
+                    <option
+                      key={staff.id || staff.fullName}
+                      value={staff.fullName}
+                    >
                       {staff.fullName}
                     </option>
                   ))}
                 </select>
-              </div>
+              </Field>
             </>
           )}
         />
@@ -351,7 +379,7 @@ export default function SectionsPage() {
       <ConfirmModal
         isOpen={deleteModalOpen}
         title="Delete Section"
-        message={`Are you sure you want to delete "${sectionToDelete?.section}"?`}
+        message={`Are you sure you want to delete "${sectionToDelete?.section}"? This cannot be undone.`}
         onCancel={() => setDeleteModalOpen(false)}
         onConfirm={handleDeleteSection}
       />

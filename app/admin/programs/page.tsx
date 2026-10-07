@@ -1,10 +1,13 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import api from "@/lib/api";
-import DataTable from "@/components/DataTable";
+import DataCards from "@/components/DataCards";
 import ModalForm from "@/components/ModalForm";
 import ConfirmModal from "@/components/ConfirmModal";
 import EditModal from "@/components/EditModal";
+import RowActions from "@/components/RowActions";
+import { Badge } from "@/components/ui/badge";
+import { Field, PageHeader } from "@/components/ui/page";
 import toast from "react-hot-toast";
 
 interface Program {
@@ -99,64 +102,86 @@ export default function ProgramsPage() {
   }, [fetchPrograms]);
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-amber-400 text-2xl font-bold">Programs Management</h1>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Programs"
+        description="Instrument programs and the ID code prefix assigned to each."
+        action={
+          <ModalForm
+            title="Create New Program"
+            triggerText="Add Program"
+            onSubmit={handleCreateProgram}
+          >
+            <Field label="Program Name" htmlFor="programName" required>
+              <input
+                id="programName"
+                placeholder="በገና, መሰንቆ, ክራር"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+              />
+            </Field>
+            <Field
+              label="Program Code"
+              htmlFor="programCode"
+              hint="Used as the student ID prefix, e.g. BG-2026-001."
+              required
+            >
+              <input
+                id="programCode"
+                className="font-mono uppercase"
+                placeholder="BG, MS, KR"
+                value={formData.code}
+                onChange={(e) =>
+                  setFormData({ ...formData, code: e.target.value })
+                }
+              />
+            </Field>
+            <Field label="Description" htmlFor="programDescription">
+              <input
+                id="programDescription"
+                placeholder="Short description"
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
+              />
+            </Field>
+          </ModalForm>
+        }
+      />
 
-      <ModalForm title="Create New Program" triggerText="Add Program" onSubmit={handleCreateProgram}>
-        <input
-          className="w-full p-2 rounded bg-gray-700 text-white"
-          placeholder="Program Name (e.g. በገና, መሰንቆ, ክራር)"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-        />
-        <input
-          className="w-full p-2 rounded bg-gray-700 text-white uppercase"
-          placeholder="Program Code (e.g. BG, MS, KR)"
-          value={formData.code}
-          onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-        />
-        <input
-          className="w-full p-2 rounded bg-gray-700 text-white"
-          placeholder="Description"
-          value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-        />
-      </ModalForm>
-
-      <DataTable
-        columns={[
-          { key: "name", label: "Program Name" },
-          { key: "code", label: "Code Prefix" },
-          { key: "description", label: "Description" },
-          { key: "actions", label: "Actions" },
-        ]}
-        data={programs.map((p) => ({
-          ...p,
-          code: <span className="font-mono text-amber-400 font-bold bg-gray-800 px-2 py-0.5 rounded border border-amber-950">{p.code}</span>,
+      <DataCards
+        emptyTitle="No programs yet"
+        emptyDescription="Add a program to start assigning student ID prefixes."
+        items={programs.map((p) => ({
+          id: p._id ?? p.code,
+          title: p.name,
+          badge: (
+            <Badge tone="primary" className="font-mono">
+              {p.code}
+            </Badge>
+          ),
+          fields: [
+            {
+              label: "Description",
+              value: p.description || "—",
+              wide: true,
+            },
+          ],
           actions: (
-            <div className="flex gap-2" key={p._id}>
-              <button
-                className="text-blue-500 hover:text-blue-700 text-sm font-semibold"
-                onClick={() => {
-                  setProgramToEdit(p);
-                  setFormData({ ...p });
-                  setEditModalOpen(true);
-                }}
-              >
-                Edit
-              </button>
-              <button
-                className="text-red-500 hover:text-red-700 text-sm font-semibold"
-                onClick={() => {
-                  setProgramToDelete(p);
-                  setDeleteModalOpen(true);
-                }}
-              >
-                Delete
-              </button>
-            </div>
+            <RowActions
+              onEdit={() => {
+                setProgramToEdit(p);
+                setFormData({ ...p });
+                setEditModalOpen(true);
+              }}
+              onDelete={() => {
+                setProgramToDelete(p);
+                setDeleteModalOpen(true);
+              }}
+            />
           ),
         }))}
       />
@@ -174,24 +199,30 @@ export default function ProgramsPage() {
             setData: React.Dispatch<React.SetStateAction<Program>>
           ) => (
             <>
-              <input
-                className="w-full p-2 rounded bg-gray-700 text-white"
-                placeholder="Program Name"
-                value={data.name}
-                onChange={(e) => setData({ ...data, name: e.target.value })}
-              />
-              <input
-                className="w-full p-2 rounded bg-gray-700 text-white uppercase"
-                placeholder="Program Code"
-                value={data.code}
-                onChange={(e) => setData({ ...data, code: e.target.value })}
-              />
-              <input
-                className="w-full p-2 rounded bg-gray-700 text-white"
-                placeholder="Description"
-                value={data.description}
-                onChange={(e) => setData({ ...data, description: e.target.value })}
-              />
+              <Field label="Program Name" htmlFor="editProgramName">
+                <input
+                  id="editProgramName"
+                  value={data.name}
+                  onChange={(e) => setData({ ...data, name: e.target.value })}
+                />
+              </Field>
+              <Field label="Program Code" htmlFor="editProgramCode">
+                <input
+                  id="editProgramCode"
+                  className="font-mono uppercase"
+                  value={data.code}
+                  onChange={(e) => setData({ ...data, code: e.target.value })}
+                />
+              </Field>
+              <Field label="Description" htmlFor="editProgramDescription">
+                <input
+                  id="editProgramDescription"
+                  value={data.description}
+                  onChange={(e) =>
+                    setData({ ...data, description: e.target.value })
+                  }
+                />
+              </Field>
             </>
           )}
         />
@@ -200,7 +231,7 @@ export default function ProgramsPage() {
       <ConfirmModal
         isOpen={deleteModalOpen}
         title="Delete Program"
-        message={`Are you sure you want to delete program "${programToDelete?.name}"?`}
+        message={`Are you sure you want to delete the program "${programToDelete?.name}"? This cannot be undone.`}
         onCancel={() => setDeleteModalOpen(false)}
         onConfirm={handleDeleteProgram}
       />

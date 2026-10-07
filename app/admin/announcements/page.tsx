@@ -5,6 +5,8 @@ import DataTable from "@/components/DataTable";
 import ModalForm from "@/components/ModalForm";
 import ConfirmModal from "@/components/ConfirmModal";
 import EditModal from "@/components/EditModal";
+import RowActions from "@/components/RowActions";
+import { Field, PageHeader } from "@/components/ui/page";
 import toast from "react-hot-toast";
 import { AxiosError } from "axios";
 
@@ -125,24 +127,77 @@ export default function AnnouncementsPage() {
   const uniqueDates = Array.from(new Set(announcements.map((a) => a.date)));
 
   return (
-    <div>
-      <h1 className="text-amber-400 text-2xl font-bold mb-4">Announcements</h1>
+    <div className="space-y-6">
+      <PageHeader
+        title="Announcements"
+        description="Notices broadcast to students on the public home page."
+        action={
+          <ModalForm
+            title="Add Announcement"
+            onSubmit={handleCreateAnnouncement}
+          >
+            <Field label="Title" htmlFor="announcementTitle" required>
+              <input
+                id="announcementTitle"
+                placeholder="Announcement title"
+                value={formData.title}
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
+              />
+            </Field>
+            <Field label="Body" htmlFor="announcementBody" required>
+              <textarea
+                id="announcementBody"
+                rows={4}
+                placeholder="Message shown to students"
+                value={formData.body}
+                onChange={(e) =>
+                  setFormData({ ...formData, body: e.target.value })
+                }
+              />
+            </Field>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Date" htmlFor="announcementDate">
+                <input
+                  id="announcementDate"
+                  placeholder="2025-10-01"
+                  value={formData.date}
+                  onChange={(e) =>
+                    setFormData({ ...formData, date: e.target.value })
+                  }
+                />
+              </Field>
+              <Field label="Time" htmlFor="announcementTime">
+                <input
+                  id="announcementTime"
+                  placeholder="14:30"
+                  value={formData.time}
+                  onChange={(e) =>
+                    setFormData({ ...formData, time: e.target.value })
+                  }
+                />
+              </Field>
+            </div>
+          </ModalForm>
+        }
+      />
 
-      {/* Search & Filter */}
-      <div className="flex gap-2 mb-4 flex-wrap">
+      {/* Search & filter */}
+      <div className="flex flex-wrap gap-3">
         <input
-          type="text"
+          type="search"
           placeholder="Search by title or body"
-          className="p-2 rounded bg-gray-700 text-white flex-1"
+          className="min-w-60 flex-1"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
         <select
-          className="p-2 rounded bg-gray-700 text-white"
+          className="w-auto"
           value={filterDate}
           onChange={(e) => setFilterDate(e.target.value)}
         >
-          <option value="">All Dates</option>
+          <option value="">All dates</option>
           {uniqueDates.map((date) => (
             <option key={date} value={date}>
               {date}
@@ -151,67 +206,33 @@ export default function AnnouncementsPage() {
         </select>
       </div>
 
-      {/* Add Announcement Modal */}
-      <ModalForm title="Add Announcement" onSubmit={handleCreateAnnouncement}>
-        <input
-          className="w-full p-2 rounded bg-gray-700 text-white"
-          placeholder="Title"
-          value={formData.title}
-          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-        />
-        <textarea
-          className="w-full p-2 rounded bg-gray-700 text-white"
-          placeholder="Body"
-          value={formData.body}
-          onChange={(e) => setFormData({ ...formData, body: e.target.value })}
-        />
-        <input
-          className="w-full p-2 rounded bg-gray-700 text-white"
-          placeholder="Date (e.g., 2025-10-01)"
-          value={formData.date}
-          onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-        />
-        <input
-          className="w-full p-2 rounded bg-gray-700 text-white"
-          placeholder="Time (e.g., 14:30)"
-          value={formData.time}
-          onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-        />
-      </ModalForm>
-
-      {/* Data Table */}
       <DataTable
         columns={[
           { key: "title", label: "Title" },
           { key: "body", label: "Body" },
           { key: "date", label: "Date" },
           { key: "time", label: "Time" },
-          { key: "actions", label: "Actions" },
+          { key: "actions", label: "" },
         ]}
         data={filteredAnnouncements.map((a) => ({
           ...a,
+          body: (
+            <span className="text-muted-foreground block max-w-xs truncate">
+              {a.body}
+            </span>
+          ),
           actions: (
-            <div className="flex gap-2">
-              <button
-                className="text-blue-500 hover:text-blue-700"
-                onClick={() => {
-                  setAnnouncementToEdit(a);
-                  setEditModalOpen(true);
-                }}
-              >
-                Edit
-              </button>
-
-              <button
-                className="text-red-500 hover:text-red-700"
-                onClick={() => {
-                  setAnnouncementToDelete(a);
-                  setDeleteModalOpen(true);
-                }}
-              >
-                Delete
-              </button>
-            </div>
+            <RowActions
+              key={a._id}
+              onEdit={() => {
+                setAnnouncementToEdit(a);
+                setEditModalOpen(true);
+              }}
+              onDelete={() => {
+                setAnnouncementToDelete(a);
+                setDeleteModalOpen(true);
+              }}
+            />
           ),
         }))}
       />
@@ -231,42 +252,48 @@ export default function AnnouncementsPage() {
           onSubmit={handleUpdateAnnouncement}
           renderFields={(data, setData) => (
             <>
-              <input
-                className="w-full p-2 rounded bg-gray-700 text-white"
-                placeholder="Title"
-                value={data.title}
-                onChange={(e) => setData({ ...data, title: e.target.value })}
-              />
-              <textarea
-                className="w-full p-2 rounded bg-gray-700 text-white"
-                placeholder="Body"
-                value={data.body}
-                onChange={(e) =>
-                  setData({ ...data, body: e.target.value || "" })
-                }
-              />
-              <input
-                className="w-full p-2 rounded bg-gray-700 text-white"
-                placeholder="Date (e.g., 2025-10-01)"
-                value={data.date}
-                onChange={(e) => setData({ ...data, date: e.target.value })}
-              />
-              <input
-                className="w-full p-2 rounded bg-gray-700 text-white"
-                placeholder="Time (e.g., 14:30)"
-                value={data.time}
-                onChange={(e) => setData({ ...data, time: e.target.value })}
-              />
+              <Field label="Title" htmlFor="editAnnouncementTitle">
+                <input
+                  id="editAnnouncementTitle"
+                  value={data.title}
+                  onChange={(e) => setData({ ...data, title: e.target.value })}
+                />
+              </Field>
+              <Field label="Body" htmlFor="editAnnouncementBody">
+                <textarea
+                  id="editAnnouncementBody"
+                  rows={4}
+                  value={data.body}
+                  onChange={(e) =>
+                    setData({ ...data, body: e.target.value || "" })
+                  }
+                />
+              </Field>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Date" htmlFor="editAnnouncementDate">
+                  <input
+                    id="editAnnouncementDate"
+                    value={data.date}
+                    onChange={(e) => setData({ ...data, date: e.target.value })}
+                  />
+                </Field>
+                <Field label="Time" htmlFor="editAnnouncementTime">
+                  <input
+                    id="editAnnouncementTime"
+                    value={data.time}
+                    onChange={(e) => setData({ ...data, time: e.target.value })}
+                  />
+                </Field>
+              </div>
             </>
           )}
         />
       )}
 
-      {/* Delete Confirm Modal */}
       <ConfirmModal
         isOpen={deleteModalOpen}
         title="Delete Announcement"
-        message={`Are you sure you want to delete the announcement "${announcementToDelete?.title}"?`}
+        message={`Are you sure you want to delete "${announcementToDelete?.title}"? This cannot be undone.`}
         onCancel={() => setDeleteModalOpen(false)}
         onConfirm={handleDeleteAnnouncement}
       />

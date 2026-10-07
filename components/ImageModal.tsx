@@ -2,6 +2,7 @@
 "use client";
 import React from "react";
 import Image from "next/image";
+import { X } from "lucide-react";
 
 interface ImageModalProps {
   isOpen: boolean;
@@ -18,25 +19,26 @@ const ImageModal: React.FC<ImageModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="relative max-w-[90%] max-h-[90%]"
+        className="relative max-h-[90vh] max-w-3xl"
         onClick={(e) => e.stopPropagation()}
       >
         <Image
           src={imageUrl}
-          alt="Screenshot"
-          width={800}
-          height={600}
-          className="max-w-full max-h-full rounded shadow-lg object-contain"
+          alt="Payment receipt"
+          width={1200}
+          height={900}
+          className="max-h-[90vh] w-auto rounded-lg border border-white/10 object-contain shadow-2xl"
         />
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 text-white text-2xl font-bold"
+          aria-label="Close"
+          className="bg-background/80 hover:text-primary absolute top-2 right-2 flex size-8 cursor-pointer items-center justify-center rounded-full border border-white/10 backdrop-blur transition-colors"
         >
-          ×
+          <X size={16} />
         </button>
       </div>
     </div>

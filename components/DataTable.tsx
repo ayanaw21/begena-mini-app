@@ -15,43 +15,35 @@ interface DataTableProps {
 
 const DataTable: React.FC<DataTableProps> = ({ columns, data }) => {
   return (
-    <div className="w-full overflow-x-auto rounded-lg border border-gray-700 bg-gray-800 p-2">
-      <table className="w-full min-w-[500px] text-left text-white text-sm sm:text-base">
+    <div className="bg-surface w-full overflow-x-auto rounded-xl border border-white/5">
+      <table className="w-full min-w-[500px] text-left text-sm">
         <thead>
-          <tr>
+          <tr className="text-muted-foreground border-b border-white/5 text-xs tracking-wider uppercase">
             {columns.map((col) => (
               <th
                 key={col.key}
-                className="px-3 sm:px-4 py-2 bg-gray-900 text-gray-200 font-semibold whitespace-nowrap"
+                className="px-4 py-2.5 font-medium whitespace-nowrap"
               >
                 {col.label}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody>
+        <tbody className="divide-y divide-white/5">
           {data.length === 0 ? (
             <tr>
               <td
                 colSpan={columns.length}
-                className="text-center text-gray-400 py-4"
+                className="text-muted-foreground px-4 py-10 text-center"
               >
                 No data found
               </td>
             </tr>
           ) : (
             data.map((row, index) => (
-              <tr
-                key={index}
-                className={`border-t border-gray-700 ${
-                  index % 2 === 0 ? "bg-gray-800" : "bg-gray-700/50"
-                }`}
-              >
+              <tr key={index} className="hover:bg-white/[0.03] transition-colors">
                 {columns.map((col) => (
-                  <td
-                    key={col.key}
-                    className="px-3 sm:px-4 py-2 whitespace-nowrap"
-                  >
+                  <td key={col.key} className="px-4 py-2.5 whitespace-nowrap">
                     {row[col.key]}
                   </td>
                 ))}

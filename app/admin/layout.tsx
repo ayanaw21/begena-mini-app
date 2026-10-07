@@ -1,9 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { getToken } from "@/lib/auth";
+import { getValidToken } from "@/lib/auth";
 import AdminSidebar from "@/components/AdminSidebar";
 import AdminNavbar from "@/components/AdminNavbar";
+import { Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function AdminLayoutClient({
@@ -20,9 +21,9 @@ export default function AdminLayoutClient({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
-    const token = getToken();
+    const token = getValidToken();
     if (!token && pathname !== "/admin/login") {
-      toast.error("You must login first");
+      toast.error("Please log in to continue");
       router.push("/admin/login");
     } else if (token) {
       setIsAuthenticated(true);
@@ -32,7 +33,8 @@ export default function AdminLayoutClient({
 
   if (isChecking) {
     return (
-      <div className="flex items-center justify-center min-h-screen text-amber-400">
+      <div className="text-muted-foreground flex min-h-screen items-center justify-center gap-3 text-sm">
+        <Loader2 size={18} className="text-primary animate-spin" />
         Checking authentication...
       </div>
     );
@@ -43,8 +45,7 @@ export default function AdminLayoutClient({
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-900 text-white">
-      {/* Sidebar */}
+    <div className="flex min-h-screen">
       {isAuthenticated && (
         <AdminSidebar
           isOpen={isSidebarOpen}
@@ -52,14 +53,16 @@ export default function AdminLayoutClient({
         />
       )}
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex min-w-0 flex-1 flex-col">
         {isAuthenticated && (
           <AdminNavbar
             onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
             isSidebarOpen={isSidebarOpen}
           />
         )}
-        <main className="flex-1 p-4 sm:p-6 overflow-auto">{children}</main>
+        <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
+          <div className="mx-auto w-full max-w-6xl">{children}</div>
+        </main>
       </div>
     </div>
   );

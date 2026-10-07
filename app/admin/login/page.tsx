@@ -1,10 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { setToken, getToken } from "@/lib/auth";
+import { Field, Panel } from "@/components/ui/page";
+import { setToken, getValidToken } from "@/lib/auth";
 import toast from "react-hot-toast";
 
 export default function AdminLogin() {
@@ -14,7 +15,7 @@ export default function AdminLogin() {
   const router = useRouter();
 
   useEffect(() => {
-    const token = getToken();
+    const token = getValidToken();
     if (token) {
       router.replace("/admin");
     }
@@ -40,44 +41,65 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-900 p-4">
-      <Card className="bg-gray-800 p-6 w-full max-w-sm sm:max-w-md rounded-lg shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-amber-400 text-center text-xl sm:text-2xl">
-            Admin Login
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3">
-          <input
-            className="p-3 rounded bg-gray-700 text-white text-sm sm:text-base w-full focus:outline-none focus:ring-2 focus:ring-amber-500"
-            placeholder="Full Name"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            disabled={isLoading}
-          />
-          <input
-            className="p-3 rounded bg-gray-700 text-white text-sm sm:text-base w-full focus:outline-none focus:ring-2 focus:ring-amber-500"
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={isLoading}
-          />
-          <Button
-            className="bg-amber-600 hover:bg-amber-700 w-full py-3"
-            onClick={handleLogin}
-            disabled={isLoading}
+    <div className="flex min-h-screen flex-col items-center justify-center px-4 py-10">
+      <div className="w-full max-w-sm">
+        <Link
+          href="/"
+          className="text-primary mb-8 block text-center text-lg font-bold tracking-wide"
+        >
+          በገና
+        </Link>
+
+        <Panel className="p-6">
+          <div className="space-y-1">
+            <h1 className="text-xl font-bold">Admin Login</h1>
+            <p className="text-muted-foreground text-sm">
+              Sign in to manage students, payments and schedules.
+            </p>
+          </div>
+
+          <form
+            className="mt-6 space-y-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleLogin();
+            }}
           >
-            {isLoading ? "Logging in..." : "Login"}
-          </Button>
-          <button
-            className="mt-2 text-sm text-gray-400 hover:underline"
-            onClick={() => router.push("/")}
-          >
-            Back to Home
-          </button>
-        </CardContent>
-      </Card>
+            <Field label="Full Name" htmlFor="fullName">
+              <input
+                id="fullName"
+                autoComplete="username"
+                placeholder="Enter your full name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                disabled={isLoading}
+              />
+            </Field>
+
+            <Field label="Password" htmlFor="password">
+              <input
+                id="password"
+                type="password"
+                autoComplete="current-password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
+              />
+            </Field>
+
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Logging in..." : "Login"}
+            </Button>
+          </form>
+        </Panel>
+
+        <p className="text-muted-foreground mt-5 text-center text-sm">
+          <Link href="/" className="hover:text-primary transition-colors">
+            ← Back to home
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }

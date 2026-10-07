@@ -4,9 +4,19 @@ import React from "react";
 import logo from "../../public/begena.jpg";
 import Footer from "@/components/footer";
 import Navbar from "@/components/Navbar";
+import {
+  PageBody,
+  PageContainer,
+  PageHeader,
+  Panel,
+} from "@/components/ui/page";
+
 const lists = [
   { zemari: "ደምሴ ደስታ", link: "https://t.me/aastugibibuaebegena/4" },
-  { zemari: "አለቃ ተሰማ ወልደ አማኑኤል(አባ በገና)", link: "https://t.me/aastugibibuaebegena/6" },
+  {
+    zemari: "አለቃ ተሰማ ወልደ አማኑኤል (አባ በገና)",
+    link: "https://t.me/aastugibibuaebegena/6",
+  },
   { zemari: "መጋቤ ስብሃት አለሙ አጋ", link: "https://t.me/aastugibibuaebegena/2" },
   { zemari: "ዲ/ን አቤል ተስፋዬ", link: "https://t.me/aastugibibuaebegena/18" },
   { zemari: "ዘርፉ ደምሴ", link: "https://t.me/aastugibibuaebegena/214" },
@@ -17,45 +27,70 @@ const lists = [
 
 const MezmurList = () => {
   return (
-    <div className='"w-full max-w-[750px] mx-auto min-h-screen bg-gray-900'>
-      <Navbar/>
-      <div className="my-6">
-        <h1 className="text-4xl font-bold text-amber-400 text-center">
-          የበገና ደርዳሪወች ዝርዝር
-        </h1>
-        <h3 className="text-3xl text-gray-300 text-center mt-5">
-          መዝሙሮችን ለማግኘት የዘማሪውን ስም ይጫኑ
-        </h3>
-      </div>
-      {lists.map((list) => (
-        <Link key={list.zemari} className="" href={list.link}>
-          <div className="p-10  m-10  rounded-md text-center flex flex-col items-center border border-amber-950 bg-gray-800 hover:bg-gray-700">
-            <Image
-              src={logo}
-              alt="pay"
-              width={20}
-              height={10}
-              className="rounded-full w-16 h-16"
-            />
-            <p className="text-amber-400 text-2xl mt-5">{list.zemari}</p>
-            <p className="mt-2 text-gray-500">የበገና መዝሙሮች ጋር ለመድረስ ይጫኑ</p>
-          </div>
-        </Link>
-      ))}
-      <div className="p-10  m-10  rounded-md flex flex-col  border border-amber-950 bg-gray-900">
-        <h1 className="text-2xl text-amber-400">በገና በኢትዮጵያ</h1>
-        <p className="text-gray-300 mt-4">
-          በገና በኢትዮጵያ ኦርቶዶክስ ተዋህዶ ቤተክርስቲያን የዜማ መሳሪያ ሲሆን በዋናነት ለመለኮታዊ የእግዚአብሔር ፈቃድ
-          ማስፈጸሚያ ማለትም ለምስጋናና ለልመና የሚያገለግል ነው። በገና ከብሉይ ኪዳን የመጀመሪያ መጽሐፍ ከኦሪት
-          ዘፍጥረት እስከ መጨረሻው የአዲስ ኪዳን መጽሐፍ ዮሐንስ ራእይ ድረስ አገልግሎቱ የተጠቀሰ እጅግ ድንቅ መንፈሳዊ
-          የዜማ መሳሪያ ነው።
-        </p>
+    <div className="flex min-h-screen flex-col">
+      <Navbar />
 
-        <p className="text-gray-300 mt-4">
-          ከላይ የተጠተቀሱት የበገና ደርራሪያንም በገና በኢትዮጵያ ከትውልድ ወደ ትውልድ እንዲሸጋገርና ለበገና ትምህርት
-          መስፋፋት እጅጉን ትልቁን ድርሻ የተወጡ ናቸው፡፡
-        </p>
-      </div>
+      <PageBody>
+        <PageContainer className="space-y-8">
+          <PageHeader
+            eyebrow="🎵 ዝማሬዎች"
+            title="የበገና ደርዳሪዎች ዝርዝር"
+            description="መዝሙሮችን ለማግኘት የዘማሪውን ስም ይጫኑ። አገናኙ ወደ ቴሌግራም ቻናል ይወስድዎታል።"
+          />
+
+          <ul className="divide-y divide-white/5 overflow-hidden rounded-xl border border-white/5">
+            {lists.map((list) => (
+              <li key={list.zemari}>
+                <Link
+                  href={list.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:bg-surface group flex items-center gap-4 px-4 py-3.5 transition-colors"
+                >
+                  <Image
+                    src={logo}
+                    alt=""
+                    width={40}
+                    height={40}
+                    className="ring-primary/20 size-10 shrink-0 rounded-full object-cover ring-1"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="group-hover:text-primary truncate font-medium transition-colors">
+                      {list.zemari}
+                    </p>
+                    <p className="text-muted-foreground text-xs">
+                      የበገና መዝሙሮች ጋር ለመድረስ ይጫኑ
+                    </p>
+                  </div>
+                  <span
+                    aria-hidden
+                    className="text-muted-foreground group-hover:text-primary transition-colors"
+                  >
+                    →
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+
+          <Panel className="p-5">
+            <h2 className="font-semibold">በገና በኢትዮጵያ</h2>
+            <div className="text-muted-foreground mt-3 space-y-3 text-sm leading-relaxed">
+              <p>
+                በገና በኢትዮጵያ ኦርቶዶክስ ተዋህዶ ቤተክርስቲያን የዜማ መሳሪያ ሲሆን በዋናነት ለመለኮታዊ
+                የእግዚአብሔር ፈቃድ ማስፈጸሚያ ማለትም ለምስጋናና ለልመና የሚያገለግል ነው። በገና ከብሉይ ኪዳን
+                የመጀመሪያ መጽሐፍ ከኦሪት ዘፍጥረት እስከ መጨረሻው የአዲስ ኪዳን መጽሐፍ ዮሐንስ ራእይ ድረስ
+                አገልግሎቱ የተጠቀሰ እጅግ ድንቅ መንፈሳዊ የዜማ መሳሪያ ነው።
+              </p>
+              <p>
+                ከላይ የተጠቀሱት የበገና ደርዳሪያንም በገና በኢትዮጵያ ከትውልድ ወደ ትውልድ እንዲሸጋገርና ለበገና
+                ትምህርት መስፋፋት እጅጉን ትልቁን ድርሻ የተወጡ ናቸው።
+              </p>
+            </div>
+          </Panel>
+        </PageContainer>
+      </PageBody>
+
       <Footer />
     </div>
   );

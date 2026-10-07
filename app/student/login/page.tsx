@@ -1,9 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Field, Panel } from "@/components/ui/page";
 import toast from "react-hot-toast";
 
 export default function StudentLogin() {
@@ -47,61 +48,76 @@ export default function StudentLogin() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-900 p-4">
-      <Card className="bg-gray-800 p-6 w-full max-w-sm sm:max-w-md rounded-lg shadow-lg border border-amber-950">
-        <CardHeader>
-          <CardTitle className="text-amber-400 text-center text-xl sm:text-2xl font-bold">
-            Student Portal Login
-          </CardTitle>
-          <p className="text-gray-400 text-center text-xs sm:text-sm mt-1">
-            Access your multi-year payments, class schedules, and attendance log
-          </p>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4 mt-2">
-          <div>
-            <label className="block text-xs text-amber-400 font-semibold mb-1">Student ID (ተማሪ መለያ)</label>
-            <input
-              className="p-3 rounded bg-gray-700 text-white text-sm sm:text-base w-full focus:outline-none focus:ring-2 focus:ring-amber-500 uppercase"
-              placeholder="e.g. BG-2026-001 or MS-2026-001"
-              value={studentId}
-              onChange={(e) => setStudentId(e.target.value)}
-              disabled={isLoading}
-            />
+    <div className="flex min-h-screen flex-col items-center justify-center px-4 py-10">
+      <div className="w-full max-w-sm">
+        <Link
+          href="/"
+          className="text-primary mb-8 block text-center text-lg font-bold tracking-wide"
+        >
+          በገና
+        </Link>
+
+        <Panel className="p-6">
+          <div className="space-y-1">
+            <h1 className="text-xl font-bold">🎓 የተማሪዎች ፖርታል</h1>
+            <p className="text-muted-foreground text-sm">
+              የክፍያ ታሪክዎን፣ የትምህርት ክፍለ-ጊዜዎን እና የክትትል ሁኔታዎን ይመልከቱ።
+            </p>
           </div>
-          <div>
-            <label className="block text-xs text-amber-400 font-semibold mb-1">Password (የይለፍ ቃል)</label>
-            <input
-              className="p-3 rounded bg-gray-700 text-white text-sm sm:text-base w-full focus:outline-none focus:ring-2 focus:ring-amber-500"
-              type="password"
-              placeholder="Enter your password (default is your phone)"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={isLoading}
-            />
-          </div>
-          <Button
-            className="bg-amber-600 hover:bg-amber-700 text-gray-900 font-bold w-full py-3 mt-2"
-            onClick={handleLogin}
-            disabled={isLoading}
+
+          <form
+            className="mt-6 space-y-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleLogin();
+            }}
           >
-            {isLoading ? "Logging in..." : "Login to Student Portal"}
-          </Button>
-          <div className="flex justify-between items-center text-xs text-gray-400 mt-2">
-            <button
-              className="hover:underline hover:text-amber-400"
-              onClick={() => router.push("/")}
+            <Field
+              label="Student ID (ተማሪ መለያ)"
+              htmlFor="studentId"
             >
-              ← Back to Home
-            </button>
-            <button
-              className="hover:underline hover:text-amber-400"
-              onClick={() => router.push("/payment")}
+              <input
+                id="studentId"
+                autoComplete="username"
+                placeholder="BG-2026-001"
+                className="font-mono uppercase"
+                value={studentId}
+                onChange={(e) => setStudentId(e.target.value)}
+                disabled={isLoading}
+              />
+            </Field>
+
+            <Field
+              label="Password (የይለፍ ቃል)"
+              htmlFor="password"
+              hint="የመጀመሪያ ይለፍ ቃልዎ የስልክ ቁጥርዎ ነው።"
             >
-              Submit Payment Proof →
-            </button>
-          </div>
-        </CardContent>
-      </Card>
+              <input
+                id="password"
+                type="password"
+                autoComplete="current-password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
+              />
+            </Field>
+
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Logging in..." : "Login"}
+            </Button>
+          </form>
+        </Panel>
+
+        <div className="text-muted-foreground mt-5 flex items-center justify-between text-sm">
+          <Link href="/" className="hover:text-primary transition-colors">
+            ← Back to home
+          </Link>
+          <Link href="/payment" className="hover:text-primary transition-colors">
+            Submit payment proof →
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

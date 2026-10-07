@@ -3,6 +3,11 @@ import { useEffect, useState, useCallback } from "react";
 import api from "@/lib/api";
 import { Section, Student, Program, AttendanceSummaryItem } from "@/types";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Field, PageHeader, Panel } from "@/components/ui/page";
+import { cn } from "@/lib/utils";
+import { Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 
 type AttendanceStatus = "Present" | "Absent" | "Late" | "Permission";
@@ -12,6 +17,60 @@ interface StudentRecordState {
   fullName: string;
   status: AttendanceStatus;
 }
+
+const attendanceOptions: {
+  value: AttendanceStatus;
+  label: string;
+  icon: string;
+  activeClass: string;
+}[] = [
+  {
+    value: "Present",
+    label: "Present",
+    icon: "✅",
+    activeClass: "border-emerald-500/50 bg-emerald-500/20",
+  },
+  {
+    value: "Late",
+    label: "Late",
+    icon: "⏱️",
+    activeClass: "border-amber-500/50 bg-amber-500/20",
+  },
+  {
+    value: "Permission",
+    label: "Permission",
+    icon: "📄",
+    activeClass: "border-sky-500/50 bg-sky-500/20",
+  },
+  {
+    value: "Absent",
+    label: "Absent",
+    icon: "❌",
+    activeClass: "border-red-500/50 bg-red-500/20",
+  },
+];
+
+const statusActions = [
+  { value: "Active", label: "Activate", title: "Set as active" },
+  { value: "Warning", label: "Warn", title: "Issue a warning for absences" },
+  { value: "Suspended", label: "Suspend", title: "Suspend student" },
+] as const;
+
+const statusTone = (status?: string) =>
+  status === "Warning"
+    ? "warning"
+    : status === "Suspended"
+      ? "danger"
+      : status === "Graduated"
+        ? "info"
+        : "success";
+
+const rateColor = (rate: number) =>
+  rate >= 85
+    ? { bar: "bg-emerald-500", text: "text-emerald-400" }
+    : rate >= 70
+      ? { bar: "bg-amber-500", text: "text-amber-400" }
+      : { bar: "bg-red-500", text: "text-red-400" };
 
 export default function AttendancePage() {
   const [activeTab, setActiveTab] = useState<"daily" | "summary">("daily");
@@ -201,364 +260,335 @@ export default function AttendancePage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-amber-400 text-2xl font-bold">Attendance & Decision Center</h1>
-          <p className="text-gray-400 text-sm">
-            Track daily class attendance and monitor student overall attendance risk for warnings/suspensions.
-          </p>
-        </div>
-
-        {/* Tab switcher */}
-        <div className="flex bg-gray-800 p-1 rounded-lg border border-gray-700">
-          <button
-            onClick={() => setActiveTab("daily")}
-            className={`px-4 py-2 text-sm font-semibold rounded-md transition-all ${
-              activeTab === "daily"
-                ? "bg-amber-600 text-gray-900 shadow"
-                : "text-gray-400 hover:text-white"
-            }`}
-          >
-            📋 Mark Daily Sheet
-          </button>
-          <button
-            onClick={() => setActiveTab("summary")}
-            className={`px-4 py-2 text-sm font-semibold rounded-md transition-all ${
-              activeTab === "summary"
-                ? "bg-amber-600 text-gray-900 shadow"
-                : "text-gray-400 hover:text-white"
-            }`}
-          >
-            📊 Overall Status & Decisions
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="Attendance & Decision Center"
+        description="Track daily class attendance and monitor students at risk of warnings or suspension."
+        action={
+          <div className="bg-surface inline-flex rounded-lg border border-white/5 p-1">
+            {[
+              { id: "daily" as const, label: "📋 Daily Sheet" },
+              { id: "summary" as const, label: "📊 Overall Status" },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  "cursor-pointer rounded-md px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors",
+                  activeTab === tab.id
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        }
+      />
 
       {activeTab === "daily" ? (
-        <div>
-          <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 flex gap-4 flex-wrap items-center mb-6">
-            <div>
-              <label className="block text-xs text-amber-400 mb-1">Select Section</label>
+        <div className="space-y-4">
+          <Panel className="flex flex-wrap items-end gap-4 p-4">
+            <Field
+              label="Section"
+              htmlFor="attendanceSection"
+              className="min-w-52 flex-1"
+            >
               <select
-                className="p-2 rounded bg-gray-700 text-white min-w-[200px]"
+                id="attendanceSection"
                 value={selectedSection}
                 onChange={(e) => setSelectedSection(e.target.value)}
               >
-                <option value="">Choose Section</option>
+                <option value="">Choose section</option>
                 {sections.map((sec) => (
                   <option key={sec._id} value={sec.section}>
-                    {sec.section} ({sec.mainTeacherName || sec.assignedTeacher || "TBA"})
+                    {sec.section} (
+                    {sec.mainTeacherName || sec.assignedTeacher || "TBA"})
                   </option>
                 ))}
               </select>
-            </div>
+            </Field>
 
-            <div>
-              <label className="block text-xs text-amber-400 mb-1">Class Date</label>
+            <Field label="Class Date" htmlFor="attendanceDate" className="w-44">
               <input
+                id="attendanceDate"
                 type="date"
-                className="p-2 rounded bg-gray-700 text-white"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
               />
-            </div>
+            </Field>
 
             {selectedSection && (
-              <div className="self-end ml-auto">
-                <Button
-                  onClick={handleSaveAttendance}
-                  disabled={savingDaily || studentRecords.length === 0}
-                  className="bg-amber-600 hover:bg-amber-700 text-gray-900 font-bold px-6 py-2"
-                >
-                  {savingDaily ? "Saving..." : "Save Attendance"}
-                </Button>
-              </div>
+              <Button
+                onClick={handleSaveAttendance}
+                disabled={savingDaily || studentRecords.length === 0}
+                className="ml-auto"
+              >
+                {savingDaily ? "Saving..." : "Save Attendance"}
+              </Button>
             )}
-          </div>
+          </Panel>
 
           {!selectedSection ? (
-            <div className="bg-gray-800 p-8 rounded-lg text-center text-gray-400 border border-gray-700">
-              Please select a section above to load student attendance sheet.
-            </div>
+            <Panel>
+              <EmptyState
+                title="No section selected"
+                description="Choose a section above to load its attendance sheet."
+              />
+            </Panel>
           ) : loadingDaily ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-amber-400 mx-auto mb-2"></div>
-              <p className="text-gray-400 text-sm">Loading student roster...</p>
+            <div className="text-muted-foreground flex items-center justify-center gap-3 py-12 text-sm">
+              <Loader2 size={18} className="text-primary animate-spin" />
+              Loading student roster...
             </div>
           ) : studentRecords.length === 0 ? (
-            <div className="bg-gray-800 p-8 rounded-lg text-center text-gray-400 border border-gray-700">
-              No students enrolled in section &quot;{selectedSection}&quot; yet.
-            </div>
+            <Panel>
+              <EmptyState
+                title="No students enrolled"
+                description={`Section "${selectedSection}" has no students yet.`}
+              />
+            </Panel>
           ) : (
-            <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden shadow-lg">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-gray-700 text-amber-400">
-                  <tr>
-                    <th className="p-3">#</th>
-                    <th className="p-3">Student Name</th>
-                    <th className="p-3 text-center">Attendance Status</th>
+            <Panel className="overflow-x-auto">
+              <div className="text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 border-b border-white/5 px-4 py-2.5 text-xs">
+                {attendanceOptions.map((option) => (
+                  <span key={option.value} className="flex items-center gap-1.5">
+                    <span aria-hidden>{option.icon}</span>
+                    {option.label}
+                  </span>
+                ))}
+              </div>
+              <table className="w-full min-w-[320px] text-left text-sm">
+                <thead>
+                  <tr className="text-muted-foreground border-b border-white/5 text-xs tracking-wider uppercase">
+                    <th className="w-10 px-3 py-2.5 font-medium">#</th>
+                    <th className="px-3 py-2.5 font-medium">Student</th>
+                    <th className="px-3 py-2.5 text-right font-medium">Status</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-white/5">
                   {studentRecords.map((r, idx) => (
-                    <tr key={r.studentId} className="border-b border-gray-700/60 hover:bg-gray-700/40">
-                      <td className="p-3 text-gray-400">{idx + 1}</td>
-                      <td className="p-3 font-semibold text-white">{r.fullName}</td>
-                      <td className="p-3 text-center">
-                        <div className="flex justify-center gap-1 sm:gap-2">
-                          <button
-                            type="button"
-                            onClick={() => handleStatusChange(r.studentId, "Present")}
-                            className={`px-3 py-1.5 rounded text-xs font-bold transition-all ${
-                              r.status === "Present"
-                                ? "bg-green-600 text-white shadow-lg ring-2 ring-green-400"
-                                : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                            }`}
-                          >
-                            Present ✅
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleStatusChange(r.studentId, "Late")}
-                            className={`px-3 py-1.5 rounded text-xs font-bold transition-all ${
-                              r.status === "Late"
-                                ? "bg-yellow-600 text-white shadow-lg ring-2 ring-yellow-400"
-                                : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                            }`}
-                          >
-                            Late ⏱️
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleStatusChange(r.studentId, "Permission")}
-                            className={`px-3 py-1.5 rounded text-xs font-bold transition-all ${
-                              r.status === "Permission"
-                                ? "bg-blue-600 text-white shadow-lg ring-2 ring-blue-400"
-                                : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                            }`}
-                          >
-                            Permission 📄
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleStatusChange(r.studentId, "Absent")}
-                            className={`px-3 py-1.5 rounded text-xs font-bold transition-all ${
-                              r.status === "Absent"
-                                ? "bg-red-600 text-white shadow-lg ring-2 ring-red-400"
-                                : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                            }`}
-                          >
-                            Absent ❌
-                          </button>
+                    <tr key={r.studentId} className="hover:bg-white/[0.03]">
+                      <td className="text-muted-foreground px-3 py-2">
+                        {idx + 1}
+                      </td>
+                      <td className="px-3 py-2 font-medium">{r.fullName}</td>
+                      <td className="px-3 py-2">
+                        <div className="flex justify-end gap-1">
+                          {attendanceOptions.map((option) => (
+                            <button
+                              key={option.value}
+                              type="button"
+                              title={option.label}
+                              aria-label={option.label}
+                              aria-pressed={r.status === option.value}
+                              onClick={() =>
+                                handleStatusChange(r.studentId, option.value)
+                              }
+                              className={cn(
+                                "flex size-9 cursor-pointer items-center justify-center rounded-md border text-base transition-all",
+                                r.status === option.value
+                                  ? option.activeClass
+                                  : "border-white/10 opacity-40 hover:opacity-100"
+                              )}
+                            >
+                              {option.icon}
+                            </button>
+                          ))}
                         </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
+            </Panel>
           )}
         </div>
       ) : (
-        /* Overall Analytics & Decision Center Tab */
-        <div className="space-y-6">
-          {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
-              <h3 className="text-gray-400 text-xs font-semibold uppercase">Total Tracked Students</h3>
-              <p className="text-3xl font-bold text-white mt-1">{summaryList.length}</p>
-            </div>
-            <div className="bg-gray-800 p-4 rounded-lg border border-amber-950/60">
-              <h3 className="text-amber-400 text-xs font-semibold uppercase">Students at Risk (3+ Absences)</h3>
-              <p className="text-3xl font-bold text-amber-400 mt-1">{highRiskCount}</p>
-            </div>
-            <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
-              <h3 className="text-gray-400 text-xs font-semibold uppercase">Avg Platform Attendance Rate</h3>
-              <p className="text-3xl font-bold text-green-400 mt-1">
-                {summaryList.length > 0
-                  ? Math.round(
-                      summaryList.reduce((acc, curr) => acc + curr.attendanceRate, 0) /
-                        summaryList.length
-                    )
-                  : 100}
-                %
-              </p>
-            </div>
+        <div className="space-y-4">
+          {/* Stats */}
+          <div className="grid gap-3 sm:grid-cols-3">
+            {[
+              {
+                label: "Tracked students",
+                value: summaryList.length,
+                className: "",
+              },
+              {
+                label: "At risk (3+ absences)",
+                value: highRiskCount,
+                className: "text-primary",
+              },
+              {
+                label: "Avg attendance rate",
+                value: `${
+                  summaryList.length > 0
+                    ? Math.round(
+                        summaryList.reduce(
+                          (acc, curr) => acc + curr.attendanceRate,
+                          0
+                        ) / summaryList.length
+                      )
+                    : 100
+                }%`,
+                className: "text-emerald-400",
+              },
+            ].map((stat) => (
+              <Panel key={stat.label} className="p-4">
+                <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
+                  {stat.label}
+                </p>
+                <p className={cn("mt-1.5 text-2xl font-bold", stat.className)}>
+                  {stat.value}
+                </p>
+              </Panel>
+            ))}
           </div>
 
           {/* Filters */}
-          <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 flex gap-4 flex-wrap items-center">
-            <div>
-              <label className="block text-xs text-amber-400 mb-1">Filter by Program</label>
-              <select
-                className="p-2 rounded bg-gray-700 text-white min-w-[180px]"
-                value={selectedProgFilter}
-                onChange={(e) => setSelectedProgFilter(e.target.value)}
-              >
-                <option value="All">All Programs</option>
-                {programs.map((p) => (
-                  <option key={p._id || p.code} value={p.name}>
-                    {p.name} ({p.code})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs text-amber-400 mb-1">Filter by Section</label>
-              <select
-                className="p-2 rounded bg-gray-700 text-white min-w-[180px]"
-                value={selectedSecFilter}
-                onChange={(e) => setSelectedSecFilter(e.target.value)}
-              >
-                <option value="All">All Sections</option>
-                {sections.map((sec) => (
-                  <option key={sec._id} value={sec.section}>
-                    {sec.section}
-                  </option>
-                ))}
-              </select>
-            </div>
+          <div className="flex flex-wrap gap-3">
+            <select
+              className="w-auto"
+              value={selectedProgFilter}
+              onChange={(e) => setSelectedProgFilter(e.target.value)}
+            >
+              <option value="All">All programs</option>
+              {programs.map((p) => (
+                <option key={p._id || p.code} value={p.name}>
+                  {p.name} ({p.code})
+                </option>
+              ))}
+            </select>
+            <select
+              className="w-auto"
+              value={selectedSecFilter}
+              onChange={(e) => setSelectedSecFilter(e.target.value)}
+            >
+              <option value="All">All sections</option>
+              {sections.map((sec) => (
+                <option key={sec._id} value={sec.section}>
+                  {sec.section}
+                </option>
+              ))}
+            </select>
           </div>
 
-          {/* Table */}
           {loadingSummary ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-amber-400 mx-auto mb-2"></div>
-              <p className="text-gray-400 text-sm">Calculating attendance statistics...</p>
+            <div className="text-muted-foreground flex items-center justify-center gap-3 py-12 text-sm">
+              <Loader2 size={18} className="text-primary animate-spin" />
+              Calculating attendance statistics...
             </div>
           ) : summaryList.length === 0 ? (
-            <div className="bg-gray-800 p-8 rounded-lg text-center text-gray-400 border border-gray-700">
-              No attendance statistics found matching the filters.
-            </div>
+            <Panel>
+              <EmptyState
+                title="No statistics yet"
+                description="No attendance records match the selected filters."
+              />
+            </Panel>
           ) : (
-            <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-x-auto shadow-lg">
-              <table className="w-full text-left text-sm min-w-[800px]">
-                <thead className="bg-gray-700 text-amber-400">
-                  <tr>
-                    <th className="p-3">Student ID</th>
-                    <th className="p-3">Full Name</th>
-                    <th className="p-3">Program / Section</th>
-                    <th className="p-3 text-center">Sessions (Attended / Total)</th>
-                    <th className="p-3 text-center">Absences</th>
-                    <th className="p-3 text-center">Attendance %</th>
-                    <th className="p-3 text-center">Academic Status</th>
-                    <th className="p-3 text-center">Administrative Actions</th>
+            <Panel className="overflow-x-auto">
+              <table className="w-full min-w-[900px] text-left text-sm">
+                <thead>
+                  <tr className="text-muted-foreground border-b border-white/5 text-xs tracking-wider uppercase">
+                    <th className="px-4 py-2.5 font-medium">Student ID</th>
+                    <th className="px-4 py-2.5 font-medium">Full Name</th>
+                    <th className="px-4 py-2.5 font-medium">Program / Section</th>
+                    <th className="px-4 py-2.5 text-center font-medium">
+                      Attended
+                    </th>
+                    <th className="px-4 py-2.5 text-center font-medium">
+                      Absences
+                    </th>
+                    <th className="px-4 py-2.5 font-medium">Rate</th>
+                    <th className="px-4 py-2.5 font-medium">Status</th>
+                    <th className="px-4 py-2.5 text-right font-medium">Actions</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-white/5">
                   {summaryList.map((st) => (
-                    <tr
-                      key={st.studentIdObj}
-                      className="border-b border-gray-700/60 hover:bg-gray-700/40"
-                    >
-                      <td className="p-3 font-mono font-bold text-amber-400">{st.studentId}</td>
-                      <td className="p-3 font-semibold text-white">{st.fullName}</td>
-                      <td className="p-3 text-gray-300">
-                        {st.program} <br />
-                        <span className="text-xs text-gray-400">{st.section}</span>
+                    <tr key={st.studentIdObj} className="hover:bg-white/[0.03]">
+                      <td className="text-primary px-4 py-3 font-mono text-xs">
+                        {st.studentId}
                       </td>
-                      <td className="p-3 text-center font-bold text-white">
-                        <span className="text-green-400">{st.presentCount}</span> / {st.totalSessions}
+                      <td className="px-4 py-3 font-medium">{st.fullName}</td>
+                      <td className="text-muted-foreground px-4 py-3">
+                        {st.program}
+                        <span className="block text-xs">{st.section}</span>
                       </td>
-                      <td className="p-3 text-center font-bold">
-                        <span
-                          className={
-                            st.absentCount >= 3
-                              ? "text-red-400 bg-red-950/60 px-2 py-1 rounded"
-                              : "text-gray-300"
-                          }
-                        >
-                          {st.absentCount}
+                      <td className="px-4 py-3 text-center">
+                        <span className="font-medium text-emerald-400">
+                          {st.presentCount}
+                        </span>
+                        <span className="text-muted-foreground">
+                          {" "}
+                          / {st.totalSessions}
                         </span>
                       </td>
-                      <td className="p-3 text-center">
-                        <div className="flex flex-col items-center gap-1">
-                          <span
-                            className={`font-bold ${
-                              st.attendanceRate >= 85
-                                ? "text-green-400"
-                                : st.attendanceRate >= 70
-                                ? "text-amber-400"
-                                : "text-red-400"
-                            }`}
-                          >
-                            {st.attendanceRate}%
+                      <td className="px-4 py-3 text-center">
+                        {st.absentCount >= 3 ? (
+                          <Badge tone="danger">{st.absentCount}</Badge>
+                        ) : (
+                          <span className="text-muted-foreground">
+                            {st.absentCount}
                           </span>
-                          <div className="w-16 bg-gray-700 h-1.5 rounded-full overflow-hidden">
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <div className="h-1.5 w-16 overflow-hidden rounded-full bg-white/10">
                             <div
-                              className={`h-full ${
-                                st.attendanceRate >= 85
-                                  ? "bg-green-500"
-                                  : st.attendanceRate >= 70
-                                  ? "bg-amber-500"
-                                  : "bg-red-500"
-                              }`}
+                              className={cn(
+                                "h-full rounded-full",
+                                rateColor(st.attendanceRate).bar
+                              )}
                               style={{ width: `${st.attendanceRate}%` }}
                             />
                           </div>
+                          <span
+                            className={cn(
+                              "text-xs font-medium",
+                              rateColor(st.attendanceRate).text
+                            )}
+                          >
+                            {st.attendanceRate}%
+                          </span>
                         </div>
                       </td>
-                      <td className="p-3 text-center">
-                        <span
-                          className={`px-2.5 py-1 rounded-full text-xs font-bold ${
-                            st.academicStatus === "Active"
-                              ? "bg-green-900/60 text-green-300 border border-green-700"
-                              : st.academicStatus === "Warning"
-                              ? "bg-amber-900/60 text-amber-300 border border-amber-700"
-                              : st.academicStatus === "Suspended"
-                              ? "bg-red-900/60 text-red-300 border border-red-700"
-                              : "bg-blue-900/60 text-blue-300 border border-blue-700"
-                          }`}
-                        >
+                      <td className="px-4 py-3">
+                        <Badge tone={statusTone(st.academicStatus)}>
                           {st.academicStatus}
-                        </span>
+                        </Badge>
                       </td>
-                      <td className="p-3 text-center">
-                        <div className="flex justify-center items-center gap-1">
-                          {st.academicStatus !== "Active" && (
-                            <button
-                              disabled={updatingStatusId === st.studentIdObj}
-                              onClick={() =>
-                                handleUpdateStudentAcademicStatus(st.studentIdObj, "Active")
-                              }
-                              className="px-2 py-1 bg-green-700 hover:bg-green-600 text-white text-xs font-bold rounded"
-                              title="Set Active"
-                            >
-                              Activate
-                            </button>
-                          )}
-                          {st.academicStatus !== "Warning" && (
-                            <button
-                              disabled={updatingStatusId === st.studentIdObj}
-                              onClick={() =>
-                                handleUpdateStudentAcademicStatus(st.studentIdObj, "Warning")
-                              }
-                              className="px-2 py-1 bg-amber-700 hover:bg-amber-600 text-white text-xs font-bold rounded"
-                              title="Issue Warning for Absences"
-                            >
-                              Warn ⚠️
-                            </button>
-                          )}
-                          {st.academicStatus !== "Suspended" && (
-                            <button
-                              disabled={updatingStatusId === st.studentIdObj}
-                              onClick={() =>
-                                handleUpdateStudentAcademicStatus(st.studentIdObj, "Suspended")
-                              }
-                              className="px-2 py-1 bg-red-700 hover:bg-red-600 text-white text-xs font-bold rounded"
-                              title="Suspend Student"
-                            >
-                              Suspend ⛔
-                            </button>
-                          )}
+                      <td className="px-4 py-3">
+                        <div className="flex justify-end gap-1">
+                          {statusActions
+                            .filter(
+                              (action) => action.value !== st.academicStatus
+                            )
+                            .map((action) => (
+                              <Button
+                                key={action.value}
+                                size="sm"
+                                variant="outline"
+                                disabled={updatingStatusId === st.studentIdObj}
+                                title={action.title}
+                                onClick={() =>
+                                  handleUpdateStudentAcademicStatus(
+                                    st.studentIdObj,
+                                    action.value
+                                  )
+                                }
+                              >
+                                {action.label}
+                              </Button>
+                            ))}
                         </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
+            </Panel>
           )}
         </div>
       )}

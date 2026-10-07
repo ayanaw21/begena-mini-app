@@ -1,26 +1,96 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getToken } from "@/lib/auth";
+import { getValidToken } from "@/lib/auth";
+import { PageHeader, Panel } from "@/components/ui/page";
 import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardDescription,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+  BookOpen,
+  CalendarDays,
+  ClipboardCheck,
+  CreditCard,
+  Layers,
+  Loader2,
+  Megaphone,
+  UserCog,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
+
+const sections = [
+  {
+    heading: "Academics",
+    links: [
+      {
+        href: "/admin/programs",
+        icon: BookOpen,
+        title: "Programs",
+        description: "Begena, Masinko, Kirar and other instruments.",
+      },
+      {
+        href: "/admin/sections",
+        icon: Layers,
+        title: "Sections & Teachers",
+        description: "Main and assistant teacher assignments.",
+      },
+      {
+        href: "/admin/schedules",
+        icon: CalendarDays,
+        title: "Class Schedules",
+        description: "Flexible weekly timetables per section.",
+      },
+    ],
+  },
+  {
+    heading: "People",
+    links: [
+      {
+        href: "/admin/students",
+        icon: Users,
+        title: "Students",
+        description: "In-person registration and student ID records.",
+      },
+      {
+        href: "/admin/staff",
+        icon: UserCog,
+        title: "Staff & Instructors",
+        description: "Admins, main and assistant staff.",
+      },
+      {
+        href: "/admin/attendance",
+        icon: ClipboardCheck,
+        title: "Attendance",
+        description: "Track present, absent and at-risk students.",
+      },
+    ],
+  },
+  {
+    heading: "Operations",
+    links: [
+      {
+        href: "/admin/payments",
+        icon: CreditCard,
+        title: "Payments",
+        description: "Verify receipt slips, approve or reject.",
+      },
+      {
+        href: "/admin/announcements",
+        icon: Megaphone,
+        title: "Announcements",
+        description: "Broadcast notices to students.",
+      },
+    ],
+  },
+];
 
 export default function AdminHome() {
   const router = useRouter();
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    const token = getToken();
+    const token = getValidToken();
     if (!token) {
-      toast.error("You must login first");
+      toast.error("Please log in to continue");
       router.push("/admin/login");
     } else {
       setIsChecking(false);
@@ -29,132 +99,48 @@ export default function AdminHome() {
 
   if (isChecking) {
     return (
-      <div className="flex items-center justify-center min-h-screen text-amber-400">
+      <div className="text-muted-foreground flex min-h-[50vh] items-center justify-center gap-3 text-sm">
+        <Loader2 size={18} className="text-primary animate-spin" />
         Checking authentication...
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-900 text-white">
-      <div className="flex-1 flex flex-col">
-        <main className="p-6">
-          <h1 className="text-2xl font-bold text-amber-400 mb-6">Admin Control Panel</h1>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="bg-gray-800 border-amber-950 hover:border-amber-400">
-              <CardHeader>
-                <CardTitle className="text-amber-400">Programs</CardTitle>
-                <CardDescription>Manage Begena, Masinko, Kirar & instruments</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Link href="/admin/programs">
-                  <Button className="bg-amber-600 hover:bg-amber-700 w-full">
-                    Manage Programs
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
+    <div className="space-y-8">
+      <PageHeader
+        eyebrow="Admin"
+        title="Control panel"
+        description="Manage programs, students, schedules and payments for the Begena class."
+      />
 
-            <Card className="bg-gray-800 border-amber-950 hover:border-amber-400">
-              <CardHeader>
-                <CardTitle className="text-amber-400">Students</CardTitle>
-                <CardDescription>In-person registration & student ID records</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Link href="/admin/students">
-                  <Button className="bg-amber-600 hover:bg-amber-700 w-full">
-                    Manage Students
-                  </Button>
+      {sections.map((section) => (
+        <section key={section.heading} className="space-y-3">
+          <h2 className="text-muted-foreground text-xs font-semibold tracking-[0.18em] uppercase">
+            {section.heading}
+          </h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {section.links.map((link) => {
+              const Icon = link.icon;
+              return (
+                <Link key={link.href} href={link.href} className="group">
+                  <Panel className="hover:border-primary/30 h-full p-5 transition-colors">
+                    <span className="bg-primary/10 text-primary flex size-9 items-center justify-center rounded-lg">
+                      <Icon size={17} />
+                    </span>
+                    <h3 className="group-hover:text-primary mt-3 font-semibold transition-colors">
+                      {link.title}
+                    </h3>
+                    <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
+                      {link.description}
+                    </p>
+                  </Panel>
                 </Link>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gray-800 border-amber-950 hover:border-amber-400">
-              <CardHeader>
-                <CardTitle className="text-amber-400">Sections & Teachers</CardTitle>
-                <CardDescription>Main & Assistant teacher assignments</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Link href="/admin/sections">
-                  <Button className="bg-amber-600 hover:bg-amber-700 w-full">
-                    Manage Sections
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gray-800 border-amber-950 hover:border-amber-400">
-              <CardHeader>
-                <CardTitle className="text-amber-400">Staff & Instructors</CardTitle>
-                <CardDescription>Manage admins, main & assistant staff</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Link href="/admin/staff">
-                  <Button className="bg-amber-600 hover:bg-amber-700 w-full">
-                    Manage Staff
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gray-800 border-amber-950 hover:border-amber-400">
-              <CardHeader>
-                <CardTitle className="text-amber-400">Payments</CardTitle>
-                <CardDescription>Verify slips, Approve / Reject</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Link href="/admin/payments">
-                  <Button className="bg-amber-600 hover:bg-amber-700 w-full">
-                    Manage Payments
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gray-800 border-amber-950 hover:border-amber-400">
-              <CardHeader>
-                <CardTitle className="text-amber-400">Attendance Sheet</CardTitle>
-                <CardDescription>Track Present, Absent & Risk Decision Center</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Link href="/admin/attendance">
-                  <Button className="bg-amber-600 hover:bg-amber-700 w-full">
-                    Track Attendance
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gray-800 border-amber-950 hover:border-amber-400">
-              <CardHeader>
-                <CardTitle className="text-amber-400">Class Schedules</CardTitle>
-                <CardDescription>Flexible 1x, 2x, Nx weekly timetables</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Link href="/admin/schedules">
-                  <Button className="bg-amber-600 hover:bg-amber-700 w-full">
-                    Manage Schedules
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gray-800 border-amber-950 hover:border-amber-400">
-              <CardHeader>
-                <CardTitle className="text-amber-400">Announcements</CardTitle>
-                <CardDescription>Broadcast notices to students</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Link href="/admin/announcements">
-                  <Button className="bg-amber-600 hover:bg-amber-700 w-full">
-                    Manage Announcements
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
+              );
+            })}
           </div>
-        </main>
-      </div>
+        </section>
+      ))}
     </div>
   );
 }

@@ -4,8 +4,22 @@ import api from "@/lib/api";
 import DataTable from "@/components/DataTable";
 import ConfirmModal from "@/components/ConfirmModal";
 import EditModal from "@/components/EditModal";
+import RowActions from "@/components/RowActions";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
+import { Field, PageHeader, Panel, PanelHeader } from "@/components/ui/page";
+import { cn } from "@/lib/utils";
+import { ImageIcon } from "lucide-react";
 import toast from "react-hot-toast";
 import { Payment, Student, Program, Section } from "@/types";
+
+const statusTone = (status?: string) =>
+  status === "Approved"
+    ? "success"
+    : status === "Rejected"
+      ? "danger"
+      : "warning";
 
 export default function PaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -209,83 +223,79 @@ export default function PaymentsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Title & View Switcher */}
-      <div className="flex justify-between items-center flex-wrap gap-4 border-b border-gray-800 pb-4">
-        <div>
-          <h1 className="text-amber-400 text-3xl font-bold">Payments & Verification Center</h1>
-          <p className="text-gray-400 text-sm mt-1">
-            Review submitted student receipts, verify bank transfer proofs, and track monthly payment status
-          </p>
-        </div>
+      <PageHeader
+        title="Payments & Verification"
+        description="Review submitted receipts, verify bank transfer proofs and track monthly payment status."
+        action={
+          <div className="bg-surface inline-flex rounded-lg border border-white/5 p-1">
+            {[
+              {
+                id: "list" as const,
+                label: `📋 Receipts (${filteredPayments.length})`,
+              },
+              { id: "matrix" as const, label: "📊 Monthly Matrix" },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  "cursor-pointer rounded-md px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors",
+                  activeTab === tab.id
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        }
+      />
 
-        <div className="flex bg-gray-800 p-1 rounded-lg border border-gray-700">
-          <button
-            type="button"
-            onClick={() => setActiveTab("list")}
-            className={`px-4 py-2 text-sm font-bold rounded-md transition-colors ${
-              activeTab === "list"
-                ? "bg-amber-600 text-gray-950"
-                : "text-gray-300 hover:text-white"
-            }`}
-          >
-            📋 Live Receipts List ({filteredPayments.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("matrix")}
-            className={`px-4 py-2 text-sm font-bold rounded-md transition-colors ${
-              activeTab === "matrix"
-                ? "bg-amber-600 text-gray-950"
-                : "text-gray-300 hover:text-white"
-            }`}
-          >
-            📊 Monthly Payment Matrix
-          </button>
-        </div>
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {[
+          { label: "Total receipts", value: stats.total, className: "" },
+          {
+            label: "Pending approval",
+            value: stats.pending,
+            className: "text-amber-400",
+          },
+          {
+            label: "Approved",
+            value: stats.approved,
+            className: "text-emerald-400",
+          },
+          { label: "Rejected", value: stats.rejected, className: "text-red-400" },
+        ].map((stat) => (
+          <Panel key={stat.label} className="p-4">
+            <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
+              {stat.label}
+            </p>
+            <p className={cn("mt-1.5 text-2xl font-bold", stat.className)}>
+              {stat.value}
+            </p>
+          </Panel>
+        ))}
       </div>
 
-      {/* Analytics Summary Stat Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
-          <p className="text-xs text-gray-400 uppercase font-semibold">Total Receipts</p>
-          <p className="text-2xl font-bold text-white mt-1">{stats.total}</p>
-        </div>
-
-        <div className="bg-amber-950/40 border border-amber-800/80 rounded-lg p-4">
-          <p className="text-xs text-amber-400 uppercase font-semibold flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
-            Pending Approval
-          </p>
-          <p className="text-2xl font-bold text-amber-400 mt-1">{stats.pending}</p>
-        </div>
-
-        <div className="bg-green-950/40 border border-green-800/80 rounded-lg p-4">
-          <p className="text-xs text-green-400 uppercase font-semibold">Approved</p>
-          <p className="text-2xl font-bold text-green-400 mt-1">{stats.approved}</p>
-        </div>
-
-        <div className="bg-red-950/40 border border-red-800/80 rounded-lg p-4">
-          <p className="text-xs text-red-400 uppercase font-semibold">Rejected</p>
-          <p className="text-2xl font-bold text-red-400 mt-1">{stats.rejected}</p>
-        </div>
-      </div>
-
-      {/* Filter Bar */}
-      <div className="bg-gray-800/80 p-4 rounded-lg border border-gray-700 flex gap-3 flex-wrap">
+      {/* Filters */}
+      <div className="flex flex-wrap gap-3">
         <input
-          type="text"
-          placeholder="Search by Student Name or ID..."
-          className="p-2.5 rounded bg-gray-700 text-white flex-1 min-w-[200px] border border-gray-600 text-sm"
+          type="search"
+          placeholder="Search by student name or ID..."
+          className="min-w-60 flex-1"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
 
         <select
-          className="p-2.5 rounded bg-gray-700 text-white border border-gray-600 text-sm"
+          className="w-auto"
           value={filterProgram}
           onChange={(e) => setFilterProgram(e.target.value)}
         >
-          <option value="">All Programs</option>
+          <option value="">All programs</option>
           {programs.map((p) => (
             <option key={p._id || p.code} value={p.name}>
               {p.name}
@@ -294,11 +304,11 @@ export default function PaymentsPage() {
         </select>
 
         <select
-          className="p-2.5 rounded bg-gray-700 text-white border border-gray-600 text-sm"
+          className="w-auto"
           value={filterSection}
           onChange={(e) => setFilterSection(e.target.value)}
         >
-          <option value="">All Sections</option>
+          <option value="">All sections</option>
           {uniqueSections.map((sec) => (
             <option key={sec} value={sec}>
               {sec}
@@ -307,11 +317,11 @@ export default function PaymentsPage() {
         </select>
 
         <select
-          className="p-2.5 rounded bg-gray-700 text-white border border-gray-600 text-sm"
+          className="w-auto"
           value={filterBatch}
           onChange={(e) => setFilterBatch(e.target.value)}
         >
-          <option value="">All Batches</option>
+          <option value="">All batches</option>
           {uniqueBatches.map((b) => (
             <option key={b} value={b}>
               {b}
@@ -320,11 +330,11 @@ export default function PaymentsPage() {
         </select>
 
         <select
-          className="p-2.5 rounded bg-gray-700 text-white border border-gray-600 text-sm"
+          className="w-auto"
           value={filterMonth}
           onChange={(e) => setFilterMonth(e.target.value)}
         >
-          <option value="">All Months</option>
+          <option value="">All months</option>
           {ethiopianMonths.map((m) => (
             <option key={m.key} value={m.key}>
               {m.label} ({m.key})
@@ -333,18 +343,18 @@ export default function PaymentsPage() {
         </select>
 
         <select
-          className="p-2.5 rounded bg-gray-700 text-white border border-gray-600 text-sm font-semibold"
+          className="w-auto"
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
         >
-          <option value="">All Statuses</option>
-          <option value="Pending">🟡 Pending Verification</option>
-          <option value="Approved">🟢 Approved</option>
-          <option value="Rejected">🔴 Rejected</option>
+          <option value="">All statuses</option>
+          <option value="Pending">Pending verification</option>
+          <option value="Approved">Approved</option>
+          <option value="Rejected">Rejected</option>
         </select>
       </div>
 
-      {/* Tab 1: Live Receipts Table */}
+      {/* Tab 1: receipts */}
       {activeTab === "list" && (
         <DataTable
           columns={[
@@ -352,9 +362,9 @@ export default function PaymentsPage() {
             { key: "fullName", label: "Student Name" },
             { key: "programSection", label: "Program & Section" },
             { key: "monthBatch", label: "Month & Batch" },
-            { key: "screenshot", label: "Receipt Proof" },
+            { key: "screenshot", label: "Receipt" },
             { key: "statusDisplay", label: "Status" },
-            { key: "actions", label: "Actions" },
+            { key: "actions", label: "" },
           ]}
           data={filteredPayments.map((p) => {
             const idVal = p.studentId || p.begenaId || "N/A";
@@ -363,28 +373,26 @@ export default function PaymentsPage() {
             return {
               ...p,
               studentIdDisplay: (
-                <span className="font-mono font-bold text-amber-400 bg-gray-800 px-2 py-1 rounded border border-gray-700 text-xs">
-                  {idVal}
-                </span>
+                <span className="text-primary font-mono text-xs">{idVal}</span>
               ),
               programSection: (
-                <div className="space-y-1" key={p._id}>
-                  <span className="inline-block bg-amber-950 text-amber-300 text-[11px] font-semibold px-2 py-0.5 rounded border border-amber-900">
-                    {p.program || "በገና (Begena)"}
-                  </span>
-                  <p className="text-xs text-gray-300">{p.section}</p>
+                <div key={p._id}>
+                  <p className="text-sm">{p.program || "በገና (Begena)"}</p>
+                  <p className="text-muted-foreground text-xs">{p.section}</p>
                 </div>
               ),
               monthBatch: (
                 <div key={`${p._id}-mb`}>
-                  <p className="font-bold text-white text-sm">{p.month}</p>
-                  <p className="text-xs text-gray-400">{p.batch}</p>
+                  <p className="text-sm font-medium">{p.month}</p>
+                  <p className="text-muted-foreground text-xs">{p.batch}</p>
                 </div>
               ),
               screenshot: (
-                <div
+                <button
+                  type="button"
                   key={`${p._id}-img`}
-                  className="w-16 h-16 cursor-pointer group relative overflow-hidden rounded border border-gray-700 bg-gray-950 flex items-center justify-center"
+                  title="Click to inspect receipt"
+                  className="bg-surface-raised hover:border-primary/40 relative size-12 cursor-pointer overflow-hidden rounded-md border border-white/10 transition-colors"
                   onClick={() => {
                     setSelectedPayment(p);
                     setImageModalOpen(true);
@@ -394,238 +402,241 @@ export default function PaymentsPage() {
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img
                       src={p.screenshot}
-                      alt="Receipt screenshot"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      alt=""
+                      className="size-full object-cover"
                       onError={(e) => {
                         (e.target as HTMLElement).style.display = "none";
                       }}
                     />
-                  ) : null}
-                  <span className="text-[10px] text-gray-400 font-semibold text-center p-1">
-                    Click to Zoom
-                  </span>
-                </div>
+                  ) : (
+                    <span className="text-muted-foreground flex size-full items-center justify-center">
+                      <ImageIcon size={14} />
+                    </span>
+                  )}
+                </button>
               ),
               statusDisplay: (
-                <span
-                  key={`${p._id}-st`}
-                  className={`px-2.5 py-1 rounded-full text-xs font-bold inline-flex items-center gap-1 ${
-                    currentStatus === "Approved"
-                      ? "bg-green-950 text-green-300 border border-green-700"
-                      : currentStatus === "Rejected"
-                      ? "bg-red-950 text-red-300 border border-red-700"
-                      : "bg-amber-950 text-amber-300 border border-amber-700 animate-pulse"
-                  }`}
-                >
-                  {currentStatus === "Approved" ? "✓ Approved" : currentStatus === "Rejected" ? "✕ Rejected" : "⏳ Pending"}
-                </span>
+                <Badge key={`${p._id}-st`} tone={statusTone(currentStatus)}>
+                  {currentStatus}
+                </Badge>
               ),
               actions: (
-                <div className="flex items-center gap-2 flex-wrap" key={`${p._id}-act`}>
+                <RowActions
+                  key={`${p._id}-act`}
+                  onEdit={() => {
+                    setPaymentToEdit(p);
+                    setEditModalOpen(true);
+                  }}
+                  onDelete={() => {
+                    setPaymentToDelete(p);
+                    setDeleteModalOpen(true);
+                  }}
+                >
                   {currentStatus !== "Approved" && (
-                    <button
-                      type="button"
+                    <Button
+                      size="sm"
+                      variant="outline"
                       disabled={isUpdatingStatus === p._id}
                       onClick={() => handleUpdateStatus(p._id!, "Approved")}
-                      className="px-2.5 py-1 bg-green-600 hover:bg-green-700 text-white font-bold text-xs rounded transition-colors"
                     >
                       Approve
-                    </button>
+                    </Button>
                   )}
-
                   {currentStatus !== "Rejected" && (
-                    <button
-                      type="button"
+                    <Button
+                      size="sm"
+                      variant="outline"
                       disabled={isUpdatingStatus === p._id}
                       onClick={() => handleUpdateStatus(p._id!, "Rejected")}
-                      className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded transition-colors"
                     >
                       Reject
-                    </button>
+                    </Button>
                   )}
-
-                  <button
-                    type="button"
-                    className="text-blue-400 hover:text-blue-300 text-xs font-semibold ml-1"
-                    onClick={() => {
-                      setPaymentToEdit(p);
-                      setEditModalOpen(true);
-                    }}
-                  >
-                    Edit
-                  </button>
-
-                  <button
-                    type="button"
-                    className="text-gray-400 hover:text-red-400 text-xs font-semibold"
-                    onClick={() => {
-                      setPaymentToDelete(p);
-                      setDeleteModalOpen(true);
-                    }}
-                  >
-                    Delete
-                  </button>
-                </div>
+                </RowActions>
               ),
             };
           })}
         />
       )}
 
-      {/* Tab 2: Monthly Student Payment Matrix */}
+      {/* Tab 2: monthly matrix */}
       {activeTab === "matrix" && (
-        <div className="bg-gray-800 border border-gray-700 rounded-lg overflow-x-auto p-4 space-y-4">
-          <div className="flex justify-between items-center text-xs text-gray-400 pb-2 border-b border-gray-700">
-            <p>
-              Overview of all registered students and their payment statuses per month.
-            </p>
-            <div className="flex gap-4">
-              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-green-500"></span> Approved (Paid)</span>
-              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-amber-500"></span> Pending Review</span>
-              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-red-900"></span> Unpaid</span>
-            </div>
-          </div>
-
-          <table className="w-full text-left text-sm text-gray-200 border-collapse">
-            <thead>
-              <tr className="bg-gray-900 text-amber-400 border-b border-gray-700 text-xs">
-                <th className="p-3">Student ID</th>
-                <th className="p-3">Full Name</th>
-                <th className="p-3">Program & Section</th>
-                {ethiopianMonths.map((m) => (
-                  <th className="p-3 text-center" key={m.key}>
-                    {m.label}
-                  </th>
+        <Panel>
+          <PanelHeader
+            title="Monthly payment matrix"
+            description="All registered students and their payment status per month."
+            action={
+              <div className="text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 text-xs">
+                {[
+                  { label: "Paid", color: "bg-emerald-500" },
+                  { label: "Pending", color: "bg-amber-500" },
+                  { label: "Rejected", color: "bg-red-500" },
+                  { label: "Unpaid", color: "bg-white/20" },
+                ].map((legend) => (
+                  <span key={legend.label} className="flex items-center gap-1.5">
+                    <span
+                      className={cn("size-2 rounded-full", legend.color)}
+                      aria-hidden
+                    />
+                    {legend.label}
+                  </span>
                 ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-700/60">
-              {students.map((student) => {
-                const sId = student.studentId || student.begenaId;
-                const studentPayments = payments.filter(
-                  (p) => (p.studentId || p.begenaId) === sId
-                );
+              </div>
+            }
+          />
 
-                return (
-                  <tr key={student._id || sId} className="hover:bg-gray-750 transition-colors">
-                    <td className="p-3 font-mono text-amber-400 font-bold text-xs">{sId}</td>
-                    <td className="p-3 font-semibold text-white">{student.fullName}</td>
-                    <td className="p-3 text-xs text-gray-300">
-                      <span className="text-amber-300 bg-amber-950 px-1.5 py-0.5 rounded mr-1">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[900px] text-left text-sm">
+              <thead>
+                <tr className="text-muted-foreground border-b border-white/5 text-xs tracking-wider uppercase">
+                  <th className="px-4 py-2.5 font-medium">Student ID</th>
+                  <th className="px-4 py-2.5 font-medium">Full Name</th>
+                  <th className="px-4 py-2.5 font-medium">Program & Section</th>
+                  {ethiopianMonths.map((m) => (
+                    <th key={m.key} className="px-3 py-2.5 text-center font-medium">
+                      {m.label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {students.map((student) => {
+                  const sId = student.studentId || student.begenaId;
+                  const studentPayments = payments.filter(
+                    (p) => (p.studentId || p.begenaId) === sId
+                  );
+
+                  return (
+                    <tr
+                      key={student._id || sId}
+                      className="hover:bg-white/[0.03] transition-colors"
+                    >
+                      <td className="text-primary px-4 py-3 font-mono text-xs">
+                        {sId}
+                      </td>
+                      <td className="px-4 py-3 font-medium">
+                        {student.fullName}
+                      </td>
+                      <td className="text-muted-foreground px-4 py-3 text-xs">
                         {student.program || "Begena"}
-                      </span>
-                      {student.section}
-                    </td>
+                        <span className="block">{student.section}</span>
+                      </td>
 
-                    {ethiopianMonths.map((m) => {
-                      const pay = studentPayments.find(
-                        (p) => p.month?.toLowerCase() === m.key.toLowerCase()
-                      );
+                      {ethiopianMonths.map((m) => {
+                        const pay = studentPayments.find(
+                          (p) => p.month?.toLowerCase() === m.key.toLowerCase()
+                        );
+                        const st = pay ? pay.status || "Pending" : "Unpaid";
 
-                      const st = pay ? pay.status || "Pending" : "Unpaid";
-
-                      return (
-                        <td className="p-2 text-center" key={m.key}>
-                          {st === "Approved" ? (
-                            <span className="inline-block bg-green-950 text-green-300 border border-green-700 text-[10px] px-2 py-0.5 rounded font-bold">
-                              ✓ Paid
-                            </span>
-                          ) : st === "Pending" ? (
-                            <span className="inline-block bg-amber-950 text-amber-300 border border-amber-700 text-[10px] px-2 py-0.5 rounded font-bold animate-pulse">
-                              ⏳ Pending
-                            </span>
-                          ) : st === "Rejected" ? (
-                            <span className="inline-block bg-red-950 text-red-300 border border-red-700 text-[10px] px-2 py-0.5 rounded font-bold">
-                              ✕ Rejected
-                            </span>
-                          ) : (
-                            <span className="text-red-500/80 font-semibold text-xs">✕ Unpaid</span>
-                          )}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                        return (
+                          <td key={m.key} className="px-3 py-3 text-center">
+                            {st === "Unpaid" ? (
+                              <span className="text-muted-foreground text-xs">
+                                —
+                              </span>
+                            ) : (
+                              <Badge tone={statusTone(st)}>
+                                {st === "Approved" ? "Paid" : st}
+                              </Badge>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </Panel>
       )}
 
-      {/* High-Res Receipt Inspection Modal */}
-      {imageModalOpen && selectedPayment && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-gray-800 border border-gray-700 rounded-xl max-w-2xl w-full p-6 space-y-4 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center border-b border-gray-700 pb-3">
-              <div>
-                <h2 className="text-xl font-bold text-amber-400">Payment Proof Verification</h2>
-                <p className="text-xs text-gray-400">
-                  Inspect receipt slip details for {selectedPayment.fullName} ({selectedPayment.studentId || selectedPayment.begenaId})
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setImageModalOpen(false)}
-                className="text-gray-400 hover:text-white text-xl font-bold px-2"
+      {/* Receipt inspection */}
+      <Modal
+        isOpen={imageModalOpen && !!selectedPayment}
+        onClose={() => setImageModalOpen(false)}
+        title="Payment proof verification"
+        description={
+          selectedPayment
+            ? `${selectedPayment.fullName} (${
+                selectedPayment.studentId || selectedPayment.begenaId
+              })`
+            : undefined
+        }
+        className="max-w-2xl"
+        footer={
+          selectedPayment ? (
+            <>
+              <Button
+                variant="outline"
+                disabled={isUpdatingStatus === selectedPayment._id}
+                onClick={() =>
+                  handleUpdateStatus(selectedPayment._id!, "Rejected")
+                }
               >
-                ×
-              </button>
-            </div>
-
-            {/* Receipt Image */}
-            <div className="bg-gray-950 rounded-lg overflow-hidden border border-gray-700 flex justify-center max-h-80">
+                Reject (ውድቅ አድርግ)
+              </Button>
+              <Button
+                disabled={isUpdatingStatus === selectedPayment._id}
+                onClick={() =>
+                  handleUpdateStatus(selectedPayment._id!, "Approved")
+                }
+              >
+                Approve (አጽድቅ)
+              </Button>
+            </>
+          ) : null
+        }
+      >
+        {selectedPayment && (
+          <div className="space-y-4">
+            <div className="bg-background flex max-h-80 justify-center overflow-hidden rounded-lg border border-white/10">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={selectedPayment.screenshot}
-                alt="Receipt Full View"
-                className="max-h-80 object-contain w-full"
+                alt="Receipt"
+                className="max-h-80 w-full object-contain"
               />
             </div>
 
-            {/* Student & Payment Summary Grid */}
-            <div className="grid grid-cols-2 gap-3 text-sm bg-gray-900 p-4 rounded-lg border border-gray-700">
-              <div>
-                <span className="text-xs text-gray-400 block">Student Name:</span>
-                <span className="font-bold text-white">{selectedPayment.fullName}</span>
-              </div>
-              <div>
-                <span className="text-xs text-gray-400 block">Student ID:</span>
-                <span className="font-mono font-bold text-amber-400">{selectedPayment.studentId || selectedPayment.begenaId}</span>
-              </div>
-              <div>
-                <span className="text-xs text-gray-400 block">Program & Section:</span>
-                <span className="text-white">{selectedPayment.program} — {selectedPayment.section}</span>
-              </div>
-              <div>
-                <span className="text-xs text-gray-400 block">Month & Batch:</span>
-                <span className="text-white">{selectedPayment.month} ({selectedPayment.batch})</span>
-              </div>
-            </div>
-
-            {/* Quick Action Approval Buttons inside Modal */}
-            <div className="flex gap-3 pt-2">
-              <button
-                type="button"
-                disabled={isUpdatingStatus === selectedPayment._id}
-                onClick={() => handleUpdateStatus(selectedPayment._id!, "Approved")}
-                className="flex-1 py-3 bg-green-600 hover:bg-green-700 text-white font-bold text-sm rounded-lg transition-colors"
-              >
-                Approve Payment (ማረጋገጫ አጽድቅ)
-              </button>
-              <button
-                type="button"
-                disabled={isUpdatingStatus === selectedPayment._id}
-                onClick={() => handleUpdateStatus(selectedPayment._id!, "Rejected")}
-                className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white font-bold text-sm rounded-lg transition-colors"
-              >
-                Reject Payment (ውድቅ አድርግ)
-              </button>
-            </div>
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
+              {[
+                { label: "Student name", value: selectedPayment.fullName },
+                {
+                  label: "Student ID",
+                  value:
+                    selectedPayment.studentId || selectedPayment.begenaId,
+                  mono: true,
+                },
+                {
+                  label: "Program & section",
+                  value: `${selectedPayment.program} — ${selectedPayment.section}`,
+                },
+                {
+                  label: "Month & batch",
+                  value: `${selectedPayment.month} (${selectedPayment.batch})`,
+                },
+              ].map((item) => (
+                <div key={item.label} className="min-w-0">
+                  <dt className="text-muted-foreground text-xs">
+                    {item.label}
+                  </dt>
+                  <dd
+                    className={cn(
+                      "mt-0.5 truncate text-sm font-medium",
+                      item.mono && "text-primary font-mono"
+                    )}
+                  >
+                    {item.value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
 
-      {/* Edit Payment Modal */}
+      {/* Edit payment */}
       {paymentToEdit && (
         <EditModal
           isOpen={editModalOpen}
@@ -640,68 +651,91 @@ export default function PaymentsPage() {
           onSubmit={() => handleEdit(paymentToEdit)}
           renderFields={(data: Payment, setData: (p: Payment) => void) => (
             <>
-              <div>
-                <label className="block text-xs text-amber-400 mb-1">Full Name</label>
+              <Field label="Full Name" htmlFor="editPaymentName">
                 <input
-                  className="w-full p-2 rounded bg-gray-700 text-white"
+                  id="editPaymentName"
                   value={data.fullName}
-                  onChange={(e) => setData({ ...data, fullName: e.target.value })}
+                  onChange={(e) =>
+                    setData({ ...data, fullName: e.target.value })
+                  }
                 />
-              </div>
-              <div>
-                <label className="block text-xs text-amber-400 mb-1">Student ID</label>
+              </Field>
+
+              <Field label="Student ID" htmlFor="editPaymentStudentId">
                 <input
-                  className="w-full p-2 rounded bg-gray-700 text-white font-mono"
+                  id="editPaymentStudentId"
+                  className="font-mono"
                   value={data.studentId || data.begenaId}
-                  onChange={(e) => setData({ ...data, studentId: e.target.value, begenaId: e.target.value })}
+                  onChange={(e) =>
+                    setData({
+                      ...data,
+                      studentId: e.target.value,
+                      begenaId: e.target.value,
+                    })
+                  }
                 />
+              </Field>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Program" htmlFor="editPaymentProgram">
+                  <input
+                    id="editPaymentProgram"
+                    value={data.program || ""}
+                    onChange={(e) =>
+                      setData({ ...data, program: e.target.value })
+                    }
+                  />
+                </Field>
+
+                <Field label="Section" htmlFor="editPaymentSection">
+                  <input
+                    id="editPaymentSection"
+                    value={data.section}
+                    onChange={(e) =>
+                      setData({ ...data, section: e.target.value })
+                    }
+                  />
+                </Field>
               </div>
-              <div>
-                <label className="block text-xs text-amber-400 mb-1">Program</label>
-                <input
-                  className="w-full p-2 rounded bg-gray-700 text-white"
-                  value={data.program || ""}
-                  onChange={(e) => setData({ ...data, program: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-amber-400 mb-1">Section</label>
-                <input
-                  className="w-full p-2 rounded bg-gray-700 text-white"
-                  value={data.section}
-                  onChange={(e) => setData({ ...data, section: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-amber-400 mb-1">Month</label>
-                <input
-                  className="w-full p-2 rounded bg-gray-700 text-white"
-                  value={data.month}
-                  onChange={(e) => setData({ ...data, month: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-amber-400 mb-1">Verification Status</label>
-                <select
-                  className="w-full p-2 rounded bg-gray-700 text-white font-bold"
-                  value={data.status || "Pending"}
-                  onChange={(e) => setData({ ...data, status: e.target.value as "Pending" | "Approved" | "Rejected" })}
-                >
-                  <option value="Pending">Pending</option>
-                  <option value="Approved">Approved</option>
-                  <option value="Rejected">Rejected</option>
-                </select>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Month" htmlFor="editPaymentMonth">
+                  <input
+                    id="editPaymentMonth"
+                    value={data.month}
+                    onChange={(e) => setData({ ...data, month: e.target.value })}
+                  />
+                </Field>
+
+                <Field label="Verification Status" htmlFor="editPaymentStatus">
+                  <select
+                    id="editPaymentStatus"
+                    value={data.status || "Pending"}
+                    onChange={(e) =>
+                      setData({
+                        ...data,
+                        status: e.target.value as
+                          | "Pending"
+                          | "Approved"
+                          | "Rejected",
+                      })
+                    }
+                  >
+                    <option value="Pending">Pending</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Rejected">Rejected</option>
+                  </select>
+                </Field>
               </div>
             </>
           )}
         />
       )}
 
-      {/* Delete Confirmation Modal */}
       <ConfirmModal
         isOpen={deleteModalOpen}
         title="Delete Payment Record"
-        message={`Are you sure you want to delete the payment proof for "${paymentToDelete?.fullName}" (${paymentToDelete?.month})?`}
+        message={`Are you sure you want to delete the payment proof for "${paymentToDelete?.fullName}" (${paymentToDelete?.month})? This cannot be undone.`}
         onCancel={() => setDeleteModalOpen(false)}
         onConfirm={handleDelete}
       />

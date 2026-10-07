@@ -5,6 +5,9 @@ import DataTable from "@/components/DataTable";
 import ModalForm from "@/components/ModalForm";
 import ConfirmModal from "@/components/ConfirmModal";
 import EditModal from "@/components/EditModal";
+import RowActions from "@/components/RowActions";
+import { Badge } from "@/components/ui/badge";
+import { Field, PageHeader } from "@/components/ui/page";
 import toast from "react-hot-toast";
 
 interface StaffMember {
@@ -101,87 +104,100 @@ export default function StaffPage() {
   }, [fetchStaff]);
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-amber-400 text-2xl font-bold">Staff & Instructors</h1>
-      </div>
-
-      <ModalForm title="Create New Staff Member" triggerText="Add Staff / Teacher" onSubmit={handleCreateStaff}>
-        <input
-          className="w-full p-2 rounded bg-gray-700 text-white"
-          placeholder="Full Name (e.g. Teacher Motuma Kidanu)"
-          value={formData.fullName}
-          onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-        />
-        <div>
-          <label className="block text-xs text-amber-400 mb-1">Role</label>
-          <select
-            className="w-full p-2 rounded bg-gray-700 text-white"
-            value={formData.role}
-            onChange={(e) => setFormData({ ...formData, role: e.target.value as "admin" | "teacher" })}
+    <div className="space-y-6">
+      <PageHeader
+        title="Staff & Instructors"
+        description="Admins and teachers who can sign in to the panel."
+        action={
+          <ModalForm
+            title="Create New Staff Member"
+            triggerText="Add Staff"
+            onSubmit={handleCreateStaff}
           >
-            <option value="teacher">Teacher / Instructor</option>
-            <option value="admin">Admin & Instructor</option>
-          </select>
-        </div>
-        <input
-          className="w-full p-2 rounded bg-gray-700 text-white"
-          placeholder="Phone Number (e.g. 0911223344)"
-          value={formData.phoneNumber}
-          onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-        />
-        <input
-          className="w-full p-2 rounded bg-gray-700 text-white"
-          type="password"
-          placeholder="Password (default: teacher123)"
-          value={formData.password}
-          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-        />
-      </ModalForm>
+            <Field label="Full Name" htmlFor="staffName" required>
+              <input
+                id="staffName"
+                placeholder="Motuma Kidanu"
+                value={formData.fullName}
+                onChange={(e) =>
+                  setFormData({ ...formData, fullName: e.target.value })
+                }
+              />
+            </Field>
+            <Field label="Role" htmlFor="staffRole" required>
+              <select
+                id="staffRole"
+                value={formData.role}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    role: e.target.value as "admin" | "teacher",
+                  })
+                }
+              >
+                <option value="teacher">Teacher / Instructor</option>
+                <option value="admin">Admin & Instructor</option>
+              </select>
+            </Field>
+            <Field label="Phone Number" htmlFor="staffPhone">
+              <input
+                id="staffPhone"
+                inputMode="tel"
+                placeholder="0911223344"
+                value={formData.phoneNumber}
+                onChange={(e) =>
+                  setFormData({ ...formData, phoneNumber: e.target.value })
+                }
+              />
+            </Field>
+            <Field
+              label="Password"
+              htmlFor="staffPassword"
+              hint="Leave empty to use the default password."
+            >
+              <input
+                id="staffPassword"
+                type="password"
+                autoComplete="new-password"
+                placeholder="Set an initial password"
+                value={formData.password}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
+              />
+            </Field>
+          </ModalForm>
+        }
+      />
 
       <DataTable
         columns={[
           { key: "fullName", label: "Full Name" },
           { key: "role", label: "Role" },
           { key: "phoneNumber", label: "Phone Number" },
-          { key: "actions", label: "Actions" },
+          { key: "actions", label: "" },
         ]}
         data={staff.map((s) => ({
           ...s,
           role: (
-            <span
-              className={`px-2 py-0.5 rounded text-xs font-bold ${
-                s.role === "admin"
-                  ? "bg-purple-900/60 text-purple-300 border border-purple-800"
-                  : "bg-blue-900/60 text-blue-300 border border-blue-800"
-              }`}
-            >
-              {s.role === "admin" ? "Admin & Instructor" : "Teacher / Instructor"}
-            </span>
+            <Badge tone={s.role === "admin" ? "primary" : "info"}>
+              {s.role === "admin" ? "Admin & Instructor" : "Teacher"}
+            </Badge>
           ),
-          phoneNumber: s.phoneNumber || "N/A",
+          phoneNumber: s.phoneNumber || "—",
           actions: (
-            <div className="flex gap-2" key={s._id}>
-              <button
-                className="text-blue-500 hover:text-blue-700 text-sm font-semibold"
-                onClick={() => {
-                  setStaffToEdit(s);
-                  setFormData({ ...s, password: "" });
-                  setEditModalOpen(true);
-                }}
-              >
-                Edit
-              </button>
-              <button
-                className="text-red-500 hover:text-red-700 text-sm font-semibold"
-                onClick={() => {
-                  setStaffToDelete(s);
-                  setDeleteModalOpen(true);
-                }}
-              >
-                Delete
-              </button>
-            </div>
+            <RowActions
+              key={s._id}
+              onEdit={() => {
+                setStaffToEdit(s);
+                setFormData({ ...s, password: "" });
+                setEditModalOpen(true);
+              }}
+              onDelete={() => {
+                setStaffToDelete(s);
+                setDeleteModalOpen(true);
+              }}
+            />
           ),
         }))}
       />
@@ -199,36 +215,55 @@ export default function StaffPage() {
             setData: React.Dispatch<React.SetStateAction<StaffMember>>
           ) => (
             <>
-              <input
-                className="w-full p-2 rounded bg-gray-700 text-white"
-                placeholder="Full Name"
-                value={data.fullName}
-                onChange={(e) => setData({ ...data, fullName: e.target.value })}
-              />
-              <div>
-                <label className="block text-xs text-amber-400 mb-1">Role</label>
+              <Field label="Full Name" htmlFor="editStaffName">
+                <input
+                  id="editStaffName"
+                  value={data.fullName}
+                  onChange={(e) =>
+                    setData({ ...data, fullName: e.target.value })
+                  }
+                />
+              </Field>
+              <Field label="Role" htmlFor="editStaffRole">
                 <select
-                  className="w-full p-2 rounded bg-gray-700 text-white"
+                  id="editStaffRole"
                   value={data.role}
-                  onChange={(e) => setData({ ...data, role: e.target.value as "admin" | "teacher" })}
+                  onChange={(e) =>
+                    setData({
+                      ...data,
+                      role: e.target.value as "admin" | "teacher",
+                    })
+                  }
                 >
                   <option value="teacher">Teacher / Instructor</option>
                   <option value="admin">Admin & Instructor</option>
                 </select>
-              </div>
-              <input
-                className="w-full p-2 rounded bg-gray-700 text-white"
-                placeholder="Phone Number"
-                value={data.phoneNumber || ""}
-                onChange={(e) => setData({ ...data, phoneNumber: e.target.value })}
-              />
-              <input
-                className="w-full p-2 rounded bg-gray-700 text-white"
-                type="password"
-                placeholder="New Password (leave empty to keep current)"
-                value={data.password || ""}
-                onChange={(e) => setData({ ...data, password: e.target.value })}
-              />
+              </Field>
+              <Field label="Phone Number" htmlFor="editStaffPhone">
+                <input
+                  id="editStaffPhone"
+                  inputMode="tel"
+                  value={data.phoneNumber || ""}
+                  onChange={(e) =>
+                    setData({ ...data, phoneNumber: e.target.value })
+                  }
+                />
+              </Field>
+              <Field
+                label="New Password"
+                htmlFor="editStaffPassword"
+                hint="Leave empty to keep the current password."
+              >
+                <input
+                  id="editStaffPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  value={data.password || ""}
+                  onChange={(e) =>
+                    setData({ ...data, password: e.target.value })
+                  }
+                />
+              </Field>
             </>
           )}
         />
@@ -237,7 +272,7 @@ export default function StaffPage() {
       <ConfirmModal
         isOpen={deleteModalOpen}
         title="Delete Staff Member"
-        message={`Are you sure you want to delete staff member "${staffToDelete?.fullName}"?`}
+        message={`Are you sure you want to delete "${staffToDelete?.fullName}"? This cannot be undone.`}
         onCancel={() => setDeleteModalOpen(false)}
         onConfirm={handleDeleteStaff}
       />

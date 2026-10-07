@@ -4,47 +4,84 @@ import { Button } from "./ui/button";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { PageContainer } from "./ui/page";
+import { cn } from "@/lib/utils";
+
+const links = [
+  { href: "/schedule", label: "የትምህርት ሰዓት" },
+  { href: "/students", label: "ተማሪዎች" },
+  { href: "/mezmurlist", label: "ዝማሬዎች" },
+  { href: "/payment", label: "ክፍያ" },
+];
+
 const Navbar = () => {
   const pathname = usePathname();
   const [studentHref, setStudentHref] = useState("/student/login");
 
   useEffect(() => {
     const token = localStorage.getItem("studentToken");
-    if (token) {
-      setStudentHref("/student/dashboard");
-    } else {
-      setStudentHref("/student/login");
-    }
+    setStudentHref(token ? "/student/dashboard" : "/student/login");
   }, [pathname]);
 
   return (
-    <nav className="h-16 border-b border-gray-700 w-full flex justify-between items-center px-3 sm:px-6 bg-gray-900 sticky top-0 z-50">
-      <Link href="/" className="flex items-center gap-2">
-        <h1 className="text-xl sm:text-2xl text-amber-400 font-bold tracking-wide">በገና</h1>
-      </Link>
-
-      <div className="flex items-center gap-1.5 sm:gap-2">
-        {pathname !== "/" && (
-          <Link href="/">
-            <Button className="text-[11px] sm:text-xs font-bold text-amber-400 border border-amber-900 bg-gray-900 hover:bg-amber-900/60 px-2 sm:px-3 py-1.5 h-auto">
-              Home
-            </Button>
-          </Link>
-        )}
-
-        <Link href={studentHref}>
-          <Button className="text-[11px] sm:text-xs font-bold text-amber-400 bg-gray-800 border border-amber-900 hover:bg-amber-900/60 px-2 sm:px-3 py-1.5 h-auto">
-            🎓 ተማሪ
-          </Button>
+    <header className="bg-background/85 sticky top-0 z-50 border-b border-white/5 backdrop-blur">
+      <PageContainer className="flex h-14 items-center justify-between gap-4">
+        <Link href="/" className="flex items-baseline gap-2">
+          <span className="text-primary text-lg font-bold tracking-wide">
+            በገና
+          </span>
+          <span className="text-muted-foreground hidden text-xs sm:inline">
+            ንዑስ ክፍል
+          </span>
         </Link>
 
-        <Link href="/admin/login">
-          <Button className="text-[11px] sm:text-xs font-bold text-amber-400 bg-amber-900 hover:bg-amber-800 px-2.5 sm:px-3 py-1.5 h-auto">
-            Admin
+        <nav className="hidden items-center gap-1 md:flex">
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={cn(
+                "rounded-md px-2.5 py-1.5 text-sm transition-colors",
+                pathname === link.href
+                  ? "text-primary bg-primary/10"
+                  : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+              )}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="flex items-center gap-2">
+          <Button asChild variant="ghost" size="sm">
+            <Link href={studentHref}>🎓 ተማሪ</Link>
           </Button>
-        </Link>
-      </div>
-    </nav>
+          <Button asChild size="sm">
+            <Link href="/admin/login">Admin</Link>
+          </Button>
+        </div>
+      </PageContainer>
+
+      {/* On small screens the primary links move to a scrollable strip under the bar. */}
+      <nav className="border-t border-white/5 md:hidden">
+        <PageContainer className="flex gap-1 overflow-x-auto py-1.5">
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={cn(
+                "rounded-md px-2.5 py-1 text-xs whitespace-nowrap transition-colors",
+                pathname === link.href
+                  ? "text-primary bg-primary/10"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </PageContainer>
+      </nav>
+    </header>
   );
 };
 

@@ -1,9 +1,17 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+	Field,
+	PageBody,
+	PageContainer,
+	PageHeader,
+	Panel,
+	PanelBody,
+	PanelHeader,
+} from "@/components/ui/page";
 import React, { useState, useTransition, useCallback } from "react";
-import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { Check, Upload, X } from "lucide-react";
 import { sendPayment } from "@/lib/actions/payment";
 import Footer from "@/components/footer";
 import Navbar from "@/components/Navbar";
@@ -17,6 +25,21 @@ interface FoundStudent {
   batch: string;
   academicStatus?: string;
 }
+
+const StepTitle = ({
+	step,
+	children,
+}: {
+	step: number;
+	children: React.ReactNode;
+}) => (
+	<span className="flex items-center gap-2.5">
+		<span className="bg-primary/15 text-primary flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold">
+			{step}
+		</span>
+		{children}
+	</span>
+);
 
 const Payment = () => {
 	const [isPending, startTransition] = useTransition();
@@ -147,144 +170,155 @@ const Payment = () => {
 	};
 
 	return (
-		<div className="min-h-screen bg-gray-900 text-white flex flex-col w-full">
+		<div className="flex min-h-screen flex-col">
 			<Navbar />
 
-			<main className="flex-1 w-full max-w-2xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
-				<h1 className="text-center text-2xl sm:text-4xl text-amber-400 font-bold mb-1.5 sm:mb-2">
-					Submit Payment Proof
-				</h1>
-				<p className="text-center text-gray-400 text-xs sm:text-sm mb-4 sm:mb-6">
-					ተማሪዎች የክፍያ ደረሰኝ በ ID ብቻ የሚያስገቡበት ገጽ
-				</p>
+			<PageBody>
+				<PageContainer className="space-y-8">
+					<PageHeader
+						eyebrow="💳 ወርሃዊ ክፍያ"
+						title="Submit Payment Proof"
+						description="ተማሪዎች የክፍያ ደረሰኝ በ ID ብቻ የሚያስገቡበት ገጽ።"
+					/>
 
-				<Card className="bg-gray-800 border border-amber-950/60 shadow-xl">
-					<CardContent className="p-3.5 sm:p-6 pt-5 sm:pt-6">
-						<form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
-							{/* Step 1: Student ID Input */}
+					{/* Bank details come first — the receipt cannot exist before the transfer. */}
+					<Panel className="border-primary/20 bg-primary/5 p-5">
+						<h2 className="text-primary text-sm font-semibold tracking-wider uppercase">
+							የክፍያ መመሪያ · Bank Transfer
+						</h2>
+						<p className="text-muted-foreground mt-1.5 text-sm">
+							ወርሃዊ የተማሪ ክፍያ ወደ የሚከተለው የባንክ አካውንት ያስተላልፉ።
+						</p>
+						<dl className="mt-4 grid gap-3 sm:grid-cols-3">
 							<div>
-								<div className="flex justify-between items-center mb-1.5 sm:mb-2">
-									<label
-										htmlFor="begenaId"
-										className="block text-base sm:text-lg font-bold text-amber-400"
-									>
-										የተማሪ ID (Student ID)
-									</label>
-									{isLookingUp && (
-										<span className="text-xs text-amber-400 animate-pulse">
+								<dt className="text-muted-foreground text-xs">ባንክ</dt>
+								<dd className="mt-0.5 text-sm font-medium">
+									የኢትዮጵያ ንግድ ባንክ (CBE)
+								</dd>
+							</div>
+							<div>
+								<dt className="text-muted-foreground text-xs">የአካውንት ስም</dt>
+								<dd className="mt-0.5 text-sm font-medium">
+									Ayanaw Mengesha and/or Motuma Kidanu
+								</dd>
+							</div>
+							<div>
+								<dt className="text-muted-foreground text-xs">የአካውንት ቁጥር</dt>
+								<dd className="text-primary mt-0.5 font-mono text-sm font-semibold">
+									1000720480337
+								</dd>
+							</div>
+						</dl>
+					</Panel>
+
+					<form onSubmit={handleSubmit} className="space-y-4">
+						{/* Step 1 — Student ID */}
+						<Panel>
+							<PanelHeader
+								title={<StepTitle step={1}>የተማሪ ID (Student ID)</StepTitle>}
+								action={
+									isLookingUp ? (
+										<span className="text-primary animate-pulse text-xs">
 											Verifying...
 										</span>
-									)}
-								</div>
-
-								<div className="flex flex-col sm:flex-row gap-2">
-									<div className="relative flex-1 min-w-0">
-										<input
-											type="text"
-											id="begenaId"
-											name="begenaId"
-											required
-											value={begenaId}
-											onChange={(e) => {
-												setBegenaId(e.target.value);
-											}}
-											onBlur={() => performStudentLookup(begenaId)}
-											placeholder="Student ID (e.g. BG2026-0001)"
-											className={cn(
-												"w-full border border-gray-600 px-3.5 py-2.5 sm:px-4 sm:py-3 bg-gray-700 text-gray-100 font-mono text-base sm:text-lg min-w-0",
-												"rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500",
-											)}
-											disabled={isPending}
-										/>
-									</div>
-									<button
+									) : null
+								}
+							/>
+							<PanelBody className="space-y-3">
+								<div className="flex flex-col gap-2 sm:flex-row">
+									<input
+										type="text"
+										id="begenaId"
+										name="begenaId"
+										required
+										value={begenaId}
+										onChange={(e) => setBegenaId(e.target.value)}
+										onBlur={() => performStudentLookup(begenaId)}
+										placeholder="BG2026-0001"
+										className="flex-1 font-mono"
+										disabled={isPending}
+									/>
+									<Button
 										type="button"
+										variant="outline"
 										onClick={() => performStudentLookup(begenaId)}
-										className="w-full sm:w-auto px-5 py-2.5 sm:py-3 bg-amber-600 hover:bg-amber-700 text-gray-950 font-bold text-sm sm:text-base rounded-md transition-colors whitespace-nowrap shrink-0 flex items-center justify-center"
+										className="sm:w-auto"
 									>
 										Verify ID
-									</button>
+									</Button>
 								</div>
-								<p className="text-[11px] sm:text-xs text-gray-400 mt-1.5">
-									Enter your assigned Student ID to auto-link your program, section & full name.
+								<p className="text-muted-foreground text-xs">
+									Enter your assigned Student ID to auto-link your program,
+									section and full name.
 								</p>
-							</div>
 
-							{/* Verified Student Details Card */}
-							{foundStudent ? (
-								<div className="p-3 sm:p-4 bg-gradient-to-r from-green-950/90 to-gray-800 border border-green-600/80 rounded-lg space-y-2 shadow-md">
-									<div className="flex items-center justify-between">
-										<div className="flex items-center gap-2">
-											<span className="bg-green-500 text-gray-950 p-1 rounded-full text-xs font-bold">✓</span>
-											<span className="font-bold text-green-300 text-xs sm:text-sm">Verified Student Found</span>
+								{foundStudent ? (
+									<div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3.5">
+										<div className="flex items-center justify-between gap-3">
+											<span className="flex items-center gap-2 text-sm font-medium text-emerald-300">
+												<Check size={14} /> Verified student
+											</span>
+											<span className="text-muted-foreground font-mono text-xs">
+												{foundStudent.studentId}
+											</span>
 										</div>
-										<span className="text-[11px] bg-green-900/80 text-green-200 px-2 py-0.5 rounded border border-green-700 font-mono">
-											{foundStudent.studentId}
-										</span>
+										<dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2.5 border-t border-emerald-500/15 pt-3 sm:grid-cols-4">
+											{[
+												{ label: "Full Name", value: foundStudent.fullName },
+												{ label: "Program", value: foundStudent.program },
+												{ label: "Section", value: foundStudent.section },
+												{ label: "Batch", value: foundStudent.batch },
+											].map((item) => (
+												<div key={item.label} className="min-w-0">
+													<dt className="text-muted-foreground text-[11px]">
+														{item.label}
+													</dt>
+													<dd className="truncate text-sm font-medium">
+														{item.value}
+													</dd>
+												</div>
+											))}
+										</dl>
 									</div>
+								) : (
+									begenaId.length >= 3 &&
+									!isLookingUp && (
+										<div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 px-3.5 py-3">
+											<span className="text-muted-foreground text-xs">
+												ID not pre-registered yet? You can still submit your
+												receipt.
+											</span>
+											<button
+												type="button"
+												onClick={() => setManualMode(!manualMode)}
+												className="text-primary cursor-pointer text-xs font-semibold hover:underline"
+											>
+												{manualMode ? "Hide form" : "Enter name manually"}
+											</button>
+										</div>
+									)
+								)}
 
-									<div className="grid grid-cols-2 gap-2 text-xs sm:text-sm pt-1 border-t border-green-900/60">
-										<div>
-											<span className="text-gray-400 text-[11px] block">Full Name:</span>
-											<span className="font-semibold text-white">{foundStudent.fullName}</span>
-										</div>
-										<div>
-											<span className="text-gray-400 text-[11px] block">Program:</span>
-											<span className="font-semibold text-amber-400">{foundStudent.program}</span>
-										</div>
-										<div>
-											<span className="text-gray-400 text-[11px] block">Section:</span>
-											<span className="font-semibold text-white">{foundStudent.section}</span>
-										</div>
-										<div>
-											<span className="text-gray-400 text-[11px] block">Batch:</span>
-											<span className="font-semibold text-white">{foundStudent.batch}</span>
-										</div>
-									</div>
-								</div>
-							) : (
-								begenaId.length >= 3 && !isLookingUp && (
-									<div className="p-3 bg-gray-900/80 border border-amber-900/60 rounded-md text-xs text-gray-300 flex items-center justify-between">
-										<span>
-											ID not pre-registered yet? You can still submit your payment receipt!
-										</span>
-										<button
-											type="button"
-											onClick={() => setManualMode(!manualMode)}
-											className="text-amber-400 underline font-semibold hover:text-amber-300 ml-2 whitespace-nowrap"
-										>
-											{manualMode ? "Hide Form" : "Enter Name"}
-										</button>
-									</div>
-								)
-							)}
-
-							{/* Optional Manual Name input if unverified ID */}
-							{(!foundStudent && manualMode) && (
-								<div className="p-3 bg-gray-900/90 rounded-md border border-gray-700 space-y-3">
-									<div>
-										<label className="block text-xs font-medium text-amber-400 mb-1">
-											Full Name (ሙሉ ስም)
-										</label>
+								{!foundStudent && manualMode && (
+									<Field label="Full Name (ሙሉ ስም)" htmlFor="fullName">
 										<input
+											id="fullName"
 											type="text"
 											value={fullName}
 											onChange={(e) => setFullName(e.target.value)}
 											placeholder="Enter your full name"
-											className="w-full border border-gray-600 px-3 py-2 bg-gray-800 text-white rounded text-sm"
 										/>
-									</div>
-								</div>
-							)}
+									</Field>
+								)}
+							</PanelBody>
+						</Panel>
 
-							{/* Step 2: Select Payment Month */}
-							<div>
-								<label
-									htmlFor="month"
-									className="block text-lg font-bold text-amber-400 mb-2"
-								>
-									የሚከፍሉበት ወር (Month)
-								</label>
+						{/* Step 2 — Month */}
+						<Panel>
+							<PanelHeader
+								title={<StepTitle step={2}>የሚከፍሉበት ወር (Month)</StepTitle>}
+							/>
+							<PanelBody>
 								<select
 									id="month"
 									name="month"
@@ -292,10 +326,6 @@ const Payment = () => {
 									value={selectedMonth}
 									onChange={(e) => setSelectedMonth(e.target.value)}
 									disabled={isPending}
-									className={cn(
-										"w-full border border-gray-600 px-4 py-3 bg-gray-700 text-gray-100 text-lg",
-										"rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500",
-									)}
 								>
 									<option value="">Select a month (ወር ይምረጡ)</option>
 									{months.map((month) => (
@@ -304,34 +334,48 @@ const Payment = () => {
 										</option>
 									))}
 								</select>
-							</div>
+							</PanelBody>
+						</Panel>
 
-							{/* Step 3: Payment Screenshot Upload */}
-							<div>
-								<label className="block text-lg font-bold text-amber-400 mb-2">
-									የክፍያ Screenshot (Payment Receipt Slip)
-								</label>
-
+						{/* Step 3 — Receipt */}
+						<Panel>
+							<PanelHeader
+								title={
+									<StepTitle step={3}>የክፍያ Screenshot (Receipt)</StepTitle>
+								}
+							/>
+							<PanelBody>
 								{previewUrl ? (
-									<div className="relative mb-4">
+									<div className="relative">
 										<Image
 											src={previewUrl}
 											alt="Payment screenshot preview"
-											width={300}
-											height={300}
-											className="w-full rounded-md max-h-60 object-cover border border-amber-900"
+											width={600}
+											height={400}
+											className="max-h-72 w-full rounded-lg border border-white/10 object-cover"
 										/>
-										<Button
+										<button
 											type="button"
 											onClick={removeImage}
-											className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white p-1 h-8 w-8 rounded-full flex items-center justify-center"
 											disabled={isPending}
+											aria-label="Remove screenshot"
+											className="bg-background/80 hover:text-destructive absolute top-2 right-2 flex size-8 cursor-pointer items-center justify-center rounded-full border border-white/10 backdrop-blur transition-colors"
 										>
-											×
-										</Button>
+											<X size={15} />
+										</button>
 									</div>
 								) : (
-									<div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-600 hover:border-amber-400 rounded-lg p-6 bg-gray-700/50 transition-colors">
+									<label
+										htmlFor="screenshot-input"
+										className="hover:border-primary/40 hover:bg-primary/5 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-white/15 px-4 py-9 text-center transition-colors"
+									>
+										<Upload size={20} className="text-muted-foreground" />
+										<span className="text-sm font-medium">
+											Choose payment screenshot
+										</span>
+										<span className="text-muted-foreground text-xs">
+											PNG, JPG or WEBP up to 5MB
+										</span>
 										<input
 											type="file"
 											accept="image/*"
@@ -340,62 +384,23 @@ const Payment = () => {
 											disabled={isPending}
 											className="hidden"
 										/>
-										<label
-											htmlFor="screenshot-input"
-											className="cursor-pointer flex flex-col items-center gap-2"
-										>
-											<span className="bg-amber-600 hover:bg-amber-700 text-gray-950 font-bold px-6 py-2.5 rounded-md text-sm transition-colors">
-												Choose Payment Image Screenshot
-											</span>
-											<span className="text-gray-400 text-xs">
-												PNG, JPG, WEBP up to 5MB
-											</span>
-										</label>
-									</div>
+									</label>
 								)}
-							</div>
+							</PanelBody>
+						</Panel>
 
-							{/* Payment Bank Details Instructions */}
-							<div className="text-white p-4 bg-gray-900/90 rounded-lg border border-gray-700">
-								<h2 className="text-amber-400 text-lg font-bold mb-2">
-									የክፍያ መመሪያ (Bank Transfer Details)
-								</h2>
-								<p className="pb-2 text-xs text-gray-300">
-									ወርሃዊ የተማሪ ክፍያ ወደ የሚከተለው የባንክ አካውንት ያስተላልፉ!
-								</p>
-								<div className="bg-gray-950 p-4 rounded-md space-y-1 text-sm">
-									<p>
-										ባንክ:{" "}
-										<span className="text-amber-400 font-semibold">
-											የኢትዮጵያ ንግድ ባንክ (CBE)
-										</span>
-									</p>
-									<p>
-										የአካውንት ስም:{" "}
-										<span className="text-amber-400 font-semibold">
-											Ayanaw Mengesha and/or Motuma Kidanu
-										</span>
-									</p>
-									<p>
-										የአካውንት ቁጥር:{" "}
-										<span className="text-amber-400 font-mono font-bold">
-											1000720480337
-										</span>
-									</p>
-								</div>
-							</div>
+						<Button
+							type="submit"
+							size="lg"
+							disabled={isPending || !selectedFile || !begenaId}
+							className="w-full"
+						>
+							{isPending ? "Submitting..." : "Submit Payment (ክፍያውን መዝግብ)"}
+						</Button>
+					</form>
+				</PageContainer>
+			</PageBody>
 
-							<Button
-								type="submit"
-								disabled={isPending || !selectedFile || !begenaId}
-								className="w-full py-4 text-lg font-bold bg-amber-600 hover:bg-amber-700 text-gray-950 disabled:bg-amber-900/50 disabled:text-gray-500 disabled:cursor-not-allowed transition-all"
-							>
-								{isPending ? "Submitting Payment..." : "Submit Payment (ክፍያውን መዝግብ)"}
-							</Button>
-						</form>
-					</CardContent>
-				</Card>
-			</main>
 			<Footer />
 		</div>
 	);
