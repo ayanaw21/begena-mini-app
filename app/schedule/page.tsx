@@ -2,11 +2,13 @@
 import Footer from "@/components/footer";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
+import Figure from "@/components/ui/figure";
+import PhotoPanel from "@/components/ui/photo-panel";
+import { siteImages } from "@/lib/images";
 import {
 	PageBody,
 	PageContainer,
 	PageHeader,
-	Panel,
 	PanelBody,
 	PanelHeader,
 } from "@/components/ui/page";
@@ -75,9 +77,23 @@ const Schedule = () => {
 
 			<PageBody>
 				<PageContainer className="space-y-8">
+					<Figure
+						src={siteImages.scheduleBanner}
+						alt="በገና ደርዳሪ"
+						ratio="ultrawide"
+						priority
+						scrim
+					>
+						<p className="text-primary text-xs font-semibold tracking-[0.18em] uppercase">
+							የበገና ንዑስ ክፍል
+						</p>
+						<h1 className="mt-1.5 text-2xl font-bold sm:text-3xl">
+							የትምህርት ሰዓት
+						</h1>
+					</Figure>
+
 					<PageHeader
-						eyebrow="የበገና ንዑስ ክፍል"
-						title="የትምህርት ሰዓት"
+						title="የዚህ ሳምንት መርሃ ግብር"
 						description="በምድብዎ የተዘጋጀውን ሳምንታዊ የትምህርት ክፍለ-ጊዜ ይመልከቱ።"
 						action={
 							<Button asChild variant="outline" size="sm">
@@ -138,7 +154,7 @@ const Schedule = () => {
 					</div>
 
 					{/* Schedules */}
-					<Panel>
+					<PhotoPanel src={siteImages.scheduleCard} contentClassName="p-0">
 						<PanelHeader
 							title={`${isBasic ? "ቤዚክ" : "አድቫንስ"} የትምህርት ሰዓት`}
 							description={
@@ -175,10 +191,14 @@ const Schedule = () => {
 								ለዚህ ምድብ የትምህርት ሰዓት አልተገኘም
 							</PanelBody>
 						)}
-					</Panel>
+					</PhotoPanel>
 
 					{/* Notice */}
-					<Panel className="border-primary/20 bg-primary/5 p-5">
+					<PhotoPanel
+						src={siteImages.noticeCard}
+						className="border-primary/20"
+						contentClassName="p-5"
+					>
 						<h2 className="text-primary text-sm font-semibold tracking-wider uppercase">
 							ማሳሰቢያ
 						</h2>
@@ -198,7 +218,7 @@ const Schedule = () => {
 								</li>
 							))}
 						</ol>
-					</Panel>
+					</PhotoPanel>
 				</PageContainer>
 			</PageBody>
 

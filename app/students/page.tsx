@@ -5,6 +5,8 @@ import NoSectionsFound from "@/components/NoSectionsFound";
 import NoStudentsFound from "@/components/NoStudentsFound";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import Figure from "@/components/ui/figure";
+import { siteImages } from "@/lib/images";
 import {
 	PageBody,
 	PageContainer,
@@ -52,9 +54,23 @@ const StudentsPage = () => {
 
 			<PageBody>
 				<PageContainer className="space-y-8">
+					<Figure
+						src={siteImages.studentsBanner}
+						alt="የበገና ንዑስ ክፍል ተማሪዎች"
+						ratio="ultrawide"
+						priority
+						scrim
+					>
+						<p className="text-primary text-xs font-semibold tracking-[0.18em] uppercase">
+							የበገና ንዑስ ክፍል
+						</p>
+						<h1 className="mt-1.5 text-2xl font-bold sm:text-3xl">
+							የተማሪዎች ስም ዝርዝር
+						</h1>
+					</Figure>
+
 					<PageHeader
-						eyebrow="የበገና ንዑስ ክፍል"
-						title="የተማሪዎች ስም ዝርዝር"
+						title="በየምድቡ"
 						description="ተማሪዎች በየምድባቸው ተዘርዝረዋል። ዝርዝሩን ለማየት ምድቡን ይጫኑ።"
 						action={
 							<Button asChild variant="outline" size="sm">

@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "images": "node scripts/build-images.mjs",
     "start": "next start",
     "lint": "eslint"
   },

@@ -8,6 +8,8 @@ import Footer from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
+import PhotoPanel from "@/components/ui/photo-panel";
+import { siteImages } from "@/lib/images";
 import {
   Field,
   PageBody,
@@ -29,11 +31,11 @@ interface AttendanceRecord {
 
 type TabId = "payments" | "schedules" | "attendance" | "password";
 
-const tabs: { id: TabId; label: string; emoji: string }[] = [
-  { id: "payments", label: "Payments", emoji: "💳" },
-  { id: "schedules", label: "Schedule", emoji: "📅" },
-  { id: "attendance", label: "Attendance", emoji: "📊" },
-  { id: "password", label: "Security", emoji: "🔒" },
+const tabs: { id: TabId; label: string }[] = [
+  { id: "payments", label: "Payments" },
+  { id: "schedules", label: "Schedule" },
+  { id: "attendance", label: "Attendance" },
+  { id: "password", label: "Security" },
 ];
 
 const paymentTone = (status: string) =>
@@ -161,7 +163,12 @@ export default function StudentDashboard() {
       <PageBody>
         <PageContainer className="space-y-6">
           {/* Profile */}
-          <Panel className="p-5">
+          <PhotoPanel
+            src={siteImages.studentProfile}
+            sizes="(max-width: 768px) 100vw, 768px"
+            priority
+            contentClassName="p-5"
+          >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <h1 className="truncate text-xl font-bold sm:text-2xl">
@@ -195,7 +202,7 @@ export default function StudentDashboard() {
                 </div>
               ))}
             </dl>
-          </Panel>
+          </PhotoPanel>
 
           {/* Tabs */}
           <div
@@ -215,7 +222,7 @@ export default function StudentDashboard() {
                     : "text-muted-foreground hover:text-foreground border-transparent"
                 }`}
               >
-                {tab.emoji} {tab.label}
+                {tab.label}
               </button>
             ))}
           </div>

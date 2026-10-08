@@ -1,7 +1,9 @@
 import Footer from "@/components/footer";
 import { Button } from "@/components/ui/button";
+import Figure from "@/components/ui/figure";
 import { PageBody, PageContainer, Panel } from "@/components/ui/page";
 import UserAnnouncement from "@/components/userAnnouncement";
+import { siteImages } from "@/lib/images";
 import Link from "next/link";
 import React from "react";
 import Navbar from "@/components/Navbar";
@@ -43,13 +45,22 @@ const Home = () => {
       <PageBody>
         <PageContainer className="space-y-10">
           {/* Hero */}
-          <section className="space-y-3">
-            <p className="text-primary/80 text-xs font-semibold tracking-[0.18em] uppercase">
-              የ አ/አ/ሳ/ቴ/ዪ ግቢ ጉባኤ
-            </p>
-            <h1 className="text-3xl font-bold sm:text-4xl">
-              የበገና ንዑስ ክፍል
-            </h1>
+          <section className="space-y-5">
+            <Figure
+              src={siteImages.hero}
+              alt="የበገና መሳሪያ"
+              ratio="ultrawide"
+              priority
+              scrim
+            >
+              <p className="text-primary text-xs font-semibold tracking-[0.18em] uppercase">
+                የ አ/አ/ሳ/ቴ/ዪ ግቢ ጉባኤ
+              </p>
+              <h1 className="mt-1.5 text-3xl font-bold sm:text-4xl">
+                የበገና ንዑስ ክፍል
+              </h1>
+            </Figure>
+
             <p className="text-muted-foreground max-w-prose text-sm leading-relaxed sm:text-base">
               እንኳን ወደ በገና ቦት በሰላም መጡ። የትምህርት ክፍለ-ጊዜዎን፣ ወርሃዊ ክፍያዎን እና የክትትል
               ሁኔታዎን በአንድ ቦታ ይከታተሉ።
@@ -121,6 +132,13 @@ const Home = () => {
             <h2 className="text-muted-foreground text-xs font-semibold tracking-[0.18em] uppercase">
               ስለ በገና ክፍሉ
             </h2>
+
+            <Figure
+              src={siteImages.about}
+              alt="የበገና ንዑስ ክፍል ተማሪዎች"
+              ratio="wide"
+            />
+
             <Panel className="p-5">
               <h3 className="font-semibold">የበገና ንዑስ ክፍሉ ዓላማ</h3>
               <ul className="mt-3 space-y-2.5">

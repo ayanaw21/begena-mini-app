@@ -1,10 +1,11 @@
 "use client";
 import { Button } from "@/components/ui/button";
+import Figure from "@/components/ui/figure";
+import { siteImages } from "@/lib/images";
 import {
 	Field,
 	PageBody,
 	PageContainer,
-	PageHeader,
 	Panel,
 	PanelBody,
 	PanelHeader,
@@ -175,11 +176,24 @@ const Payment = () => {
 
 			<PageBody>
 				<PageContainer className="space-y-8">
-					<PageHeader
-						eyebrow="💳 ወርሃዊ ክፍያ"
-						title="Submit Payment Proof"
-						description="ተማሪዎች የክፍያ ደረሰኝ በ ID ብቻ የሚያስገቡበት ገጽ።"
-					/>
+					<Figure
+						src={siteImages.paymentBanner}
+						alt="ባህላዊ በገና"
+						ratio="ultrawide"
+						priority
+						scrim
+					>
+						<p className="text-primary text-xs font-semibold tracking-[0.18em] uppercase">
+							💳 ወርሃዊ ክፍያ
+						</p>
+						<h1 className="mt-1.5 text-2xl font-bold sm:text-3xl">
+							Submit Payment Proof
+						</h1>
+					</Figure>
+
+					<p className="text-muted-foreground max-w-prose text-sm">
+						ተማሪዎች የክፍያ ደረሰኝ በ ID ብቻ የሚያስገቡበት ገጽ።
+					</p>
 
 					{/* Bank details come first — the receipt cannot exist before the transfer. */}
 					<Panel className="border-primary/20 bg-primary/5 p-5">

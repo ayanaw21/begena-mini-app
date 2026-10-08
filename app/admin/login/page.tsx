@@ -4,7 +4,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { Field, Panel } from "@/components/ui/page";
+import PhotoPanel from "@/components/ui/photo-panel";
+import { Field } from "@/components/ui/page";
+import { siteImages } from "@/lib/images";
 import { setToken, getValidToken } from "@/lib/auth";
 import toast from "react-hot-toast";
 
@@ -41,7 +43,7 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-4 py-10">
+    <div className="bg-background flex min-h-screen flex-col items-center justify-center px-4 py-10">
       <div className="w-full max-w-sm">
         <Link
           href="/"
@@ -50,7 +52,7 @@ export default function AdminLogin() {
           በገና
         </Link>
 
-        <Panel className="p-6">
+        <PhotoPanel src={siteImages.authPanel} sizes="(max-width: 640px) 100vw, 420px" priority>
           <div className="space-y-1">
             <h1 className="text-xl font-bold">Admin Login</h1>
             <p className="text-muted-foreground text-sm">
@@ -92,7 +94,7 @@ export default function AdminLogin() {
               {isLoading ? "Logging in..." : "Login"}
             </Button>
           </form>
-        </Panel>
+        </PhotoPanel>
 
         <p className="text-muted-foreground mt-5 text-center text-sm">
           <Link href="/" className="hover:text-primary transition-colors">

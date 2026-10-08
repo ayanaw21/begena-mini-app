@@ -14,6 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+  ),
   title: "የአ/አ/ሳ/ቴ/ዪ/ግ/ጉ በገና",
   description:
     "Admin panel and backend API for managing students, sections, payments, announcements, and class schedules for Begena mini app.",
@@ -27,6 +30,16 @@ export const metadata: Metadata = {
     "Class Schedules",
     "Education Management",
   ],
+  openGraph: {
+    type: "website",
+    siteName: "የአ/አ/ሳ/ቴ/ዪ የበገና ንዑስ ክፍል",
+    title: "የአ/አ/ሳ/ቴ/ዪ የበገና ንዑስ ክፍል",
+    description:
+      "የትምህርት ክፍለ-ጊዜዎን፣ ወርሃዊ ክፍያዎን እና የክትትል ሁኔታዎን በአንድ ቦታ ይከታተሉ።",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
 };
 
 export default function RootLayout({
@@ -36,10 +49,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        {/* Favicon */}
-        <link rel="icon" type="image/jpeg" href="/begena.jpg" />
-      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
