@@ -9,6 +9,7 @@ import begenaStrings from "@/public/images/begena-strings.webp";
 import begenaStringsWide from "@/public/images/begena-strings-wide.webp";
 import begenaSilhouette from "@/public/images/begena-silhouette.webp";
 import begenaInstrument from "@/public/images/begena-instrument.webp";
+import begenaKfl from "@/public/images/begena-kfl.webp";
 
 /**
  * Central registry for site imagery.
@@ -57,7 +58,7 @@ export const siteImages: {
   scheduleCard: begenaSilhouette,
   noticeCard: begenaInstrument,
   studentsBanner: begenaEnsemble,
-  paymentBanner: begenaOrnate,
+  paymentBanner: begenaKfl,
   authPanel: begenaStrings,
   studentProfile: begenaStringsWide,
 };
