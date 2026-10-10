@@ -1,7 +1,6 @@
 "use client";
 import Footer from "@/components/footer";
 import Navbar from "@/components/Navbar";
-import NoSectionsFound from "@/components/NoSectionsFound";
 import NoStudentsFound from "@/components/NoStudentsFound";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -14,9 +13,11 @@ import {
 	Panel,
 } from "@/components/ui/page";
 import useStudentStore from "@/stores/studentStore";
+import api from "@/lib/api";
+import { Section } from "@/types";
 import { ChevronDown, Loader2, Users } from "lucide-react";
 import Link from "next/link";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 
 const LoadingState = () => (
 	<div className="text-muted-foreground flex flex-col items-center justify-center py-16 text-center">
@@ -26,27 +27,108 @@ const LoadingState = () => (
 );
 
 const StudentsPage = () => {
-	const {
-		students,
-		loading,
-		fetchStudents,
-		getStudentsBySection,
-		getUniqueSections,
-	} = useStudentStore();
+	const { students, loading, fetchStudents } = useStudentStore();
+	const [selectedProgram, setSelectedProgram] = useState("All");
+	const [selectedSection, setSelectedSection] = useState("All");
+	const [sectionsMap, setSectionsMap] = useState<Record<string, string>>({});
 	const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
 	useEffect(() => {
 		fetchStudents();
+		api.get("/sections")
+			.then((res) => {
+				if (res.data?.sections) {
+					const map: Record<string, string> = {};
+					res.data.sections.forEach((sec: Section) => {
+						if (sec._id && sec.section) {
+							map[sec._id] = sec.section;
+						}
+					});
+					setSectionsMap(map);
+				}
+			})
+			.catch(() => null);
 	}, [fetchStudents]);
 
-	const sections = getUniqueSections();
+	const getSectionName = useCallback(
+		(secVal?: string) => {
+			if (!secVal) return "ያልተጠቀሰ";
+			const mapped = sectionsMap[secVal];
+			const name = mapped || secVal;
+			if (name.toLowerCase().includes("section") || name.startsWith("ምድብ")) {
+				return name;
+			}
+			return `Section ${name}`;
+		},
+		[sectionsMap]
+	);
+
+	// Extract unique programs
+	const uniquePrograms = useMemo(() => {
+		return [
+			...new Set(
+				students
+					.map((s) => s.program || "")
+					.filter((p) => p.trim().length > 0)
+			),
+		];
+	}, [students]);
+
+	// Filter students by program
+	const programStudents = useMemo(() => {
+		if (selectedProgram === "All") return students;
+		return students.filter((s) => s.program === selectedProgram);
+	}, [students, selectedProgram]);
+
+	// Extract sections available for selected program
+	const availableSections = useMemo(() => {
+		return [
+			...new Set(
+				programStudents
+					.map((s) => getSectionName(s.section))
+					.filter((sec) => sec.trim().length > 0)
+			),
+		];
+	}, [programStudents, getSectionName]);
+
+	// Final filtered students list
+	const filteredStudents = useMemo(() => {
+		return programStudents.filter((student) => {
+			if (selectedSection === "All") return true;
+			const secName = getSectionName(student.section);
+			return secName === selectedSection || student.section === selectedSection;
+		});
+	}, [programStudents, selectedSection, getSectionName]);
+
+	// Unique sections in the filtered dataset
+	const displaySections = useMemo(() => {
+		return [
+			...new Set(
+				filteredStudents.map((s) => getSectionName(s.section))
+			),
+		];
+	}, [filteredStudents, getSectionName]);
+
+	const handleProgramChange = (prog: string) => {
+		setSelectedProgram(prog);
+		setSelectedSection("All");
+		setExpandedSection(null);
+	};
+
+	const handleSectionChange = (sec: string) => {
+		setSelectedSection(sec);
+		if (sec !== "All") {
+			setExpandedSection(sec);
+		} else {
+			setExpandedSection(null);
+		}
+	};
 
 	const toggleSection = (section: string) => {
 		setExpandedSection((prev) => (prev === section ? null : section));
 	};
 
 	const hasStudents = students.length > 0;
-	const hasSections = sections.length > 0;
 
 	return (
 		<div className="flex min-h-screen flex-col">
@@ -70,8 +152,8 @@ const StudentsPage = () => {
 					</Figure>
 
 					<PageHeader
-						title="በየምድቡ"
-						description="ተማሪዎች በየምድባቸው ተዘርዝረዋል። ዝርዝሩን ለማየት ምድቡን ይጫኑ።"
+						title="የተማሪዎች መዝገብ"
+						description="በፕሮግራም እና በምድብ የተመደቡ ተማሪዎችን ይመልከቱ።"
 						action={
 							<Button asChild variant="outline" size="sm">
 								<Link href="/schedule">የትምህርት ሰዓት</Link>
@@ -79,16 +161,79 @@ const StudentsPage = () => {
 						}
 					/>
 
+					{/* Two Dropdowns Filter Row */}
+					{hasStudents && (
+						<div className="bg-surface grid gap-4 rounded-xl border border-white/5 p-4 sm:grid-cols-2">
+							<div className="space-y-1.5">
+								<label
+									htmlFor="programSelect"
+									className="text-muted-foreground text-xs font-semibold tracking-[0.18em] uppercase"
+								>
+									ፕሮግራም (Program)
+								</label>
+								<select
+									id="programSelect"
+									value={selectedProgram}
+									onChange={(e) => handleProgramChange(e.target.value)}
+									className="bg-background text-foreground border border-white/10 rounded-lg px-3 py-2.5 text-sm w-full focus:border-primary/40 focus:outline-none transition-colors cursor-pointer"
+								>
+									<option value="All">ሁሉም ፕሮግራሞች (All Programs)</option>
+									{uniquePrograms.map((prog) => (
+										<option key={prog} value={prog}>
+											{prog}
+										</option>
+									))}
+								</select>
+							</div>
+
+							<div className="space-y-1.5">
+								<label
+									htmlFor="sectionSelect"
+									className="text-muted-foreground text-xs font-semibold tracking-[0.18em] uppercase"
+								>
+									ምድብ / ክፍል (Section)
+								</label>
+								<select
+									id="sectionSelect"
+									value={selectedSection}
+									onChange={(e) => handleSectionChange(e.target.value)}
+									className="bg-background text-foreground border border-white/10 rounded-lg px-3 py-2.5 text-sm w-full focus:border-primary/40 focus:outline-none transition-colors cursor-pointer"
+								>
+									<option value="All">ሁሉም ምድቦች (All Sections)</option>
+									{availableSections.map((sec) => (
+										<option key={sec} value={sec}>
+											{sec}
+										</option>
+									))}
+								</select>
+							</div>
+						</div>
+					)}
+
 					{loading && <LoadingState />}
 
 					{!loading && !hasStudents && <NoStudentsFound />}
-					{!loading && hasStudents && !hasSections && <NoSectionsFound />}
 
-					{!loading && hasStudents && hasSections && (
-						<div className="space-y-3">
-							{sections.map((section) => {
-								const isExpanded = expandedSection === section;
-								const sectionStudents = getStudentsBySection(section);
+					{!loading && hasStudents && displaySections.length === 0 && (
+						<EmptyState
+							icon={<Users size={24} />}
+							title="ለተመረጠው ማጣሪያ ምንም ተማሪ አልተገኘም"
+							description="እባክዎን ሌላ ፕሮግራም ወይም ምድብ ይምረጡ።"
+							className="py-12"
+						/>
+					)}
+
+					{!loading && hasStudents && displaySections.length > 0 && (
+						<div className="space-y-4">
+							{displaySections.map((section) => {
+								const isExpanded =
+									expandedSection === section ||
+									selectedSection === section ||
+									displaySections.length === 1;
+
+								const sectionStudents = filteredStudents.filter(
+									(student) => getSectionName(student.section) === section
+								);
 
 								return (
 									<Panel key={section} className="overflow-hidden">
@@ -99,7 +244,9 @@ const StudentsPage = () => {
 											className="hover:bg-white/[0.03] flex w-full cursor-pointer items-center justify-between gap-3 px-5 py-4 text-left transition-colors"
 										>
 											<span className="flex items-baseline gap-3">
-												<span className="font-semibold">Section {section}</span>
+												<span className="font-semibold text-foreground">
+													{section}
+												</span>
 												<span className="text-muted-foreground text-xs">
 													{sectionStudents.length} ተማሪ
 												</span>
@@ -115,38 +262,46 @@ const StudentsPage = () => {
 										{isExpanded && (
 											<div className="border-t border-white/5">
 												{sectionStudents.length > 0 ? (
-													<table className="w-full text-sm">
-														<thead>
-															<tr className="text-muted-foreground text-xs tracking-wider uppercase">
-																<th className="w-40 px-5 py-2 text-left font-medium">
-																	Begena ID
-																</th>
-																<th className="px-5 py-2 text-left font-medium">
-																	Full Name
-																</th>
-															</tr>
-														</thead>
-														<tbody className="divide-y divide-white/5">
-															{sectionStudents.map((student) => (
-																<tr
-																	key={student._id}
-																	className="hover:bg-white/[0.03] transition-colors"
-																>
-																	<td className="text-muted-foreground px-5 py-2.5 font-mono text-xs">
-																		{student.begenaId}
-																	</td>
-																	<td className="px-5 py-2.5">
-																		{student.fullName}
-																	</td>
+													<div className="overflow-x-auto">
+														<table className="w-full text-sm">
+															<thead>
+																<tr className="text-muted-foreground text-xs tracking-wider uppercase border-b border-white/5 bg-white/[0.01]">
+																	<th className="px-5 py-2.5 text-left font-medium">
+																		ID / Begena ID
+																	</th>
+																	<th className="px-5 py-2.5 text-left font-medium">
+																		Full Name
+																	</th>
+																	<th className="px-5 py-2.5 text-left font-medium hidden sm:table-cell">
+																		Program
+																	</th>
 																</tr>
-															))}
-														</tbody>
-													</table>
+															</thead>
+															<tbody className="divide-y divide-white/5">
+																{sectionStudents.map((student) => (
+																	<tr
+																		key={student._id}
+																		className="hover:bg-white/[0.03] transition-colors"
+																	>
+																		<td className="text-muted-foreground px-5 py-3 font-mono text-xs">
+																			{student.begenaId || student.studentId}
+																		</td>
+																		<td className="px-5 py-3 font-medium text-foreground">
+																			{student.fullName}
+																		</td>
+																		<td className="text-muted-foreground px-5 py-3 text-xs hidden sm:table-cell">
+																			{student.program || "—"}
+																		</td>
+																	</tr>
+																))}
+															</tbody>
+														</table>
+													</div>
 												) : (
 													<EmptyState
 														icon={<Users size={20} />}
-														title="No students in this section"
-														className="py-10"
+														title="በዚህ ምድብ ተማሪ የለም"
+														className="py-8"
 													/>
 												)}
 											</div>
@@ -165,3 +320,4 @@ const StudentsPage = () => {
 };
 
 export default StudentsPage;
+
