@@ -20,7 +20,6 @@ import React, { useEffect, useState, useCallback, useMemo } from "react";
 import toast from "react-hot-toast";
 
 const Schedule = () => {
-	const [isBasic, setIsBasic] = useState<boolean>(true);
 	const [schedules, setSchedules] = useState<ClassSchedule[]>([]);
 	const [sectionsMap, setSectionsMap] = useState<Record<string, string>>({});
 	const [selectedProgram, setSelectedProgram] = useState("All");
@@ -84,46 +83,24 @@ const Schedule = () => {
 		return schedules.filter((s) => s.program === selectedProgram);
 	}, [schedules, selectedProgram]);
 
-	const basicSections = useMemo(() => {
+	const availableSections = useMemo(() => {
 		return [
 			...new Set(
-				programFilteredSchedules
-					.filter((s) => (s.type || "basic").toLowerCase() === "basic")
-					.map((s) => getSectionName(s.section))
-			),
-		];
-	}, [programFilteredSchedules, getSectionName]);
-
-	const advancedSections = useMemo(() => {
-		return [
-			...new Set(
-				programFilteredSchedules
-					.filter((s) => (s.type || "").toLowerCase() !== "basic")
-					.map((s) => getSectionName(s.section))
+				programFilteredSchedules.map((s) => getSectionName(s.section))
 			),
 		];
 	}, [programFilteredSchedules, getSectionName]);
 
 	const filteredSchedules = useMemo(() => {
 		return programFilteredSchedules.filter((schedule) => {
-			const schType = (schedule.type || "basic").toLowerCase();
-			const typeMatch = isBasic ? schType === "basic" : schType !== "basic";
 			const secName = getSectionName(schedule.section);
-			const sectionMatch =
+			return (
 				selectedSection === "All" ||
 				secName === selectedSection ||
-				schedule.section === selectedSection;
-			return typeMatch && sectionMatch;
+				schedule.section === selectedSection
+			);
 		});
-	}, [programFilteredSchedules, isBasic, selectedSection, getSectionName]);
-
-	const availableSections = isBasic ? basicSections : advancedSections;
-
-	// Reset downstream filters when type or program changes.
-	const selectType = (basic: boolean) => {
-		setIsBasic(basic);
-		setSelectedSection("All");
-	};
+	}, [programFilteredSchedules, selectedSection, getSectionName]);
 
 	const selectProgram = (program: string) => {
 		setSelectedProgram(program);
@@ -184,32 +161,6 @@ const Schedule = () => {
 							</div>
 						)}
 
-						<div
-							role="tablist"
-							aria-label="የትምህርት ደረጃ"
-							className="bg-surface inline-flex w-full rounded-lg border border-white/5 p-1 sm:w-auto"
-						>
-							{[
-								{ label: "ቤዚክ ተማሪዎች", basic: true },
-								{ label: "አድቫንስ ተማሪዎች", basic: false },
-							].map((tab) => (
-								<button
-									key={tab.label}
-									role="tab"
-									aria-selected={isBasic === tab.basic}
-									onClick={() => selectType(tab.basic)}
-									className={cn(
-										"flex-1 cursor-pointer rounded-md px-4 py-2 text-sm font-medium transition-colors sm:flex-none",
-										isBasic === tab.basic
-											? "bg-primary text-primary-foreground"
-											: "text-muted-foreground hover:text-foreground"
-									)}
-								>
-									{tab.label}
-								</button>
-							))}
-						</div>
-
 						{availableSections.length > 0 && (
 							<div className="flex flex-wrap items-center gap-2">
 								<span className="text-muted-foreground text-xs font-semibold tracking-[0.18em] uppercase">
@@ -236,7 +187,11 @@ const Schedule = () => {
 					{/* Schedules */}
 					<PhotoPanel src={siteImages.scheduleCard} contentClassName="p-0">
 						<PanelHeader
-							title={`${isBasic ? "ቤዚክ" : "አድቫንስ"} የትምህርት ሰዓት`}
+							title={
+								selectedProgram !== "All"
+									? `${selectedProgram} የትምህርት ሰዓት`
+									: "የትምህርት ሰዓት"
+							}
 							description={
 								[
 									selectedProgram !== "All" ? selectedProgram : null,
