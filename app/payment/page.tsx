@@ -1,18 +1,20 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import Figure from "@/components/ui/figure";
+import PhotoPanel from "@/components/ui/photo-panel";
+import CustomSelect from "@/components/ui/custom-select";
 import { siteImages } from "@/lib/images";
 import {
 	Field,
 	PageBody,
 	PageContainer,
-	Panel,
+	PageHeader,
 	PanelBody,
 	PanelHeader,
 } from "@/components/ui/page";
 import React, { useState, useTransition, useCallback } from "react";
 import Image from "next/image";
-import { Check, Upload, X } from "lucide-react";
+import { Check, Upload, X, Building2, UserCheck, Calendar, UploadCloud, ShieldCheck } from "lucide-react";
 import { sendPayment } from "@/lib/actions/payment";
 import Footer from "@/components/footer";
 import Navbar from "@/components/Navbar";
@@ -29,16 +31,19 @@ interface FoundStudent {
 
 const StepTitle = ({
 	step,
+	icon: Icon,
 	children,
 }: {
 	step: number;
+	icon: React.ElementType;
 	children: React.ReactNode;
 }) => (
 	<span className="flex items-center gap-2.5">
-		<span className="bg-primary/15 text-primary flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold">
+		<span className="bg-primary/20 text-primary border border-primary/30 flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-bold">
 			{step}
 		</span>
-		{children}
+		<Icon size={18} className="text-primary shrink-0" />
+		<span>{children}</span>
 	</span>
 );
 
@@ -185,62 +190,78 @@ const Payment = () => {
 						priority
 						scrim
 					>
-						<p className="text-primary text-xs font-semibold tracking-[0.18em] uppercase">
-							💳 ወርሃዊ ክፍያ
+						<p className="text-primary text-xs font-semibold tracking-[0.18em] uppercase flex items-center gap-1.5">
+							<ShieldCheck size={14} /> ወርሃዊ ክፍያ
 						</p>
 						<h1 className="mt-1.5 text-2xl font-bold sm:text-3xl">
 							Submit Payment Proof
 						</h1>
 					</Figure>
 
-					<p className="text-muted-foreground max-w-prose text-sm">
-						ተማሪዎች የክፍያ ደረሰኝ በ ID ብቻ የሚያስገቡበት ገጽ።
-					</p>
+					<PageHeader
+						title="የክፍያ ማረጋገጫ ማስገቢያ"
+						description="ተማሪዎች የወርሃዊ ትምህርት ክፍያ ደረሰኝ በ ID ብቻ የሚያስገቡበት ገጽ።"
+					/>
 
-					{/* Bank details come first — the receipt cannot exist before the transfer. */}
-					<Panel className="border-primary/20 bg-primary/5 p-5">
-						<h2 className="text-primary text-sm font-semibold tracking-wider uppercase">
-							የክፍያ መመሪያ · Bank Transfer
-						</h2>
-						<p className="text-muted-foreground mt-1.5 text-sm">
-							ወርሃዊ የተማሪ ክፍያ ወደ የሚከተለው የባንክ አካውንት ያስተላልፉ።
-						</p>
-						<dl className="mt-4 grid gap-3 sm:grid-cols-3">
+					{/* Bank details card with PhotoPanel */}
+					<PhotoPanel
+						src={siteImages.noticeCard}
+						className="border-primary/30 shadow-2xl backdrop-blur"
+						contentClassName="p-6"
+					>
+						<div className="flex items-center gap-3">
+							<div className="bg-primary/20 text-primary flex size-10 items-center justify-center rounded-xl border border-primary/30 shrink-0">
+								<Building2 size={20} />
+							</div>
 							<div>
-								<dt className="text-muted-foreground text-xs">ባንክ</dt>
-								<dd className="mt-0.5 text-sm font-medium">
+								<h2 className="text-primary text-sm font-semibold tracking-wider uppercase">
+									የክፍያ መመሪያ · Bank Transfer Details
+								</h2>
+								<p className="text-muted-foreground text-xs mt-0.5">
+									ወርሃዊ የተማሪ ክፍያ ወደ የሚከተለው የባንክ አካውንት ያስተላልፉ።
+								</p>
+							</div>
+						</div>
+
+						<dl className="mt-5 grid gap-4 sm:grid-cols-3">
+							<div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+								<dt className="text-muted-foreground text-xs font-medium">ባንክ (Bank)</dt>
+								<dd className="mt-1 text-sm font-semibold text-foreground">
 									የኢትዮጵያ ንግድ ባንክ (CBE)
 								</dd>
 							</div>
-							<div>
-								<dt className="text-muted-foreground text-xs">የአካውንት ስም</dt>
-								<dd className="mt-0.5 text-sm font-medium">
+							<div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+								<dt className="text-muted-foreground text-xs font-medium">የአካውንት ስም (Account Name)</dt>
+								<dd className="mt-1 text-sm font-semibold text-foreground">
 									Ayanaw Mengesha and/or Motuma Kidanu
 								</dd>
 							</div>
-							<div>
-								<dt className="text-muted-foreground text-xs">የአካውንት ቁጥር</dt>
-								<dd className="text-primary mt-0.5 font-mono text-sm font-semibold">
+							<div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 border border-primary/30 bg-primary/10">
+								<dt className="text-muted-foreground text-xs font-medium">የአካውንት ቁጥር (Account Number)</dt>
+								<dd className="text-primary mt-1 font-mono text-base font-bold tracking-wider">
 									1000720480337
 								</dd>
 							</div>
 						</dl>
-					</Panel>
+					</PhotoPanel>
 
-					<form onSubmit={handleSubmit} className="space-y-4">
+					<form onSubmit={handleSubmit} className="space-y-6">
 						{/* Step 1 — Student ID */}
-						<Panel>
+						<PhotoPanel
+							src={siteImages.studentProfile}
+							contentClassName="p-0"
+						>
 							<PanelHeader
-								title={<StepTitle step={1}>የተማሪ ID (Student ID)</StepTitle>}
+								title={<StepTitle step={1} icon={UserCheck}>የተማሪ ID (Student ID)</StepTitle>}
 								action={
 									isLookingUp ? (
-										<span className="text-primary animate-pulse text-xs">
+										<span className="text-primary animate-pulse text-xs font-medium">
 											Verifying...
 										</span>
 									) : null
 								}
 							/>
-							<PanelBody className="space-y-3">
+							<PanelBody className="space-y-4 p-6">
 								<div className="flex flex-col gap-2 sm:flex-row">
 									<input
 										type="text"
@@ -251,7 +272,7 @@ const Payment = () => {
 										onChange={(e) => setBegenaId(e.target.value)}
 										onBlur={() => performStudentLookup(begenaId)}
 										placeholder="BG2026-0001"
-										className="flex-1 font-mono"
+										className="flex-1 font-mono bg-black/40 border-white/15 focus:border-primary/50"
 										disabled={isPending}
 									/>
 									<Button
@@ -269,16 +290,16 @@ const Payment = () => {
 								</p>
 
 								{foundStudent ? (
-									<div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3.5">
+									<div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4 backdrop-blur-sm">
 										<div className="flex items-center justify-between gap-3">
 											<span className="flex items-center gap-2 text-sm font-medium text-emerald-300">
-												<Check size={14} /> Verified student
+												<Check size={16} /> Verified student
 											</span>
 											<span className="text-muted-foreground font-mono text-xs">
 												{foundStudent.studentId}
 											</span>
 										</div>
-										<dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2.5 border-t border-emerald-500/15 pt-3 sm:grid-cols-4">
+										<dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2.5 border-t border-emerald-500/20 pt-3 sm:grid-cols-4">
 											{[
 												{ label: "Full Name", value: foundStudent.fullName },
 												{ label: "Program", value: foundStudent.program },
@@ -289,7 +310,7 @@ const Payment = () => {
 													<dt className="text-muted-foreground text-[11px]">
 														{item.label}
 													</dt>
-													<dd className="truncate text-sm font-medium">
+													<dd className="truncate text-sm font-medium text-foreground">
 														{item.value}
 													</dd>
 												</div>
@@ -299,7 +320,7 @@ const Payment = () => {
 								) : (
 									begenaId.length >= 3 &&
 									!isLookingUp && (
-										<div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 px-3.5 py-3">
+										<div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/10 bg-black/30 px-4 py-3">
 											<span className="text-muted-foreground text-xs">
 												ID not pre-registered yet? You can still submit your
 												receipt.
@@ -323,44 +344,44 @@ const Payment = () => {
 											value={fullName}
 											onChange={(e) => setFullName(e.target.value)}
 											placeholder="Enter your full name"
+											className="bg-black/40 border-white/15"
 										/>
 									</Field>
 								)}
 							</PanelBody>
-						</Panel>
+						</PhotoPanel>
 
 						{/* Step 2 — Month */}
-						<Panel>
+						<PhotoPanel
+							src={siteImages.scheduleCard}
+							contentClassName="p-0"
+						>
 							<PanelHeader
-								title={<StepTitle step={2}>የሚከፍሉበት ወር (Month)</StepTitle>}
+								title={<StepTitle step={2} icon={Calendar}>የሚከፍሉበት ወር (Month)</StepTitle>}
 							/>
-							<PanelBody>
-								<select
+							<PanelBody className="p-6">
+								<CustomSelect
 									id="month"
-									name="month"
-									required
 									value={selectedMonth}
-									onChange={(e) => setSelectedMonth(e.target.value)}
+									onChange={setSelectedMonth}
+									options={[
+										{ value: "", label: "ወር ይምረጡ (Select a month)..." },
+										...months.map((m) => ({ value: m.value, label: m.label })),
+									]}
 									disabled={isPending}
-								>
-									<option value="">Select a month (ወር ይምረጡ)</option>
-									{months.map((month) => (
-										<option key={month.value} value={month.value}>
-											{month.label}
-										</option>
-									))}
-								</select>
+								/>
 							</PanelBody>
-						</Panel>
+						</PhotoPanel>
 
 						{/* Step 3 — Receipt */}
-						<Panel>
+						<PhotoPanel
+							src={siteImages.begenaHistory}
+							contentClassName="p-0"
+						>
 							<PanelHeader
-								title={
-									<StepTitle step={3}>የክፍያ Screenshot (Receipt)</StepTitle>
-								}
+								title={<StepTitle step={3} icon={UploadCloud}>የክፍያ Screenshot (Receipt)</StepTitle>}
 							/>
-							<PanelBody>
+							<PanelBody className="p-6">
 								{previewUrl ? (
 									<div className="relative">
 										<Image
@@ -368,30 +389,34 @@ const Payment = () => {
 											alt="Payment screenshot preview"
 											width={600}
 											height={400}
-											className="max-h-72 w-full rounded-lg border border-white/10 object-cover"
+											className="max-h-72 w-full rounded-xl border border-white/15 object-cover"
 										/>
 										<button
 											type="button"
 											onClick={removeImage}
 											disabled={isPending}
 											aria-label="Remove screenshot"
-											className="bg-background/80 hover:text-destructive absolute top-2 right-2 flex size-8 cursor-pointer items-center justify-center rounded-full border border-white/10 backdrop-blur transition-colors"
+											className="bg-background/80 hover:text-destructive absolute top-3 right-3 flex size-8 cursor-pointer items-center justify-center rounded-full border border-white/15 backdrop-blur transition-colors"
 										>
-											<X size={15} />
+											<X size={16} />
 										</button>
 									</div>
 								) : (
 									<label
 										htmlFor="screenshot-input"
-										className="hover:border-primary/40 hover:bg-primary/5 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-white/15 px-4 py-9 text-center transition-colors"
+										className="hover:border-primary/50 hover:bg-primary/10 bg-black/30 flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-white/20 px-4 py-10 text-center transition-all"
 									>
-										<Upload size={20} className="text-muted-foreground" />
-										<span className="text-sm font-medium">
-											Choose payment screenshot
-										</span>
-										<span className="text-muted-foreground text-xs">
-											PNG, JPG or WEBP up to 5MB
-										</span>
+										<div className="bg-primary/15 text-primary flex size-12 items-center justify-center rounded-full border border-primary/25">
+											<Upload size={22} />
+										</div>
+										<div>
+											<span className="text-sm font-semibold text-foreground block">
+												Choose payment screenshot
+											</span>
+											<span className="text-muted-foreground text-xs mt-1 block">
+												PNG, JPG or WEBP up to 5MB
+											</span>
+										</div>
 										<input
 											type="file"
 											accept="image/*"
@@ -403,13 +428,13 @@ const Payment = () => {
 									</label>
 								)}
 							</PanelBody>
-						</Panel>
+						</PhotoPanel>
 
 						<Button
 							type="submit"
 							size="lg"
 							disabled={isPending || !selectedFile || !begenaId}
-							className="w-full"
+							className="w-full py-6 text-base font-semibold shadow-xl"
 						>
 							{isPending ? "Submitting..." : "Submit Payment (ክፍያውን መዝግብ)"}
 						</Button>
@@ -423,3 +448,4 @@ const Payment = () => {
 };
 
 export default Payment;
+
