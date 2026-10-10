@@ -128,6 +128,8 @@ const Payment = () => {
 	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
+		if (isPending) return;
+
 		if (!begenaId.trim()) {
 			toast.error("Please enter your Student ID");
 			return;
@@ -157,7 +159,7 @@ const Payment = () => {
 		startTransition(async () => {
 			const result = await sendPayment(formData);
 			if (result?.error) {
-				toast.error(`${result.error}. Please contact the admins.`);
+				toast.error(result.error);
 			} else {
 				toast.success("Payment submitted successfully!");
 				removeImage();
