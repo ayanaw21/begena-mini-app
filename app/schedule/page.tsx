@@ -16,6 +16,7 @@ import api from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { ClassSchedule, Section } from "@/types";
 import Link from "next/link";
+import CustomSelect from "@/components/ui/custom-select";
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import toast from "react-hot-toast";
 
@@ -146,18 +147,16 @@ const Schedule = () => {
 								<span className="text-muted-foreground text-xs font-semibold tracking-[0.18em] uppercase">
 									ፕሮግራም
 								</span>
-								<select
-									value={selectedProgram}
-									onChange={(e) => selectProgram(e.target.value)}
-									className="bg-surface text-foreground border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-primary/40 focus:outline-none transition-colors cursor-pointer"
-								>
-									<option value="All">ሁሉም ፕሮግራሞች</option>
-									{uniquePrograms.map((prog) => (
-										<option key={prog} value={prog}>
-											{prog}
-										</option>
-									))}
-								</select>
+								<div className="w-64">
+									<CustomSelect
+										value={selectedProgram}
+										onChange={selectProgram}
+										options={[
+											{ value: "All", label: "ሁሉም ፕሮግራሞች" },
+											...uniquePrograms.map((prog) => ({ value: prog, label: prog })),
+										]}
+									/>
+								</div>
 							</div>
 						)}
 

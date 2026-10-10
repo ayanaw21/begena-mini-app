@@ -17,6 +17,7 @@ import api from "@/lib/api";
 import { Section } from "@/types";
 import { ChevronDown, Loader2, Users } from "lucide-react";
 import Link from "next/link";
+import CustomSelect from "@/components/ui/custom-select";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 
 const LoadingState = () => (
@@ -171,19 +172,15 @@ const StudentsPage = () => {
 								>
 									ፕሮግራም (Program)
 								</label>
-								<select
+								<CustomSelect
 									id="programSelect"
 									value={selectedProgram}
-									onChange={(e) => handleProgramChange(e.target.value)}
-									className="bg-background text-foreground border border-white/10 rounded-lg px-3 py-2.5 text-sm w-full focus:border-primary/40 focus:outline-none transition-colors cursor-pointer"
-								>
-									<option value="All">ሁሉም ፕሮግራሞች (All Programs)</option>
-									{uniquePrograms.map((prog) => (
-										<option key={prog} value={prog}>
-											{prog}
-										</option>
-									))}
-								</select>
+									onChange={handleProgramChange}
+									options={[
+										{ value: "All", label: "ሁሉም ፕሮግራሞች (All Programs)" },
+										...uniquePrograms.map((prog) => ({ value: prog, label: prog })),
+									]}
+								/>
 							</div>
 
 							<div className="space-y-1.5">
@@ -193,19 +190,15 @@ const StudentsPage = () => {
 								>
 									ምድብ / ክፍል (Section)
 								</label>
-								<select
+								<CustomSelect
 									id="sectionSelect"
 									value={selectedSection}
-									onChange={(e) => handleSectionChange(e.target.value)}
-									className="bg-background text-foreground border border-white/10 rounded-lg px-3 py-2.5 text-sm w-full focus:border-primary/40 focus:outline-none transition-colors cursor-pointer"
-								>
-									<option value="All">ሁሉም ምድቦች (All Sections)</option>
-									{availableSections.map((sec) => (
-										<option key={sec} value={sec}>
-											{sec}
-										</option>
-									))}
-								</select>
+									onChange={handleSectionChange}
+									options={[
+										{ value: "All", label: "ሁሉም ምድቦች (All Sections)" },
+										...availableSections.map((sec) => ({ value: sec, label: sec })),
+									]}
+								/>
 							</div>
 						</div>
 					)}
