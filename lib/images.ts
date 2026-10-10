@@ -10,6 +10,7 @@ import begenaStringsWide from "@/public/images/begena-strings-wide.webp";
 import begenaSilhouette from "@/public/images/begena-silhouette.webp";
 import begenaInstrument from "@/public/images/begena-instrument.webp";
 import begenaKfl from "@/public/images/begena-kfl.webp";
+import orthodoxChurch from "@/public/images/orthodox-church.webp";
 
 /**
  * Central registry for site imagery.
@@ -49,6 +50,8 @@ export const siteImages: {
   authPanel: SiteImage;
   /** Student dashboard profile card. 1400x500. */
   studentProfile: SiteImage;
+  /** Orthodox church background image. 1400x700. */
+  orthodoxChurch: SiteImage;
 } = {
   hero: begenaSunlight,
   about: begenaEnsemble,
@@ -61,4 +64,5 @@ export const siteImages: {
   paymentBanner: begenaKfl,
   authPanel: begenaStrings,
   studentProfile: begenaStringsWide,
+  orthodoxChurch: orthodoxChurch,
 };

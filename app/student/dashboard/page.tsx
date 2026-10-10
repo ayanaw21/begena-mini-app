@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import PhotoPanel from "@/components/ui/photo-panel";
+import CustomSelect from "@/components/ui/custom-select";
 import { siteImages } from "@/lib/images";
 import {
   Field,
@@ -231,26 +232,30 @@ export default function StudentDashboard() {
           {activeTab === "payments" && (
             <div className="space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <label className="text-muted-foreground flex items-center gap-2 text-sm">
-                  Year
-                  <select
-                    value={selectedYear}
-                    onChange={(e) => setSelectedYear(e.target.value)}
-                    className="w-auto py-1.5 text-sm"
-                  >
-                    <option value="2026">2026</option>
-                    <option value="2025">2025</option>
-                    <option value="2024">2024</option>
-                    <option value="All">All</option>
-                  </select>
-                </label>
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground text-xs font-semibold tracking-[0.18em] uppercase">
+                    Year
+                  </span>
+                  <div className="w-32">
+                    <CustomSelect
+                      value={selectedYear}
+                      onChange={setSelectedYear}
+                      options={[
+                        { value: "2026", label: "2026" },
+                        { value: "2025", label: "2025" },
+                        { value: "2024", label: "2024" },
+                        { value: "All", label: "All Years" },
+                      ]}
+                    />
+                  </div>
+                </div>
                 <Button size="sm" onClick={() => router.push("/payment")}>
                   Submit receipt
                 </Button>
               </div>
 
               {filteredPayments.length === 0 ? (
-                <Panel>
+                <PhotoPanel src={siteImages.orthodoxChurch}>
                   <EmptyState
                     title="No payment records"
                     description={`Nothing has been submitted for ${selectedYear} yet.`}
@@ -260,9 +265,13 @@ export default function StudentDashboard() {
                       </Button>
                     }
                   />
-                </Panel>
+                </PhotoPanel>
               ) : (
-                <Panel>
+                <PhotoPanel src={siteImages.orthodoxChurch} contentClassName="p-0">
+                  <PanelHeader
+                    title="Payment History"
+                    description={`Submitted payment proof records for ${selectedYear}`}
+                  />
                   <ul className="divide-y divide-white/5">
                     {filteredPayments.map((p) => {
                       const status =
@@ -270,10 +279,10 @@ export default function StudentDashboard() {
                       return (
                         <li
                           key={p._id}
-                          className="flex items-center justify-between gap-3 px-5 py-4"
+                          className="flex items-center justify-between gap-3 px-5 py-4 hover:bg-white/[0.03] transition-colors"
                         >
                           <div className="min-w-0">
-                            <p className="font-medium">{p.month}</p>
+                            <p className="font-medium text-foreground">{p.month}</p>
                             <p className="text-muted-foreground mt-0.5 text-xs">
                               Section {p.section} · Batch {p.batch} · submitted{" "}
                               {new Date(p.createdAt || "").toLocaleDateString()}
@@ -284,7 +293,7 @@ export default function StudentDashboard() {
                       );
                     })}
                   </ul>
-                </Panel>
+                </PhotoPanel>
               )}
             </div>
           )}
