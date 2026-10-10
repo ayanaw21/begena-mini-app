@@ -29,26 +29,32 @@ export default function PhotoPanel({
   return (
     <div
       className={cn(
-        "bg-surface relative overflow-hidden rounded-xl border border-white/10 shadow-xl",
+        "bg-surface relative rounded-xl border border-white/10 shadow-xl",
         className
       )}
     >
       {src ? (
-        <Image
-          src={src}
-          alt=""
+        <div className="absolute inset-0 overflow-hidden rounded-xl">
+          <Image
+            src={src}
+            alt=""
+            aria-hidden
+            fill
+            priority={priority}
+            sizes={sizes}
+            className="object-cover opacity-30"
+          />
+          <div
+            aria-hidden
+            className="from-surface/80 via-surface/45 to-surface/85 absolute inset-0 bg-gradient-to-b"
+          />
+        </div>
+      ) : (
+        <div
           aria-hidden
-          fill
-          priority={priority}
-          sizes={sizes}
-          className="object-cover opacity-30"
+          className="from-surface/80 via-surface/45 to-surface/85 absolute inset-0 rounded-xl bg-gradient-to-b"
         />
-      ) : null}
-
-      <div
-        aria-hidden
-        className="from-surface/80 via-surface/45 to-surface/85 absolute inset-0 bg-gradient-to-b"
-      />
+      )}
 
       <div className={cn("relative p-6", contentClassName)}>{children}</div>
     </div>
