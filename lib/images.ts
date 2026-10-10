@@ -11,6 +11,7 @@ import begenaSilhouette from "@/public/images/begena-silhouette.webp";
 import begenaInstrument from "@/public/images/begena-instrument.webp";
 import begenaKfl from "@/public/images/begena-kfl.webp";
 import orthodoxChurch from "@/public/images/orthodox-church.webp";
+import begenaGirl from "@/public/images/begena-girl.webp";
 
 /**
  * Central registry for site imagery.
@@ -52,6 +53,8 @@ export const siteImages: {
   studentProfile: SiteImage;
   /** Orthodox church background image. 1400x700. */
   orthodoxChurch: SiteImage;
+  /** Begena girl background image. 1400x700. */
+  begenaGirl: SiteImage;
 } = {
   hero: begenaSunlight,
   about: begenaEnsemble,
@@ -65,4 +68,5 @@ export const siteImages: {
   authPanel: begenaStrings,
   studentProfile: begenaStringsWide,
   orthodoxChurch: orthodoxChurch,
+  begenaGirl: begenaGirl,
 };
