@@ -14,54 +14,92 @@ import {
 } from "@/components/ui/page";
 import api from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { ClassSchedule } from "@/types";
+import { ClassSchedule, Section } from "@/types";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import toast from "react-hot-toast";
 
 const Schedule = () => {
 	const [isBasic, setIsBasic] = useState<boolean>(true);
 	const [schedules, setSchedules] = useState<ClassSchedule[]>([]);
+	const [sectionsMap, setSectionsMap] = useState<Record<string, string>>({});
 	const [selectedSection, setSelectedSection] = useState("All");
 
 	const fetchSchedules = async () => {
 		try {
-			const res = await api.get("/class-schedules");
-			// console.log(res);
-			setSchedules(res.data.schedules);
+			const [schedRes, secRes] = await Promise.all([
+				api.get("/class-schedules"),
+				api.get("/sections").catch(() => null),
+			]);
+
+			if (secRes?.data?.sections) {
+				const map: Record<string, string> = {};
+				secRes.data.sections.forEach((sec: Section) => {
+					if (sec._id && sec.section) {
+						map[sec._id] = sec.section;
+					}
+				});
+				setSectionsMap(map);
+			}
+
+			if (schedRes.data?.schedules) {
+				setSchedules(schedRes.data.schedules);
+			}
 		} catch (err: unknown) {
 			console.error(err);
-			toast.error("Failed to fetch announcements");
+			toast.error("የትምህርት ሰዓት መረጃ መጫን አልተቻለም");
 		}
 	};
 
 	useEffect(() => {
 		fetchSchedules();
 	}, []);
-	const basicSections = [
-		...new Set(
-			schedules
-				.filter((schedule) => schedule.type === "basic")
-				.map((schedule) => schedule.section)
-		),
-	];
 
-	const advancedSections = [
-		...new Set(
-			schedules
-				.filter((schedule) => schedule.type === "advanced")
-				.map((schedule) => schedule.section)
-		),
-	];
+	const getSectionName = useCallback(
+		(secVal: string) => {
+			if (!secVal) return "Section";
+			const mapped = sectionsMap[secVal];
+			const name = mapped || secVal;
+			if (name.toLowerCase().includes("section") || name.startsWith("ምድብ")) {
+				return name;
+			}
+			return `Section ${name}`;
+		},
+		[sectionsMap]
+	);
 
-	const filteredSchedules = schedules.filter((schedule) => {
-		const typeMatch = isBasic
-			? schedule.type === "basic"
-			: schedule.type === "advanced";
-		const sectionMatch =
-			selectedSection === "All" || schedule.section === selectedSection;
-		return typeMatch && sectionMatch;
-	});
+	const basicSections = useMemo(() => {
+		return [
+			...new Set(
+				schedules
+					.filter((s) => (s.type || "basic").toLowerCase() === "basic")
+					.map((s) => getSectionName(s.section))
+			),
+		];
+	}, [schedules, getSectionName]);
+
+	const advancedSections = useMemo(() => {
+		return [
+			...new Set(
+				schedules
+					.filter((s) => (s.type || "").toLowerCase() !== "basic")
+					.map((s) => getSectionName(s.section))
+			),
+		];
+	}, [schedules, getSectionName]);
+
+	const filteredSchedules = useMemo(() => {
+		return schedules.filter((schedule) => {
+			const schType = (schedule.type || "basic").toLowerCase();
+			const typeMatch = isBasic ? schType === "basic" : schType !== "basic";
+			const secName = getSectionName(schedule.section);
+			const sectionMatch =
+				selectedSection === "All" ||
+				secName === selectedSection ||
+				schedule.section === selectedSection;
+			return typeMatch && sectionMatch;
+		});
+	}, [schedules, isBasic, selectedSection, getSectionName]);
 
 	const availableSections = isBasic ? basicSections : advancedSections;
 
@@ -160,7 +198,7 @@ const Schedule = () => {
 							description={
 								selectedSection === "All"
 									? "ሁሉም ምድቦች"
-									: `ምድብ ${selectedSection}`
+									: `${selectedSection}`
 							}
 						/>
 						{filteredSchedules.length > 0 ? (
@@ -168,21 +206,44 @@ const Schedule = () => {
 								{filteredSchedules.map((schedule) => (
 									<li
 										key={schedule._id}
-										className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 px-5 py-4"
+										className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 px-5 py-4"
 									>
 										<span className="font-medium">
-											Section {schedule.section}
+											{getSectionName(schedule.section)}
 										</span>
-										<span className="text-muted-foreground flex gap-5 text-sm">
-											<span>
-												<span className="text-xs tracking-wider uppercase">ቀን</span>{" "}
-												<span className="text-foreground">{schedule.date}</span>
-											</span>
-											<span>
-												<span className="text-xs tracking-wider uppercase">ሰዓት</span>{" "}
-												<span className="text-foreground">{schedule.time}</span>
-											</span>
-										</span>
+										<div className="text-muted-foreground flex flex-col gap-1 text-sm sm:flex-row sm:gap-5">
+											{schedule.sessions && schedule.sessions.length > 0 ? (
+												schedule.sessions.map((session, idx) => (
+													<span key={idx} className="flex gap-4">
+														<span>
+															<span className="text-xs tracking-wider uppercase">ቀን</span>{" "}
+															<span className="text-foreground">{session.day}</span>
+														</span>
+														<span>
+															<span className="text-xs tracking-wider uppercase">ሰዓት</span>{" "}
+															<span className="text-foreground">
+																{session.startTime} - {session.endTime}
+															</span>
+														</span>
+													</span>
+												))
+											) : (
+												<span className="flex gap-5">
+													{schedule.date && (
+														<span>
+															<span className="text-xs tracking-wider uppercase">ቀን</span>{" "}
+															<span className="text-foreground">{schedule.date}</span>
+														</span>
+													)}
+													{schedule.time && (
+														<span>
+															<span className="text-xs tracking-wider uppercase">ሰዓት</span>{" "}
+															<span className="text-foreground">{schedule.time}</span>
+														</span>
+													)}
+												</span>
+											)}
+										</div>
 									</li>
 								))}
 							</ul>
@@ -228,3 +289,4 @@ const Schedule = () => {
 };
 
 export default Schedule;
+
