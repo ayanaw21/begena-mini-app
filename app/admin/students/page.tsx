@@ -9,6 +9,7 @@ import EditModal from "@/components/EditModal";
 import RowActions from "@/components/RowActions";
 import { Badge } from "@/components/ui/badge";
 import { Field, PageHeader } from "@/components/ui/page";
+import CustomSelect from "@/components/ui/custom-select";
 import toast from "react-hot-toast";
 
 type AcademicStatus = "Active" | "Graduated" | "Suspended" | "Warning";
@@ -249,36 +250,31 @@ export default function StudentsPage() {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Enrolled Program" htmlFor="studentProgram">
-                <select
+                <CustomSelect
                   id="studentProgram"
                   value={formData.program}
-                  onChange={(e) =>
-                    setFormData({ ...formData, program: e.target.value })
-                  }
-                >
-                  {programs.map((p) => (
-                    <option key={p._id || p.code} value={p.name}>
-                      {p.name} ({p.code})
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => setFormData({ ...formData, program: val })}
+                  options={programs.map((p) => ({
+                    value: p.name,
+                    label: `${p.name} (${p.code})`,
+                  }))}
+                />
               </Field>
 
               <Field label="Assigned Section" htmlFor="studentSection">
-                <select
+                <CustomSelect
                   id="studentSection"
                   value={formData.section}
-                  onChange={(e) =>
-                    setFormData({ ...formData, section: e.target.value })
-                  }
-                >
-                  <option value="">Choose section</option>
-                  {sections.map((sec) => (
-                    <option key={sec._id} value={sec.section}>
-                      {sec.section} ({sec.program || "General"})
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => setFormData({ ...formData, section: val })}
+                  placeholder="Choose section"
+                  options={[
+                    { value: "", label: "Choose section" },
+                    ...sections.map((sec) => ({
+                      value: sec.section,
+                      label: `${sec.section} (${sec.program || "General"})`,
+                    })),
+                  ]}
+                />
               </Field>
             </div>
 
@@ -296,22 +292,20 @@ export default function StudentsPage() {
               </Field>
 
               <Field label="Academic Status" htmlFor="studentStatus">
-                <select
+                <CustomSelect
                   id="studentStatus"
                   value={formData.academicStatus || "Active"}
-                  onChange={(e) =>
+                  onChange={(val) =>
                     setFormData({
                       ...formData,
-                      academicStatus: e.target.value as AcademicStatus,
+                      academicStatus: val as AcademicStatus,
                     })
                   }
-                >
-                  {academicStatuses.map((status) => (
-                    <option key={status} value={status}>
-                      {status}
-                    </option>
-                  ))}
-                </select>
+                  options={academicStatuses.map((status) => ({
+                    value: status,
+                    label: status,
+                  }))}
+                />
               </Field>
             </div>
           </ModalForm>
@@ -327,42 +321,42 @@ export default function StudentsPage() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-        <select
-          className="w-auto"
+        <CustomSelect
+          className="w-auto min-w-[170px]"
           value={filterProgram}
-          onChange={(e) => setFilterProgram(e.target.value)}
-        >
-          <option value="">All programs</option>
-          {programs.map((p) => (
-            <option key={p._id || p.code} value={p.name}>
-              {p.name} ({p.code})
-            </option>
-          ))}
-        </select>
-        <select
-          className="w-auto"
+          onChange={(val) => setFilterProgram(val)}
+          options={[
+            { value: "", label: "All programs" },
+            ...programs.map((p) => ({
+              value: p.name,
+              label: `${p.name} (${p.code})`,
+            })),
+          ]}
+        />
+        <CustomSelect
+          className="w-auto min-w-[150px]"
           value={filterBatch}
-          onChange={(e) => setFilterBatch(e.target.value)}
-        >
-          <option value="">All batches</option>
-          {uniqueBatches.map((batch) => (
-            <option key={batch} value={batch}>
-              {batch}
-            </option>
-          ))}
-        </select>
-        <select
-          className="w-auto"
+          onChange={(val) => setFilterBatch(val)}
+          options={[
+            { value: "", label: "All batches" },
+            ...uniqueBatches.map((batch) => ({
+              value: batch,
+              label: batch,
+            })),
+          ]}
+        />
+        <CustomSelect
+          className="w-auto min-w-[150px]"
           value={filterSection}
-          onChange={(e) => setFilterSection(e.target.value)}
-        >
-          <option value="">All sections</option>
-          {uniqueSections.map((sec) => (
-            <option key={sec} value={sec}>
-              {sec}
-            </option>
-          ))}
-        </select>
+          onChange={(val) => setFilterSection(val)}
+          options={[
+            { value: "", label: "All sections" },
+            ...uniqueSections.map((sec) => ({
+              value: sec,
+              label: sec,
+            })),
+          ]}
+        />
       </div>
 
       <DataTable
@@ -444,36 +438,31 @@ export default function StudentsPage() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Enrolled Program" htmlFor="editStudentProgram">
-                  <select
+                  <CustomSelect
                     id="editStudentProgram"
                     value={data.program}
-                    onChange={(e) =>
-                      setData({ ...data, program: e.target.value })
-                    }
-                  >
-                    {programs.map((p) => (
-                      <option key={p._id || p.code} value={p.name}>
-                        {p.name} ({p.code})
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => setData({ ...data, program: val })}
+                    options={programs.map((p) => ({
+                      value: p.name,
+                      label: `${p.name} (${p.code})`,
+                    }))}
+                  />
                 </Field>
 
                 <Field label="Assigned Section" htmlFor="editStudentSection">
-                  <select
+                  <CustomSelect
                     id="editStudentSection"
                     value={data.section}
-                    onChange={(e) =>
-                      setData({ ...data, section: e.target.value })
-                    }
-                  >
-                    <option value="">Choose section</option>
-                    {sections.map((sec) => (
-                      <option key={sec._id} value={sec.section}>
-                        {sec.section}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => setData({ ...data, section: val })}
+                    placeholder="Choose section"
+                    options={[
+                      { value: "", label: "Choose section" },
+                      ...sections.map((sec) => ({
+                        value: sec.section,
+                        label: sec.section,
+                      })),
+                    ]}
+                  />
                 </Field>
               </div>
 
@@ -490,22 +479,20 @@ export default function StudentsPage() {
                 </Field>
 
                 <Field label="Academic Status" htmlFor="editStudentStatus">
-                  <select
+                  <CustomSelect
                     id="editStudentStatus"
                     value={data.academicStatus || "Active"}
-                    onChange={(e) =>
+                    onChange={(val) =>
                       setData({
                         ...data,
-                        academicStatus: e.target.value as AcademicStatus,
+                        academicStatus: val as AcademicStatus,
                       })
                     }
-                  >
-                    {academicStatuses.map((status) => (
-                      <option key={status} value={status}>
-                        {status}
-                      </option>
-                    ))}
-                  </select>
+                    options={academicStatuses.map((status) => ({
+                      value: status,
+                      label: status,
+                    }))}
+                  />
                 </Field>
               </div>
             </>

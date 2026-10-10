@@ -52,6 +52,7 @@
    Gold (--primary) carries headings and accents; warm amber (--cta) is reserved
    for calls to action so the two never compete for attention. */
 :root {
+  color-scheme: dark;
   --radius: 0.625rem;
 
   --background: #0d192e; /* primary background */
@@ -124,9 +125,28 @@
   }
 
   input,
-  select,
   textarea {
     @apply bg-surface-raised text-foreground placeholder:text-muted-foreground w-full rounded-md border border-white/10 px-3 py-2.5 text-sm transition-colors;
+  }
+
+  select {
+    color-scheme: dark;
+    background-color: var(--surface-raised);
+    color: var(--foreground);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-md);
+    padding: 0.625rem 2.25rem 0.625rem 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23e5b842'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1.1rem;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
   }
 
   input:focus-visible,
@@ -142,7 +162,18 @@
   }
 
   select option {
-    @apply bg-surface-raised text-foreground;
+    color-scheme: dark;
+    background-color: #122340 !important;
+    color: #ebf1f5 !important;
+    padding: 10px 14px;
+    font-size: 0.875rem;
+  }
+
+  select option:checked,
+  select option:hover,
+  select option:focus {
+    background-color: #1c417a !important;
+    color: #e5b842 !important;
   }
 }
 

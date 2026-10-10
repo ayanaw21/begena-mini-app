@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { Field, PageHeader, Panel, PanelHeader } from "@/components/ui/page";
+import CustomSelect from "@/components/ui/custom-select";
 import { cn } from "@/lib/utils";
 import { ImageIcon } from "lucide-react";
 import toast from "react-hot-toast";
@@ -256,7 +257,11 @@ export default function PaymentsPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
-          { label: "Total receipts", value: stats.total, className: "" },
+          {
+            label: "Total receipts",
+            value: stats.total,
+            className: "",
+          },
           {
             label: "Pending approval",
             value: stats.pending,
@@ -267,9 +272,13 @@ export default function PaymentsPage() {
             value: stats.approved,
             className: "text-emerald-400",
           },
-          { label: "Rejected", value: stats.rejected, className: "text-red-400" },
+          {
+            label: "Rejected",
+            value: stats.rejected,
+            className: "text-red-400",
+          },
         ].map((stat) => (
-          <Panel key={stat.label} className="p-4">
+          <Panel key={stat.label} className="bg-surface/85 backdrop-blur-md p-4 border border-white/10">
             <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
               {stat.label}
             </p>
@@ -290,68 +299,69 @@ export default function PaymentsPage() {
           onChange={(e) => setSearchQuery(e.target.value)}
         />
 
-        <select
-          className="w-auto"
+        <CustomSelect
+          className="w-auto min-w-[160px]"
           value={filterProgram}
-          onChange={(e) => setFilterProgram(e.target.value)}
-        >
-          <option value="">All programs</option>
-          {programs.map((p) => (
-            <option key={p._id || p.code} value={p.name}>
-              {p.name}
-            </option>
-          ))}
-        </select>
+          onChange={(val) => setFilterProgram(val)}
+          options={[
+            { value: "", label: "All programs" },
+            ...programs.map((p) => ({
+              value: p.name,
+              label: p.name,
+            })),
+          ]}
+        />
 
-        <select
-          className="w-auto"
+        <CustomSelect
+          className="w-auto min-w-[150px]"
           value={filterSection}
-          onChange={(e) => setFilterSection(e.target.value)}
-        >
-          <option value="">All sections</option>
-          {uniqueSections.map((sec) => (
-            <option key={sec} value={sec}>
-              {sec}
-            </option>
-          ))}
-        </select>
+          onChange={(val) => setFilterSection(val)}
+          options={[
+            { value: "", label: "All sections" },
+            ...uniqueSections.map((sec) => ({
+              value: sec,
+              label: sec,
+            })),
+          ]}
+        />
 
-        <select
-          className="w-auto"
+        <CustomSelect
+          className="w-auto min-w-[140px]"
           value={filterBatch}
-          onChange={(e) => setFilterBatch(e.target.value)}
-        >
-          <option value="">All batches</option>
-          {uniqueBatches.map((b) => (
-            <option key={b} value={b}>
-              {b}
-            </option>
-          ))}
-        </select>
+          onChange={(val) => setFilterBatch(val)}
+          options={[
+            { value: "", label: "All batches" },
+            ...uniqueBatches.map((b) => ({
+              value: b,
+              label: b,
+            })),
+          ]}
+        />
 
-        <select
-          className="w-auto"
+        <CustomSelect
+          className="w-auto min-w-[160px]"
           value={filterMonth}
-          onChange={(e) => setFilterMonth(e.target.value)}
-        >
-          <option value="">All months</option>
-          {ethiopianMonths.map((m) => (
-            <option key={m.key} value={m.key}>
-              {m.label} ({m.key})
-            </option>
-          ))}
-        </select>
+          onChange={(val) => setFilterMonth(val)}
+          options={[
+            { value: "", label: "All months" },
+            ...ethiopianMonths.map((m) => ({
+              value: m.key,
+              label: `${m.label} (${m.key})`,
+            })),
+          ]}
+        />
 
-        <select
-          className="w-auto"
+        <CustomSelect
+          className="w-auto min-w-[170px]"
           value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-        >
-          <option value="">All statuses</option>
-          <option value="Pending">Pending verification</option>
-          <option value="Approved">Approved</option>
-          <option value="Rejected">Rejected</option>
-        </select>
+          onChange={(val) => setFilterStatus(val)}
+          options={[
+            { value: "", label: "All statuses" },
+            { value: "Pending", label: "Pending verification" },
+            { value: "Approved", label: "Approved" },
+            { value: "Rejected", label: "Rejected" },
+          ]}
+        />
       </div>
 
       {/* Tab 1: receipts */}
@@ -708,23 +718,24 @@ export default function PaymentsPage() {
                 </Field>
 
                 <Field label="Verification Status" htmlFor="editPaymentStatus">
-                  <select
+                  <CustomSelect
                     id="editPaymentStatus"
                     value={data.status || "Pending"}
-                    onChange={(e) =>
+                    onChange={(val) =>
                       setData({
                         ...data,
-                        status: e.target.value as
+                        status: val as
                           | "Pending"
                           | "Approved"
                           | "Rejected",
                       })
                     }
-                  >
-                    <option value="Pending">Pending</option>
-                    <option value="Approved">Approved</option>
-                    <option value="Rejected">Rejected</option>
-                  </select>
+                    options={[
+                      { value: "Pending", label: "Pending" },
+                      { value: "Approved", label: "Approved" },
+                      { value: "Rejected", label: "Rejected" },
+                    ]}
+                  />
                 </Field>
               </div>
             </>

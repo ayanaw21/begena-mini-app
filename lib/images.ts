@@ -12,6 +12,9 @@ import begenaInstrument from "@/public/images/begena-instrument.webp";
 import begenaKfl from "@/public/images/begena-kfl.webp";
 import orthodoxChurch from "@/public/images/orthodox-church.webp";
 import begenaGirl from "@/public/images/begena-girl.webp";
+import begenaMisc04 from "@/public/images/begena-misc-04.webp";
+import lalibelaPriest from "@/public/images/lalibela-priest.webp";
+import blessingBegena from "@/public/images/blessing-begena.webp";
 
 /**
  * Central registry for site imagery.
@@ -55,6 +58,12 @@ export const siteImages: {
   orthodoxChurch: SiteImage;
   /** Begena girl background image. 1400x700. */
   begenaGirl: SiteImage;
+  /** Begena misc 04 background image. 1400x700. */
+  begenaMisc04: SiteImage;
+  /** Lalibela priest background image. 1400x700. */
+  lalibelaPriest: SiteImage;
+  /** Blessing begena background image. 1400x700. */
+  blessingBegena: SiteImage;
 } = {
   hero: begenaSunlight,
   about: begenaEnsemble,
@@ -69,4 +78,7 @@ export const siteImages: {
   studentProfile: begenaStringsWide,
   orthodoxChurch: orthodoxChurch,
   begenaGirl: begenaGirl,
+  begenaMisc04: begenaMisc04,
+  lalibelaPriest: lalibelaPriest,
+  blessingBegena: blessingBegena,
 };

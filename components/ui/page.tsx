@@ -70,7 +70,7 @@ function Panel({ className, ...props }: React.ComponentProps<"section">) {
   return (
     <section
       className={cn(
-        "bg-surface rounded-xl border border-white/5 shadow-sm",
+        "bg-surface/75 backdrop-blur-md rounded-xl border border-white/10 shadow-sm",
         className
       )}
       {...props}

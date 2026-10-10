@@ -7,6 +7,7 @@ import ConfirmModal from "@/components/ConfirmModal";
 import EditModal from "@/components/EditModal";
 import RowActions from "@/components/RowActions";
 import { Field, PageHeader } from "@/components/ui/page";
+import CustomSelect from "@/components/ui/custom-select";
 import toast from "react-hot-toast";
 import { AxiosError } from "axios";
 
@@ -192,18 +193,18 @@ export default function AnnouncementsPage() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-        <select
-          className="w-auto"
+        <CustomSelect
+          className="w-auto min-w-[150px]"
           value={filterDate}
-          onChange={(e) => setFilterDate(e.target.value)}
-        >
-          <option value="">All dates</option>
-          {uniqueDates.map((date) => (
-            <option key={date} value={date}>
-              {date}
-            </option>
-          ))}
-        </select>
+          onChange={(val) => setFilterDate(val)}
+          options={[
+            { value: "", label: "All dates" },
+            ...uniqueDates.map((date) => ({
+              value: date,
+              label: date,
+            })),
+          ]}
+        />
       </div>
 
       <DataTable

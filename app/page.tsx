@@ -2,6 +2,7 @@ import Footer from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import Figure from "@/components/ui/figure";
 import { PageBody, PageContainer, Panel } from "@/components/ui/page";
+import PhotoPanel from "@/components/ui/photo-panel";
 import UserAnnouncement from "@/components/userAnnouncement";
 import { siteImages } from "@/lib/images";
 import Link from "next/link";
@@ -71,7 +72,11 @@ const Home = () => {
 
           {/* Primary actions */}
           <section className="grid gap-4 sm:grid-cols-2">
-            <Panel className="border-primary/25 bg-primary/5 flex flex-col p-5">
+            <PhotoPanel
+              src={siteImages.begenaMisc04}
+              className="border-primary/25"
+              contentClassName="p-5 flex flex-col h-full"
+            >
               <span className="text-2xl">🎓</span>
               <h2 className="mt-3 text-lg font-semibold">የተማሪዎች ፖርታል</h2>
               <p className="text-muted-foreground mt-1.5 flex-1 text-sm leading-relaxed">
@@ -81,9 +86,13 @@ const Home = () => {
               <Button asChild className="mt-4 w-full">
                 <Link href="/student/login">ወደ ተማሪ ፖርታል ይግቡ</Link>
               </Button>
-            </Panel>
+            </PhotoPanel>
 
-            <Panel className="flex flex-col p-5">
+            <PhotoPanel
+              src={siteImages.orthodoxChurch}
+              className="border-primary/25"
+              contentClassName="p-5 flex flex-col h-full"
+            >
               <span className="text-2xl">💳</span>
               <h2 className="mt-3 text-lg font-semibold">ወርሃዊ ክፍያ</h2>
               <p className="text-muted-foreground mt-1.5 flex-1 text-sm leading-relaxed">
@@ -92,7 +101,7 @@ const Home = () => {
               <Button asChild variant="outline" className="mt-4 w-full">
                 <Link href="/payment">ክፍያ ለመፈጸም</Link>
               </Button>
-            </Panel>
+            </PhotoPanel>
           </section>
 
           {/* Secondary links */}
@@ -100,31 +109,33 @@ const Home = () => {
             <h2 className="text-muted-foreground text-xs font-semibold tracking-[0.18em] uppercase">
               ሌሎች ገጾች
             </h2>
-            <div className="divide-y divide-white/5 overflow-hidden rounded-xl border border-white/5">
-              {quickLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="hover:bg-surface group flex items-start gap-4 px-4 py-4 transition-colors"
-                >
-                  <span className="text-xl leading-none">{link.emoji}</span>
-                  <span className="min-w-0 flex-1">
-                    <span className="group-hover:text-primary block font-medium transition-colors">
-                      {link.title}
-                    </span>
-                    <span className="text-muted-foreground mt-0.5 block text-sm leading-relaxed">
-                      {link.description}
-                    </span>
-                  </span>
-                  <span
-                    aria-hidden
-                    className="text-muted-foreground group-hover:text-primary mt-0.5 transition-colors"
+            <PhotoPanel src={siteImages.lalibelaPriest} contentClassName="p-0">
+              <div className="divide-y divide-white/10 overflow-hidden rounded-xl">
+                {quickLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="hover:bg-white/[0.05] group flex items-start gap-4 px-4 py-4 transition-colors"
                   >
-                    →
-                  </span>
-                </Link>
-              ))}
-            </div>
+                    <span className="text-xl leading-none">{link.emoji}</span>
+                    <span className="min-w-0 flex-1">
+                      <span className="group-hover:text-primary block font-medium transition-colors">
+                        {link.title}
+                      </span>
+                      <span className="text-muted-foreground mt-0.5 block text-sm leading-relaxed">
+                        {link.description}
+                      </span>
+                    </span>
+                    <span
+                      aria-hidden
+                      className="text-muted-foreground group-hover:text-primary mt-0.5 transition-colors"
+                    >
+                      →
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </PhotoPanel>
           </section>
 
           {/* About */}

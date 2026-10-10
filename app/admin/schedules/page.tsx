@@ -9,6 +9,7 @@ import EditModal from "@/components/EditModal";
 import RowActions from "@/components/RowActions";
 import { Badge } from "@/components/ui/badge";
 import { Field, PageHeader } from "@/components/ui/page";
+import CustomSelect from "@/components/ui/custom-select";
 import toast from "react-hot-toast";
 
 interface Schedule {
@@ -209,70 +210,65 @@ export default function SchedulesPage() {
           >
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Program" htmlFor="scheduleProgram">
-                <select
+                <CustomSelect
                   id="scheduleProgram"
                   value={formData.program || "በገና (Begena)"}
-                  onChange={(e) =>
-                    setFormData({ ...formData, program: e.target.value })
+                  onChange={(val) =>
+                    setFormData({ ...formData, program: val })
                   }
-                >
-                  {programs.map((p) => (
-                    <option key={p._id || p.code} value={p.name}>
-                      {p.name} ({p.code})
-                    </option>
-                  ))}
-                </select>
+                  options={programs.map((p) => ({
+                    value: p.name,
+                    label: `${p.name} (${p.code})`,
+                  }))}
+                />
               </Field>
 
               <Field label="Section" htmlFor="scheduleSection" required>
-                <select
+                <CustomSelect
                   id="scheduleSection"
                   value={formData.section}
-                  onChange={(e) =>
-                    setFormData({ ...formData, section: e.target.value })
+                  onChange={(val) =>
+                    setFormData({ ...formData, section: val })
                   }
-                >
-                  <option value="">Choose section</option>
-                  {sections.map((sec) => (
-                    <option key={sec._id} value={sec.section}>
-                      {sec.section} ({sec.program || "General"})
-                    </option>
-                  ))}
-                </select>
+                  placeholder="Choose section"
+                  options={[
+                    { value: "", label: "Choose section" },
+                    ...sections.map((sec) => ({
+                      value: sec.section,
+                      label: `${sec.section} (${sec.program || "General"})`,
+                    })),
+                  ]}
+                />
               </Field>
             </div>
 
             <Field label="Batch Level / Type" htmlFor="scheduleType">
-              <select
+              <CustomSelect
                 id="scheduleType"
                 value={formData.type || "basic"}
-                onChange={(e) =>
-                  setFormData({ ...formData, type: e.target.value })
+                onChange={(val) =>
+                  setFormData({ ...formData, type: val })
                 }
-              >
-                {scheduleTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
+                options={scheduleTypes.map((type) => ({
+                  value: type,
+                  label: type,
+                }))}
+              />
             </Field>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Session Day" htmlFor="scheduleDay">
-                <select
+                <CustomSelect
                   id="scheduleDay"
                   value={formData.date || "Monday"}
-                  onChange={(e) =>
-                    setFormData({ ...formData, date: e.target.value })
+                  onChange={(val) =>
+                    setFormData({ ...formData, date: val })
                   }
-                >
-                  {daysOfWeek.map((day) => (
-                    <option key={day} value={day}>
-                      {day}
-                    </option>
-                  ))}
-                </select>
+                  options={daysOfWeek.map((day) => ({
+                    value: day,
+                    label: day,
+                  }))}
+                />
               </Field>
 
               <Field label="Session Time" htmlFor="scheduleTime">
@@ -299,54 +295,54 @@ export default function SchedulesPage() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-        <select
-          className="w-auto"
+        <CustomSelect
+          className="w-auto min-w-[170px]"
           value={filterProgram}
-          onChange={(e) => setFilterProgram(e.target.value)}
-        >
-          <option value="">All programs</option>
-          {programs.map((p) => (
-            <option key={p._id || p.code} value={p.name}>
-              {p.name} ({p.code})
-            </option>
-          ))}
-        </select>
-        <select
-          className="w-auto"
+          onChange={(val) => setFilterProgram(val)}
+          options={[
+            { value: "", label: "All programs" },
+            ...programs.map((p) => ({
+              value: p.name,
+              label: `${p.name} (${p.code})`,
+            })),
+          ]}
+        />
+        <CustomSelect
+          className="w-auto min-w-[140px]"
           value={filterType}
-          onChange={(e) => setFilterType(e.target.value)}
-        >
-          <option value="">All types</option>
-          {uniqueTypes.map((type) => (
-            <option key={type} value={type}>
-              {type}
-            </option>
-          ))}
-        </select>
-        <select
-          className="w-auto"
+          onChange={(val) => setFilterType(val)}
+          options={[
+            { value: "", label: "All types" },
+            ...uniqueTypes.map((type) => ({
+              value: type,
+              label: type,
+            })),
+          ]}
+        />
+        <CustomSelect
+          className="w-auto min-w-[150px]"
           value={filterSection}
-          onChange={(e) => setFilterSection(e.target.value)}
-        >
-          <option value="">All sections</option>
-          {uniqueSections.map((section) => (
-            <option key={section} value={section}>
-              {section}
-            </option>
-          ))}
-        </select>
-        <select
-          className="w-auto"
+          onChange={(val) => setFilterSection(val)}
+          options={[
+            { value: "", label: "All sections" },
+            ...uniqueSections.map((section) => ({
+              value: section,
+              label: section,
+            })),
+          ]}
+        />
+        <CustomSelect
+          className="w-auto min-w-[140px]"
           value={filterDay}
-          onChange={(e) => setFilterDay(e.target.value)}
-        >
-          <option value="">All days</option>
-          {daysOfWeek.map((day) => (
-            <option key={day} value={day}>
-              {day}
-            </option>
-          ))}
-        </select>
+          onChange={(val) => setFilterDay(val)}
+          options={[
+            { value: "", label: "All days" },
+            ...daysOfWeek.map((day) => ({
+              value: day,
+              label: day,
+            })),
+          ]}
+        />
       </div>
 
       <DataCards
@@ -392,66 +388,57 @@ export default function SchedulesPage() {
             <>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Program" htmlFor="editScheduleProgram">
-                  <select
+                  <CustomSelect
                     id="editScheduleProgram"
                     value={data.program || "በገና (Begena)"}
-                    onChange={(e) =>
-                      setData({ ...data, program: e.target.value })
-                    }
-                  >
-                    {programs.map((p) => (
-                      <option key={p._id || p.code} value={p.name}>
-                        {p.name} ({p.code})
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => setData({ ...data, program: val })}
+                    options={programs.map((p) => ({
+                      value: p.name,
+                      label: `${p.name} (${p.code})`,
+                    }))}
+                  />
                 </Field>
 
                 <Field label="Section" htmlFor="editScheduleSection">
-                  <select
+                  <CustomSelect
                     id="editScheduleSection"
                     value={data.section}
-                    onChange={(e) =>
-                      setData({ ...data, section: e.target.value })
-                    }
-                  >
-                    <option value="">Choose section</option>
-                    {sections.map((sec) => (
-                      <option key={sec._id} value={sec.section}>
-                        {sec.section}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => setData({ ...data, section: val })}
+                    placeholder="Choose section"
+                    options={[
+                      { value: "", label: "Choose section" },
+                      ...sections.map((sec) => ({
+                        value: sec.section,
+                        label: sec.section,
+                      })),
+                    ]}
+                  />
                 </Field>
               </div>
 
               <Field label="Batch Level / Type" htmlFor="editScheduleType">
-                <select
+                <CustomSelect
                   id="editScheduleType"
                   value={data.type || "basic"}
-                  onChange={(e) => setData({ ...data, type: e.target.value })}
-                >
-                  {scheduleTypes.map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => setData({ ...data, type: val })}
+                  options={scheduleTypes.map((type) => ({
+                    value: type,
+                    label: type,
+                  }))}
+                />
               </Field>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Session Day" htmlFor="editScheduleDay">
-                  <select
+                  <CustomSelect
                     id="editScheduleDay"
                     value={data.date || "Monday"}
-                    onChange={(e) => setData({ ...data, date: e.target.value })}
-                  >
-                    {daysOfWeek.map((day) => (
-                      <option key={day} value={day}>
-                        {day}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => setData({ ...data, date: val })}
+                    options={daysOfWeek.map((day) => ({
+                      value: day,
+                      label: day,
+                    }))}
+                  />
                 </Field>
 
                 <Field label="Session Time" htmlFor="editScheduleTime">

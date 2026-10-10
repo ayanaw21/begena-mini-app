@@ -9,6 +9,7 @@ import EditModal from "@/components/EditModal";
 import RowActions from "@/components/RowActions";
 import { Badge } from "@/components/ui/badge";
 import { Field, PageHeader } from "@/components/ui/page";
+import CustomSelect from "@/components/ui/custom-select";
 import toast from "react-hot-toast";
 
 export default function SectionsPage() {
@@ -161,19 +162,17 @@ export default function SectionsPage() {
             onSubmit={handleCreateSection}
           >
             <Field label="Program" htmlFor="sectionProgram" required>
-              <select
+              <CustomSelect
                 id="sectionProgram"
                 value={formData.program}
-                onChange={(e) =>
-                  setFormData({ ...formData, program: e.target.value })
+                onChange={(val) =>
+                  setFormData({ ...formData, program: val })
                 }
-              >
-                {programs.map((prog) => (
-                  <option key={prog._id} value={prog.name}>
-                    {prog.name} ({prog.code})
-                  </option>
-                ))}
-              </select>
+                options={programs.map((prog) => ({
+                  value: prog.name,
+                  label: `${prog.name} (${prog.code})`,
+                }))}
+              />
             </Field>
 
             <Field label="Section Name" htmlFor="sectionName" required>
@@ -188,20 +187,21 @@ export default function SectionsPage() {
             </Field>
 
             <Field label="Main Teacher (ዋና መምህር)" htmlFor="sectionMainTeacher">
-              <select
+              <CustomSelect
                 id="sectionMainTeacher"
-                value={formData.mainTeacherName}
-                onChange={(e) =>
-                  setFormData({ ...formData, mainTeacherName: e.target.value })
+                value={formData.mainTeacherName || ""}
+                onChange={(val) =>
+                  setFormData({ ...formData, mainTeacherName: val })
                 }
-              >
-                <option value="">Select main teacher</option>
-                {staffList.map((staff) => (
-                  <option key={staff.id || staff.fullName} value={staff.fullName}>
-                    {staff.fullName} ({staff.role})
-                  </option>
-                ))}
-              </select>
+                placeholder="Select main teacher"
+                options={[
+                  { value: "", label: "Select main teacher" },
+                  ...staffList.map((staff) => ({
+                    value: staff.fullName,
+                    label: `${staff.fullName} (${staff.role})`,
+                  })),
+                ]}
+              />
             </Field>
 
             <Field
@@ -209,23 +209,24 @@ export default function SectionsPage() {
               htmlFor="sectionAssistantTeacher"
               hint="Optional."
             >
-              <select
+              <CustomSelect
                 id="sectionAssistantTeacher"
-                value={formData.assistantTeacherName}
-                onChange={(e) =>
+                value={formData.assistantTeacherName || ""}
+                onChange={(val) =>
                   setFormData({
                     ...formData,
-                    assistantTeacherName: e.target.value,
+                    assistantTeacherName: val,
                   })
                 }
-              >
-                <option value="">Select assistant teacher</option>
-                {staffList.map((staff) => (
-                  <option key={staff.id || staff.fullName} value={staff.fullName}>
-                    {staff.fullName} ({staff.role})
-                  </option>
-                ))}
-              </select>
+                placeholder="Select assistant teacher"
+                options={[
+                  { value: "", label: "Select assistant teacher" },
+                  ...staffList.map((staff) => ({
+                    value: staff.fullName,
+                    label: `${staff.fullName} (${staff.role})`,
+                  })),
+                ]}
+              />
             </Field>
           </ModalForm>
         }
@@ -239,18 +240,18 @@ export default function SectionsPage() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-        <select
-          className="w-auto"
+        <CustomSelect
+          className="w-auto min-w-[170px]"
           value={filterProgram}
-          onChange={(e) => setFilterProgram(e.target.value)}
-        >
-          <option value="">All programs</option>
-          {programs.map((prog) => (
-            <option key={prog._id} value={prog.name}>
-              {prog.name}
-            </option>
-          ))}
-        </select>
+          onChange={(val) => setFilterProgram(val)}
+          options={[
+            { value: "", label: "All programs" },
+            ...programs.map((prog) => ({
+              value: prog.name,
+              label: prog.name,
+            })),
+          ]}
+        />
       </div>
 
       <DataCards
@@ -308,17 +309,15 @@ export default function SectionsPage() {
           ) => (
             <>
               <Field label="Program" htmlFor="editSectionProgram">
-                <select
+                <CustomSelect
                   id="editSectionProgram"
                   value={data.program || "Begena"}
-                  onChange={(e) => setData({ ...data, program: e.target.value })}
-                >
-                  {programs.map((prog) => (
-                    <option key={prog._id} value={prog.name}>
-                      {prog.name}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => setData({ ...data, program: val })}
+                  options={programs.map((prog) => ({
+                    value: prog.name,
+                    label: prog.name,
+                  }))}
+                />
               </Field>
 
               <Field label="Section Name" htmlFor="editSectionName">
@@ -330,46 +329,42 @@ export default function SectionsPage() {
               </Field>
 
               <Field label="Main Teacher" htmlFor="editSectionMainTeacher">
-                <select
+                <CustomSelect
                   id="editSectionMainTeacher"
                   value={data.mainTeacherName || ""}
-                  onChange={(e) =>
-                    setData({ ...data, mainTeacherName: e.target.value })
+                  onChange={(val) =>
+                    setData({ ...data, mainTeacherName: val })
                   }
-                >
-                  <option value="">Select main teacher</option>
-                  {staffList.map((staff) => (
-                    <option
-                      key={staff.id || staff.fullName}
-                      value={staff.fullName}
-                    >
-                      {staff.fullName}
-                    </option>
-                  ))}
-                </select>
+                  placeholder="Select main teacher"
+                  options={[
+                    { value: "", label: "Select main teacher" },
+                    ...staffList.map((staff) => ({
+                      value: staff.fullName,
+                      label: staff.fullName,
+                    })),
+                  ]}
+                />
               </Field>
 
               <Field
                 label="Assistant Teacher"
                 htmlFor="editSectionAssistantTeacher"
               >
-                <select
+                <CustomSelect
                   id="editSectionAssistantTeacher"
                   value={data.assistantTeacherName || ""}
-                  onChange={(e) =>
-                    setData({ ...data, assistantTeacherName: e.target.value })
+                  onChange={(val) =>
+                    setData({ ...data, assistantTeacherName: val })
                   }
-                >
-                  <option value="">Select assistant teacher</option>
-                  {staffList.map((staff) => (
-                    <option
-                      key={staff.id || staff.fullName}
-                      value={staff.fullName}
-                    >
-                      {staff.fullName}
-                    </option>
-                  ))}
-                </select>
+                  placeholder="Select assistant teacher"
+                  options={[
+                    { value: "", label: "Select assistant teacher" },
+                    ...staffList.map((staff) => ({
+                      value: staff.fullName,
+                      label: staff.fullName,
+                    })),
+                  ]}
+                />
               </Field>
             </>
           )}

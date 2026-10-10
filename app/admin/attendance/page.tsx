@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Field, PageHeader, Panel } from "@/components/ui/page";
+import CustomSelect from "@/components/ui/custom-select";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -294,19 +295,19 @@ export default function AttendancePage() {
               htmlFor="attendanceSection"
               className="min-w-52 flex-1"
             >
-              <select
+              <CustomSelect
                 id="attendanceSection"
                 value={selectedSection}
-                onChange={(e) => setSelectedSection(e.target.value)}
-              >
-                <option value="">Choose section</option>
-                {sections.map((sec) => (
-                  <option key={sec._id} value={sec.section}>
-                    {sec.section} (
-                    {sec.mainTeacherName || sec.assignedTeacher || "TBA"})
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setSelectedSection(val)}
+                placeholder="Choose section"
+                options={[
+                  { value: "", label: "Choose section" },
+                  ...sections.map((sec) => ({
+                    value: sec.section,
+                    label: `${sec.section} (${sec.mainTeacherName || sec.assignedTeacher || "TBA"})`,
+                  })),
+                ]}
+              />
             </Field>
 
             <Field label="Class Date" htmlFor="attendanceDate" className="w-44">
@@ -447,30 +448,30 @@ export default function AttendancePage() {
 
           {/* Filters */}
           <div className="flex flex-wrap gap-3">
-            <select
-              className="w-auto"
+            <CustomSelect
+              className="w-auto min-w-[170px]"
               value={selectedProgFilter}
-              onChange={(e) => setSelectedProgFilter(e.target.value)}
-            >
-              <option value="All">All programs</option>
-              {programs.map((p) => (
-                <option key={p._id || p.code} value={p.name}>
-                  {p.name} ({p.code})
-                </option>
-              ))}
-            </select>
-            <select
-              className="w-auto"
+              onChange={(val) => setSelectedProgFilter(val)}
+              options={[
+                { value: "All", label: "All programs" },
+                ...programs.map((p) => ({
+                  value: p.name,
+                  label: `${p.name} (${p.code})`,
+                })),
+              ]}
+            />
+            <CustomSelect
+              className="w-auto min-w-[160px]"
               value={selectedSecFilter}
-              onChange={(e) => setSelectedSecFilter(e.target.value)}
-            >
-              <option value="All">All sections</option>
-              {sections.map((sec) => (
-                <option key={sec._id} value={sec.section}>
-                  {sec.section}
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setSelectedSecFilter(val)}
+              options={[
+                { value: "All", label: "All sections" },
+                ...sections.map((sec) => ({
+                  value: sec.section,
+                  label: sec.section,
+                })),
+              ]}
+            />
           </div>
 
           {loadingSummary ? (

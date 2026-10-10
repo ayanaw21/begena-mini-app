@@ -8,6 +8,7 @@ import EditModal from "@/components/EditModal";
 import RowActions from "@/components/RowActions";
 import { Badge } from "@/components/ui/badge";
 import { Field, PageHeader } from "@/components/ui/page";
+import CustomSelect from "@/components/ui/custom-select";
 import toast from "react-hot-toast";
 
 interface StaffMember {
@@ -125,19 +126,20 @@ export default function StaffPage() {
               />
             </Field>
             <Field label="Role" htmlFor="staffRole" required>
-              <select
+              <CustomSelect
                 id="staffRole"
                 value={formData.role}
-                onChange={(e) =>
+                onChange={(val) =>
                   setFormData({
                     ...formData,
-                    role: e.target.value as "admin" | "teacher",
+                    role: val as "admin" | "teacher",
                   })
                 }
-              >
-                <option value="teacher">Teacher / Instructor</option>
-                <option value="admin">Admin & Instructor</option>
-              </select>
+                options={[
+                  { value: "teacher", label: "Teacher / Instructor" },
+                  { value: "admin", label: "Admin & Instructor" },
+                ]}
+              />
             </Field>
             <Field label="Phone Number" htmlFor="staffPhone">
               <input
@@ -225,19 +227,20 @@ export default function StaffPage() {
                 />
               </Field>
               <Field label="Role" htmlFor="editStaffRole">
-                <select
+                <CustomSelect
                   id="editStaffRole"
                   value={data.role}
-                  onChange={(e) =>
+                  onChange={(val) =>
                     setData({
                       ...data,
-                      role: e.target.value as "admin" | "teacher",
+                      role: val as "admin" | "teacher",
                     })
                   }
-                >
-                  <option value="teacher">Teacher / Instructor</option>
-                  <option value="admin">Admin & Instructor</option>
-                </select>
+                  options={[
+                    { value: "teacher", label: "Teacher / Instructor" },
+                    { value: "admin", label: "Admin & Instructor" },
+                  ]}
+                />
               </Field>
               <Field label="Phone Number" htmlFor="editStaffPhone">
                 <input
