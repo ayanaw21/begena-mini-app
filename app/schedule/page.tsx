@@ -23,6 +23,7 @@ const Schedule = () => {
 	const [isBasic, setIsBasic] = useState<boolean>(true);
 	const [schedules, setSchedules] = useState<ClassSchedule[]>([]);
 	const [sectionsMap, setSectionsMap] = useState<Record<string, string>>({});
+	const [selectedProgram, setSelectedProgram] = useState("All");
 	const [selectedSection, setSelectedSection] = useState("All");
 
 	const fetchSchedules = async () => {
@@ -68,28 +69,43 @@ const Schedule = () => {
 		[sectionsMap]
 	);
 
-	const basicSections = useMemo(() => {
+	const uniquePrograms = useMemo(() => {
 		return [
 			...new Set(
 				schedules
+					.map((s) => s.program || "")
+					.filter((p) => p.length > 0)
+			),
+		];
+	}, [schedules]);
+
+	const programFilteredSchedules = useMemo(() => {
+		if (selectedProgram === "All") return schedules;
+		return schedules.filter((s) => s.program === selectedProgram);
+	}, [schedules, selectedProgram]);
+
+	const basicSections = useMemo(() => {
+		return [
+			...new Set(
+				programFilteredSchedules
 					.filter((s) => (s.type || "basic").toLowerCase() === "basic")
 					.map((s) => getSectionName(s.section))
 			),
 		];
-	}, [schedules, getSectionName]);
+	}, [programFilteredSchedules, getSectionName]);
 
 	const advancedSections = useMemo(() => {
 		return [
 			...new Set(
-				schedules
+				programFilteredSchedules
 					.filter((s) => (s.type || "").toLowerCase() !== "basic")
 					.map((s) => getSectionName(s.section))
 			),
 		];
-	}, [schedules, getSectionName]);
+	}, [programFilteredSchedules, getSectionName]);
 
 	const filteredSchedules = useMemo(() => {
-		return schedules.filter((schedule) => {
+		return programFilteredSchedules.filter((schedule) => {
 			const schType = (schedule.type || "basic").toLowerCase();
 			const typeMatch = isBasic ? schType === "basic" : schType !== "basic";
 			const secName = getSectionName(schedule.section);
@@ -99,13 +115,18 @@ const Schedule = () => {
 				schedule.section === selectedSection;
 			return typeMatch && sectionMatch;
 		});
-	}, [schedules, isBasic, selectedSection, getSectionName]);
+	}, [programFilteredSchedules, isBasic, selectedSection, getSectionName]);
 
 	const availableSections = isBasic ? basicSections : advancedSections;
 
-	// Section chips are type-scoped, so reset the filter when the type changes.
+	// Reset downstream filters when type or program changes.
 	const selectType = (basic: boolean) => {
 		setIsBasic(basic);
+		setSelectedSection("All");
+	};
+
+	const selectProgram = (program: string) => {
+		setSelectedProgram(program);
 		setSelectedSection("All");
 	};
 
@@ -142,6 +163,27 @@ const Schedule = () => {
 
 					{/* Filters */}
 					<div className="flex flex-col gap-4">
+						{/* Program dropdown */}
+						{uniquePrograms.length > 1 && (
+							<div className="flex items-center gap-3">
+								<span className="text-muted-foreground text-xs font-semibold tracking-[0.18em] uppercase">
+									ፕሮግራም
+								</span>
+								<select
+									value={selectedProgram}
+									onChange={(e) => selectProgram(e.target.value)}
+									className="bg-surface text-foreground border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-primary/40 focus:outline-none transition-colors cursor-pointer"
+								>
+									<option value="All">ሁሉም ፕሮግራሞች</option>
+									{uniquePrograms.map((prog) => (
+										<option key={prog} value={prog}>
+											{prog}
+										</option>
+									))}
+								</select>
+							</div>
+						)}
+
 						<div
 							role="tablist"
 							aria-label="የትምህርት ደረጃ"
@@ -196,9 +238,14 @@ const Schedule = () => {
 						<PanelHeader
 							title={`${isBasic ? "ቤዚክ" : "አድቫንስ"} የትምህርት ሰዓት`}
 							description={
-								selectedSection === "All"
-									? "ሁሉም ምድቦች"
-									: `${selectedSection}`
+								[
+									selectedProgram !== "All" ? selectedProgram : null,
+									selectedSection === "All"
+										? "ሁሉም ምድቦች"
+										: selectedSection,
+								]
+									.filter(Boolean)
+									.join(" · ")
 							}
 						/>
 						{filteredSchedules.length > 0 ? (
