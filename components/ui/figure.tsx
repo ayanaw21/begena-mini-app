@@ -9,6 +9,7 @@ const ratios = {
   wide: "aspect-[16/9]",
   ultrawide: "aspect-[21/9]",
   portrait: "aspect-[3/4]",
+  auto: "aspect-auto",
 } as const;
 
 type FigureProps = {
@@ -40,7 +41,7 @@ export default function Figure({
   return (
     <div
       className={cn(
-        "bg-surface relative overflow-hidden rounded-xl border border-white/5",
+        "bg-surface relative w-full max-w-full min-w-0 overflow-hidden rounded-xl border border-white/5",
         ratios[ratio],
         className
       )}

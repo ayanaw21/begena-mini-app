@@ -63,8 +63,8 @@ const Navbar = () => {
       </PageContainer>
 
       {/* On small screens the primary links move to a scrollable strip under the bar. */}
-      <nav className="border-t border-white/5 md:hidden">
-        <PageContainer className="flex gap-1 overflow-x-auto py-1.5">
+      <nav className="w-full max-w-full overflow-hidden border-t border-white/5 md:hidden">
+        <PageContainer className="flex gap-1 overflow-x-auto py-1.5 scrollbar-none">
           {links.map((link) => (
             <Link
               key={link.href}

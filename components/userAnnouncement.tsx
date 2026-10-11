@@ -48,18 +48,18 @@ const UserAnnouncement = () => {
 
 			<ul className="divide-y divide-white/10">
 				{announcements.map((item) => (
-					<li key={item._id} className="p-5 hover:bg-white/[0.03] transition-colors">
-						<div className="flex flex-wrap items-center justify-between gap-2">
-							<h3 className="text-base font-semibold text-foreground">
+					<li key={item._id} className="p-5 hover:bg-white/[0.03] transition-colors min-w-0">
+						<div className="flex flex-wrap items-center justify-between gap-2 min-w-0">
+							<h3 className="text-base font-semibold text-foreground break-words min-w-0">
 								{item.title}
 							</h3>
 							{(item.date || item.time) && (
-								<span className="bg-primary/15 text-primary border border-primary/20 rounded-md px-2.5 py-0.5 text-xs font-mono">
+								<span className="bg-primary/15 text-primary border border-primary/20 rounded-md px-2.5 py-0.5 text-xs font-mono shrink-0">
 									{[item.date, item.time].filter(Boolean).join(" · ")}
 								</span>
 							)}
 						</div>
-						<p className="text-muted-foreground mt-2 text-sm leading-relaxed whitespace-pre-line">
+						<p className="text-muted-foreground mt-2 text-sm leading-relaxed whitespace-pre-line break-words min-w-0">
 							{item.body}
 						</p>
 					</li>

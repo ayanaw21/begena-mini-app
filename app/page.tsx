@@ -40,7 +40,7 @@ const goals = [
 
 const Home = () => {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col overflow-x-clip">
       <Navbar />
 
       <PageBody>
@@ -50,8 +50,8 @@ const Home = () => {
             <Figure
               src={siteImages.hero}
               alt="የበገና መሳሪያ"
-              ratio="wide"
-              className="min-h-[280px] sm:min-h-[360px] md:min-h-[420px]"
+              ratio="auto"
+              className="w-full max-w-full h-[260px] sm:h-[360px] md:h-[420px]"
               priority
               scrim
             >

@@ -29,7 +29,7 @@ export default function PhotoPanel({
   return (
     <div
       className={cn(
-        "bg-surface relative rounded-xl border border-white/10 shadow-xl",
+        "bg-surface relative w-full max-w-full min-w-0 rounded-xl border border-white/10 shadow-xl",
         className
       )}
     >
