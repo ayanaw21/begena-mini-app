@@ -381,12 +381,32 @@ export default function PaymentsPage() {
       {activeTab === "list" && (
         <DataTable
           columns={[
-            { key: "studentIdDisplay", label: "Student ID" },
-            { key: "fullName", label: "Student Name" },
-            { key: "monthBatch", label: "Month & Batch" },
-            { key: "screenshot", label: "Receipt" },
-            { key: "statusDisplay", label: "Status" },
-            { key: "actions", label: "" },
+            {
+              key: "studentIdDisplay",
+              label: "Student ID",
+              className: "w-36",
+            },
+            {
+              key: "fullName",
+              label: "Student Name",
+              className: "min-w-[160px] font-medium",
+            },
+            {
+              key: "screenshot",
+              label: "Receipt",
+              className: "w-28 text-center",
+              headerClassName: "w-28 text-center",
+            },
+            {
+              key: "statusDisplay",
+              label: "Status",
+              className: "w-32",
+            },
+            {
+              key: "actions",
+              label: "",
+              className: "w-52 text-right",
+            },
           ]}
           data={filteredPayments.map((p) => {
             const idVal = p.studentId || p.begenaId || "N/A";
@@ -396,12 +416,6 @@ export default function PaymentsPage() {
               ...p,
               studentIdDisplay: (
                 <span className="text-primary font-mono text-xs">{idVal}</span>
-              ),
-              monthBatch: (
-                <div key={`${p._id}-mb`}>
-                  <p className="text-sm font-medium">{p.month}</p>
-                  <p className="text-muted-foreground text-xs">{p.batch}</p>
-                </div>
               ),
               screenshot: (
                 <button

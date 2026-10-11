@@ -1,10 +1,13 @@
 "use client";
 
 import React from "react";
+import { cn } from "@/lib/utils";
 
 interface Column {
   key: string;
   label: string;
+  className?: string;
+  headerClassName?: string;
 }
 
 interface DataTableProps {
@@ -22,7 +25,10 @@ const DataTable: React.FC<DataTableProps> = ({ columns, data }) => {
             {columns.map((col) => (
               <th
                 key={col.key}
-                className="px-4 py-2.5 font-medium whitespace-nowrap"
+                className={cn(
+                  "px-4 py-3 font-medium whitespace-nowrap",
+                  col.headerClassName || col.className
+                )}
               >
                 {col.label}
               </th>
@@ -43,7 +49,13 @@ const DataTable: React.FC<DataTableProps> = ({ columns, data }) => {
             data.map((row, index) => (
               <tr key={index} className="hover:bg-white/[0.03] transition-colors">
                 {columns.map((col) => (
-                  <td key={col.key} className="px-4 py-2.5 whitespace-nowrap">
+                  <td
+                    key={col.key}
+                    className={cn(
+                      "px-4 py-3 whitespace-nowrap align-middle",
+                      col.className
+                    )}
+                  >
                     {row[col.key]}
                   </td>
                 ))}
