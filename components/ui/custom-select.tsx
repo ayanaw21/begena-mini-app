@@ -70,7 +70,11 @@ export function CustomSelect({
 	return (
 		<div
 			ref={containerRef}
-			className={cn("relative w-full text-left select-none", className)}
+			className={cn(
+				"relative w-full text-left select-none",
+				isOpen && "z-50",
+				className
+			)}
 			id={id}
 		>
 			<button

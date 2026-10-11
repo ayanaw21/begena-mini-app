@@ -31,8 +31,6 @@ const daysOfWeek = [
   "Sunday",
 ];
 
-const scheduleTypes = ["basic", "intermediate", "advanced"];
-
 export default function SchedulesPage() {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [sections, setSections] = useState<Section[]>([]);
@@ -180,6 +178,28 @@ export default function SchedulesPage() {
     fetchSchedules();
   }, [fetchMetadata, fetchSchedules]);
 
+  const getSectionsForProgram = useCallback(
+    (progName?: string) => {
+      if (!progName) return sections;
+      const pLower = progName.toLowerCase().trim();
+      const progObj = programs.find((p) => p.name === progName);
+      const codeLower = progObj ? progObj.code.toLowerCase().trim() : "";
+
+      const matched = sections.filter((sec) => {
+        if (!sec.program) return true;
+        const sProg = sec.program.toLowerCase().trim();
+        return (
+          sProg === pLower ||
+          sProg.includes(pLower) ||
+          pLower.includes(sProg) ||
+          (codeLower && (sProg === codeLower || sProg.includes(codeLower)))
+        );
+      });
+      return matched.length > 0 ? matched : sections;
+    },
+    [sections, programs]
+  );
+
   const uniqueTypes = Array.from(new Set(schedules.map((s) => s.type || "basic")));
   const uniqueSections = Array.from(new Set(sections.map((s) => s.section)));
 
@@ -213,9 +233,15 @@ export default function SchedulesPage() {
                 <CustomSelect
                   id="scheduleProgram"
                   value={formData.program || "በገና (Begena)"}
-                  onChange={(val) =>
-                    setFormData({ ...formData, program: val })
-                  }
+                  onChange={(val) => {
+                    const available = getSectionsForProgram(val);
+                    const keepSec = available.some((s) => s.section === formData.section);
+                    setFormData({
+                      ...formData,
+                      program: val,
+                      section: keepSec ? formData.section : "",
+                    });
+                  }}
                   options={programs.map((p) => ({
                     value: p.name,
                     label: `${p.name} (${p.code})`,
@@ -233,28 +259,14 @@ export default function SchedulesPage() {
                   placeholder="Choose section"
                   options={[
                     { value: "", label: "Choose section" },
-                    ...sections.map((sec) => ({
+                    ...getSectionsForProgram(formData.program).map((sec) => ({
                       value: sec.section,
-                      label: `${sec.section} (${sec.program || "General"})`,
+                      label: `${sec.section}${sec.program ? ` (${sec.program})` : ""}`,
                     })),
                   ]}
                 />
               </Field>
             </div>
-
-            <Field label="Batch Level / Type" htmlFor="scheduleType">
-              <CustomSelect
-                id="scheduleType"
-                value={formData.type || "basic"}
-                onChange={(val) =>
-                  setFormData({ ...formData, type: val })
-                }
-                options={scheduleTypes.map((type) => ({
-                  value: type,
-                  label: type,
-                }))}
-              />
-            </Field>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Session Day" htmlFor="scheduleDay">
@@ -287,7 +299,7 @@ export default function SchedulesPage() {
       />
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3">
+      <div className="relative z-20 flex flex-wrap gap-3">
         <input
           type="search"
           placeholder="Search by section or type..."
@@ -391,7 +403,15 @@ export default function SchedulesPage() {
                   <CustomSelect
                     id="editScheduleProgram"
                     value={data.program || "በገና (Begena)"}
-                    onChange={(val) => setData({ ...data, program: val })}
+                    onChange={(val) => {
+                      const available = getSectionsForProgram(val);
+                      const keepSec = available.some((s) => s.section === data.section);
+                      setData({
+                        ...data,
+                        program: val,
+                        section: keepSec ? data.section : "",
+                      });
+                    }}
                     options={programs.map((p) => ({
                       value: p.name,
                       label: `${p.name} (${p.code})`,
@@ -407,26 +427,14 @@ export default function SchedulesPage() {
                     placeholder="Choose section"
                     options={[
                       { value: "", label: "Choose section" },
-                      ...sections.map((sec) => ({
+                      ...getSectionsForProgram(data.program).map((sec) => ({
                         value: sec.section,
-                        label: sec.section,
+                        label: `${sec.section}${sec.program ? ` (${sec.program})` : ""}`,
                       })),
                     ]}
                   />
                 </Field>
               </div>
-
-              <Field label="Batch Level / Type" htmlFor="editScheduleType">
-                <CustomSelect
-                  id="editScheduleType"
-                  value={data.type || "basic"}
-                  onChange={(val) => setData({ ...data, type: val })}
-                  options={scheduleTypes.map((type) => ({
-                    value: type,
-                    label: type,
-                  }))}
-                />
-              </Field>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Session Day" htmlFor="editScheduleDay">

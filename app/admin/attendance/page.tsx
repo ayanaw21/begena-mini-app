@@ -289,11 +289,11 @@ export default function AttendancePage() {
 
       {activeTab === "daily" ? (
         <div className="space-y-4">
-          <Panel className="flex flex-wrap items-end gap-4 p-4">
+          <Panel className="relative z-20 flex flex-wrap items-end gap-4 p-4 overflow-visible">
             <Field
               label="Section"
               htmlFor="attendanceSection"
-              className="min-w-52 flex-1"
+              className="relative z-30 min-w-52 flex-1"
             >
               <CustomSelect
                 id="attendanceSection"
@@ -447,7 +447,7 @@ export default function AttendancePage() {
           </div>
 
           {/* Filters */}
-          <div className="flex flex-wrap gap-3">
+          <div className="relative z-20 flex flex-wrap gap-3">
             <CustomSelect
               className="w-auto min-w-[170px]"
               value={selectedProgFilter}
@@ -488,12 +488,11 @@ export default function AttendancePage() {
             </Panel>
           ) : (
             <Panel className="overflow-x-auto">
-              <table className="w-full min-w-[900px] text-left text-sm">
+              <table className="w-full min-w-[760px] text-left text-sm">
                 <thead>
                   <tr className="text-muted-foreground border-b border-white/5 text-xs tracking-wider uppercase">
                     <th className="px-4 py-2.5 font-medium">Student ID</th>
                     <th className="px-4 py-2.5 font-medium">Full Name</th>
-                    <th className="px-4 py-2.5 font-medium">Program / Section</th>
                     <th className="px-4 py-2.5 text-center font-medium">
                       Attended
                     </th>
@@ -512,10 +511,6 @@ export default function AttendancePage() {
                         {st.studentId}
                       </td>
                       <td className="px-4 py-3 font-medium">{st.fullName}</td>
-                      <td className="text-muted-foreground px-4 py-3">
-                        {st.program}
-                        <span className="block text-xs">{st.section}</span>
-                      </td>
                       <td className="px-4 py-3 text-center">
                         <span className="font-medium text-emerald-400">
                           {st.presentCount}

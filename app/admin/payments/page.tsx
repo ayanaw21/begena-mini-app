@@ -152,6 +152,19 @@ export default function PaymentsPage() {
     filterStatus,
   ]);
 
+  const filteredMatrixStudents = useMemo(() => {
+    return students.filter((s) => {
+      const idStr = s.studentId || s.begenaId || "";
+      const matchesSearch =
+        (s.fullName || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        idStr.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesProgram = filterProgram ? s.program === filterProgram : true;
+      const matchesSection = filterSection ? s.section === filterSection : true;
+      const matchesBatch = filterBatch ? s.batch === filterBatch : true;
+      return matchesSearch && matchesProgram && matchesSection && matchesBatch;
+    });
+  }, [students, searchQuery, filterProgram, filterSection, filterBatch]);
+
   // Action: Update status (Approve / Reject)
   const handleUpdateStatus = async (paymentId: string, status: "Approved" | "Rejected") => {
     setIsUpdatingStatus(paymentId);
@@ -290,7 +303,7 @@ export default function PaymentsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3">
+      <div className="relative z-20 flex flex-wrap gap-3">
         <input
           type="search"
           placeholder="Search by student name or ID..."
@@ -370,7 +383,6 @@ export default function PaymentsPage() {
           columns={[
             { key: "studentIdDisplay", label: "Student ID" },
             { key: "fullName", label: "Student Name" },
-            { key: "programSection", label: "Program & Section" },
             { key: "monthBatch", label: "Month & Batch" },
             { key: "screenshot", label: "Receipt" },
             { key: "statusDisplay", label: "Status" },
@@ -384,12 +396,6 @@ export default function PaymentsPage() {
               ...p,
               studentIdDisplay: (
                 <span className="text-primary font-mono text-xs">{idVal}</span>
-              ),
-              programSection: (
-                <div key={p._id}>
-                  <p className="text-sm">{p.program || "በገና (Begena)"}</p>
-                  <p className="text-muted-foreground text-xs">{p.section}</p>
-                </div>
               ),
               monthBatch: (
                 <div key={`${p._id}-mb`}>
@@ -496,12 +502,11 @@ export default function PaymentsPage() {
           />
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[900px] text-left text-sm">
+            <table className="w-full min-w-[760px] text-left text-sm">
               <thead>
                 <tr className="text-muted-foreground border-b border-white/5 text-xs tracking-wider uppercase">
                   <th className="px-4 py-2.5 font-medium">Student ID</th>
                   <th className="px-4 py-2.5 font-medium">Full Name</th>
-                  <th className="px-4 py-2.5 font-medium">Program & Section</th>
                   {ethiopianMonths.map((m) => (
                     <th key={m.key} className="px-3 py-2.5 text-center font-medium">
                       {m.label}
@@ -510,51 +515,58 @@ export default function PaymentsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {students.map((student) => {
-                  const sId = student.studentId || student.begenaId;
-                  const studentPayments = payments.filter(
-                    (p) => (p.studentId || p.begenaId) === sId
-                  );
-
-                  return (
-                    <tr
-                      key={student._id || sId}
-                      className="hover:bg-white/[0.03] transition-colors"
+                {filteredMatrixStudents.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={2 + ethiopianMonths.length}
+                      className="text-muted-foreground py-8 text-center text-sm"
                     >
-                      <td className="text-primary px-4 py-3 font-mono text-xs">
-                        {sId}
-                      </td>
-                      <td className="px-4 py-3 font-medium">
-                        {student.fullName}
-                      </td>
-                      <td className="text-muted-foreground px-4 py-3 text-xs">
-                        {student.program || "Begena"}
-                        <span className="block">{student.section}</span>
-                      </td>
+                      No students match the selected filters.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredMatrixStudents.map((student) => {
+                    const sId = student.studentId || student.begenaId;
+                    const studentPayments = payments.filter(
+                      (p) => (p.studentId || p.begenaId) === sId
+                    );
 
-                      {ethiopianMonths.map((m) => {
-                        const pay = studentPayments.find(
-                          (p) => p.month?.toLowerCase() === m.key.toLowerCase()
-                        );
-                        const st = pay ? pay.status || "Pending" : "Unpaid";
+                    return (
+                      <tr
+                        key={student._id || sId}
+                        className="hover:bg-white/[0.03] transition-colors"
+                      >
+                        <td className="text-primary px-4 py-3 font-mono text-xs">
+                          {sId}
+                        </td>
+                        <td className="px-4 py-3 font-medium">
+                          {student.fullName}
+                        </td>
 
-                        return (
-                          <td key={m.key} className="px-3 py-3 text-center">
-                            {st === "Unpaid" ? (
-                              <span className="text-muted-foreground text-xs">
-                                —
-                              </span>
-                            ) : (
-                              <Badge tone={statusTone(st)}>
-                                {st === "Approved" ? "Paid" : st}
-                              </Badge>
-                            )}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  );
-                })}
+                        {ethiopianMonths.map((m) => {
+                          const pay = studentPayments.find(
+                            (p) => p.month?.toLowerCase() === m.key.toLowerCase()
+                          );
+                          const st = pay ? pay.status || "Pending" : "Unpaid";
+
+                          return (
+                            <td key={m.key} className="px-3 py-3 text-center">
+                              {st === "Unpaid" ? (
+                                <span className="text-muted-foreground text-xs">
+                                  —
+                                </span>
+                              ) : (
+                                <Badge tone={statusTone(st)}>
+                                  {st === "Approved" ? "Paid" : st}
+                                </Badge>
+                              )}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
