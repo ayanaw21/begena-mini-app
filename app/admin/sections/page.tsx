@@ -10,7 +10,6 @@ import RowActions from "@/components/RowActions";
 import { Badge } from "@/components/ui/badge";
 import { Field, PageHeader } from "@/components/ui/page";
 import CustomSelect from "@/components/ui/custom-select";
-import Figure from "@/components/ui/figure";
 import { siteImages } from "@/lib/images";
 import toast from "react-hot-toast";
 
@@ -154,30 +153,16 @@ export default function SectionsPage() {
 
   return (
     <div className="space-y-6">
-      <Figure
-        src={siteImages.scheduleBanner}
-        alt="Sections"
-        ratio="ultrawide"
-        className="min-h-[140px] sm:min-h-[180px]"
-        priority
-        scrim
-      >
-        <p className="text-primary text-xs font-semibold tracking-[0.18em] uppercase">
-          አስተዳዳሪ ፖርታል · Admin Portal
-        </p>
-        <h1 className="mt-1.5 text-2xl font-bold sm:text-3xl text-foreground">
-          ምድቦች እና መምህራን (Sections & Teachers)
-        </h1>
-      </Figure>
-
       <PageHeader
-        title="Sections & Teachers"
+        eyebrow="አስተዳዳሪ ፖርታል · Admin Portal"
+        title="ምድቦች እና መምህራን (Sections & Teachers)"
         description="Class sections and the teachers assigned to each one."
         action={
           <ModalForm
             title="Create New Section"
             triggerText="Add Section"
             onSubmit={handleCreateSection}
+            image={siteImages.adminTeacher}
           >
             <Field label="Program" htmlFor="sectionProgram" required>
               <CustomSelect

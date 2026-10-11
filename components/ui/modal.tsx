@@ -13,6 +13,7 @@ type ModalProps = {
   description?: React.ReactNode;
   footer?: React.ReactNode;
   className?: string;
+  image?: import("@/lib/images").SiteImage;
   children?: React.ReactNode;
 };
 
@@ -23,6 +24,7 @@ function Modal({
   description,
   footer,
   className,
+  image,
   children,
 }: ModalProps) {
   React.useEffect(() => {
@@ -64,12 +66,12 @@ function Modal({
         {/* Photo panel background layer for form modals */}
         <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
           <Image
-            src={siteImages.authPanel}
+            src={image || siteImages.adminCloseup || siteImages.authPanel}
             alt=""
             aria-hidden
             fill
             sizes="600px"
-            className="object-cover opacity-20"
+            className="object-cover opacity-25"
           />
           <div className="from-surface/85 via-surface/92 to-surface absolute inset-0 bg-gradient-to-b backdrop-blur-xs" />
         </div>

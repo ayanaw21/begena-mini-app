@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import Image from "next/image";
+import { SiteImage } from "@/lib/images";
 import { cn } from "@/lib/utils";
 
 interface Column {
@@ -14,12 +15,27 @@ interface DataTableProps {
   columns: Column[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any[]; // Each row is an object with keys matching columns
+  image?: SiteImage;
 }
 
-const DataTable: React.FC<DataTableProps> = ({ columns, data }) => {
+const DataTable: React.FC<DataTableProps> = ({ columns, data, image }) => {
   return (
-    <div className="bg-surface w-full overflow-x-auto rounded-xl border border-white/5">
-      <table className="w-full min-w-[500px] text-left text-sm">
+    <div className="bg-surface relative w-full overflow-hidden rounded-xl border border-white/10 shadow-xl">
+      {image ? (
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <Image
+            src={image}
+            alt=""
+            aria-hidden
+            fill
+            sizes="100vw"
+            className="object-cover opacity-15"
+          />
+          <div className="from-surface/90 via-surface/75 to-surface/90 absolute inset-0 bg-gradient-to-b" />
+        </div>
+      ) : null}
+      <div className="relative z-10 w-full overflow-x-auto">
+        <table className="w-full min-w-[500px] text-left text-sm">
         <thead>
           <tr className="text-muted-foreground border-b border-white/5 text-xs tracking-wider uppercase">
             {columns.map((col) => (
@@ -64,6 +80,7 @@ const DataTable: React.FC<DataTableProps> = ({ columns, data }) => {
           )}
         </tbody>
       </table>
+      </div>
     </div>
   );
 };

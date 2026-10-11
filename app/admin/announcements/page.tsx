@@ -1,15 +1,14 @@
 "use client";
 import { useEffect, useState, useMemo } from "react";
 import api from "@/lib/api";
-import DataTable from "@/components/DataTable";
+import DataCards from "@/components/DataCards";
 import ModalForm from "@/components/ModalForm";
 import ConfirmModal from "@/components/ConfirmModal";
 import EditModal from "@/components/EditModal";
 import RowActions from "@/components/RowActions";
 import { Field, PageHeader } from "@/components/ui/page";
 import CustomSelect from "@/components/ui/custom-select";
-import Figure from "@/components/ui/figure";
-import { siteImages } from "@/lib/images";
+import { siteImages, adminCardBackgrounds } from "@/lib/images";
 import toast from "react-hot-toast";
 import { AxiosError } from "axios";
 
@@ -131,29 +130,15 @@ export default function AnnouncementsPage() {
 
   return (
     <div className="space-y-6">
-      <Figure
-        src={siteImages.begenaGirl}
-        alt="Announcements"
-        ratio="ultrawide"
-        className="min-h-[140px] sm:min-h-[180px]"
-        priority
-        scrim
-      >
-        <p className="text-primary text-xs font-semibold tracking-[0.18em] uppercase">
-          አስተዳዳሪ ፖርታል · Admin Portal
-        </p>
-        <h1 className="mt-1.5 text-2xl font-bold sm:text-3xl text-foreground">
-          የማስታወቂያ ክፍል (Announcements)
-        </h1>
-      </Figure>
-
       <PageHeader
-        title="Announcements"
+        eyebrow="አስተዳዳሪ ፖርታል · Admin Portal"
+        title="የማስታወቂያ ክፍል (Announcements)"
         description="Notices broadcast to students on the public home page."
         action={
           <ModalForm
             title="Add Announcement"
             onSubmit={handleCreateAnnouncement}
+            image={siteImages.adminAncient}
           >
             <Field label="Title" htmlFor="announcementTitle" required>
               <input
@@ -225,21 +210,15 @@ export default function AnnouncementsPage() {
         />
       </div>
 
-      <DataTable
-        columns={[
-          { key: "title", label: "Title" },
-          { key: "body", label: "Body" },
-          { key: "date", label: "Date" },
-          { key: "time", label: "Time" },
-          { key: "actions", label: "" },
-        ]}
-        data={filteredAnnouncements.map((a) => ({
-          ...a,
-          body: (
-            <span className="text-muted-foreground block max-w-xs truncate">
-              {a.body}
-            </span>
-          ),
+      <DataCards
+        emptyTitle="No announcements posted"
+        emptyDescription="Create an announcement to post it on the home page."
+        items={filteredAnnouncements.map((a, idx) => ({
+          id: a._id || a.title,
+          title: a.title,
+          subtitle: [a.date, a.time].filter(Boolean).join(" · ") || undefined,
+          image: adminCardBackgrounds[idx % adminCardBackgrounds.length],
+          fields: [{ label: "Content", value: a.body, wide: true }],
           actions: (
             <RowActions
               key={a._id}

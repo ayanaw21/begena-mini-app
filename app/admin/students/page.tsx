@@ -10,7 +10,6 @@ import RowActions from "@/components/RowActions";
 import { Badge } from "@/components/ui/badge";
 import { Field, PageHeader } from "@/components/ui/page";
 import CustomSelect from "@/components/ui/custom-select";
-import Figure from "@/components/ui/figure";
 import { siteImages } from "@/lib/images";
 import toast from "react-hot-toast";
 
@@ -209,30 +208,16 @@ export default function StudentsPage() {
 
   return (
     <div className="space-y-6">
-      <Figure
-        src={siteImages.studentsBanner}
-        alt="Students"
-        ratio="ultrawide"
-        className="min-h-[140px] sm:min-h-[180px]"
-        priority
-        scrim
-      >
-        <p className="text-primary text-xs font-semibold tracking-[0.18em] uppercase">
-          አስተዳዳሪ ፖርታል · Admin Portal
-        </p>
-        <h1 className="mt-1.5 text-2xl font-bold sm:text-3xl text-foreground">
-          የተማሪዎች ዝርዝር (Students Registry)
-        </h1>
-      </Figure>
-
       <PageHeader
-        title="Students"
+        eyebrow="አስተዳዳሪ ፖርታል · Admin Portal"
+        title="የተማሪዎች ዝርዝር (Students Registry)"
         description={`${filteredStudents.length} of ${students.length} students shown.`}
         action={
           <ModalForm
             title="Add Student"
             triggerText="Add Student"
             onSubmit={handleCreateStudent}
+            image={siteImages.adminPhoto1}
           >
             <Field label="Full Name" htmlFor="studentFullName" required>
               <input
@@ -378,6 +363,7 @@ export default function StudentsPage() {
       </div>
 
       <DataTable
+        image={siteImages.adminCard3}
         columns={[
           { key: "fullName", label: "Full Name" },
           { key: "studentIdDisplay", label: "Student ID" },

@@ -10,7 +10,6 @@ import RowActions from "@/components/RowActions";
 import { Badge } from "@/components/ui/badge";
 import { Field, PageHeader } from "@/components/ui/page";
 import CustomSelect from "@/components/ui/custom-select";
-import Figure from "@/components/ui/figure";
 import { siteImages } from "@/lib/images";
 import toast from "react-hot-toast";
 
@@ -221,30 +220,16 @@ export default function SchedulesPage() {
 
   return (
     <div className="space-y-6">
-      <Figure
-        src={siteImages.scheduleCard}
-        alt="Class Schedules"
-        ratio="ultrawide"
-        className="min-h-[140px] sm:min-h-[180px]"
-        priority
-        scrim
-      >
-        <p className="text-primary text-xs font-semibold tracking-[0.18em] uppercase">
-          አስተዳዳሪ ፖርታል · Admin Portal
-        </p>
-        <h1 className="mt-1.5 text-2xl font-bold sm:text-3xl text-foreground">
-          የትምህርት ክፍለ-ጊዜ (Class Schedules)
-        </h1>
-      </Figure>
-
       <PageHeader
-        title="Class Schedules"
+        eyebrow="አስተዳዳሪ ፖርታል · Admin Portal"
+        title="የትምህርት ክፍለ-ጊዜ (Class Schedules)"
         description="Weekly session times published to students per section."
         action={
           <ModalForm
             title="Add Class Schedule"
             triggerText="Add Schedule"
             onSubmit={handleCreateSchedule}
+            image={siteImages.adminCard2}
           >
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Program" htmlFor="scheduleProgram">

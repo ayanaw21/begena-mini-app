@@ -7,8 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Field, PageHeader, Panel } from "@/components/ui/page";
 import CustomSelect from "@/components/ui/custom-select";
-import Figure from "@/components/ui/figure";
-import { siteImages } from "@/lib/images";
+import PhotoPanel from "@/components/ui/photo-panel";
+import { siteImages, adminCardBackgrounds } from "@/lib/images";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -263,24 +263,9 @@ export default function AttendancePage() {
 
   return (
     <div className="space-y-6">
-      <Figure
-        src={siteImages.noticeCard}
-        alt="Attendance"
-        ratio="ultrawide"
-        className="min-h-[140px] sm:min-h-[180px]"
-        priority
-        scrim
-      >
-        <p className="text-primary text-xs font-semibold tracking-[0.18em] uppercase">
-          አስተዳዳሪ ፖርታል · Admin Portal
-        </p>
-        <h1 className="mt-1.5 text-2xl font-bold sm:text-3xl text-foreground">
-          የክትትል እና የውሳኔ ማዕከል (Attendance & Decisions)
-        </h1>
-      </Figure>
-
       <PageHeader
-        title="Attendance & Decision Center"
+        eyebrow="አስተዳዳሪ ፖርታል · Admin Portal"
+        title="የክትትል እና የውሳኔ ማዕከል (Attendance & Decisions)"
         description="Track daily class attendance and monitor students at risk of warnings or suspension."
         action={
           <div className="bg-surface inline-flex rounded-lg border border-white/5 p-1">
@@ -307,7 +292,11 @@ export default function AttendancePage() {
 
       {activeTab === "daily" ? (
         <div className="space-y-4">
-          <Panel className="relative z-20 flex flex-wrap items-end gap-4 p-4 overflow-visible">
+          <PhotoPanel
+            src={siteImages.adminCard4}
+            className="relative z-20 border-white/10"
+            contentClassName="flex flex-wrap items-end gap-4 p-4 overflow-visible"
+          >
             <Field
               label="Section"
               htmlFor="attendanceSection"
@@ -346,7 +335,7 @@ export default function AttendancePage() {
                 {savingDaily ? "Saving..." : "Save Attendance"}
               </Button>
             )}
-          </Panel>
+          </PhotoPanel>
 
           {!selectedSection ? (
             <Panel>
@@ -368,7 +357,11 @@ export default function AttendancePage() {
               />
             </Panel>
           ) : (
-            <Panel className="overflow-x-auto">
+            <PhotoPanel
+              src={siteImages.adminCard1}
+              className="border-white/10"
+              contentClassName="p-0 overflow-x-auto"
+            >
               <div className="text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 border-b border-white/5 px-4 py-2.5 text-xs">
                 {attendanceOptions.map((option) => (
                   <span key={option.value} className="flex items-center gap-1.5">
@@ -420,7 +413,7 @@ export default function AttendancePage() {
                   ))}
                 </tbody>
               </table>
-            </Panel>
+            </PhotoPanel>
           )}
         </div>
       ) : (
@@ -452,15 +445,20 @@ export default function AttendancePage() {
                 }%`,
                 className: "text-emerald-400",
               },
-            ].map((stat) => (
-              <Panel key={stat.label} className="p-4">
+            ].map((stat, idx) => (
+              <PhotoPanel
+                key={stat.label}
+                src={adminCardBackgrounds[idx % adminCardBackgrounds.length]}
+                className="border-white/10"
+                contentClassName="p-4"
+              >
                 <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
                   {stat.label}
                 </p>
                 <p className={cn("mt-1.5 text-2xl font-bold", stat.className)}>
                   {stat.value}
                 </p>
-              </Panel>
+              </PhotoPanel>
             ))}
           </div>
 
@@ -505,7 +503,11 @@ export default function AttendancePage() {
               />
             </Panel>
           ) : (
-            <Panel className="overflow-x-auto">
+            <PhotoPanel
+              src={siteImages.adminAncient}
+              className="border-white/10"
+              contentClassName="p-0 overflow-x-auto"
+            >
               <table className="w-full min-w-[760px] text-left text-sm">
                 <thead>
                   <tr className="text-muted-foreground border-b border-white/5 text-xs tracking-wider uppercase">
@@ -602,7 +604,7 @@ export default function AttendancePage() {
                   ))}
                 </tbody>
               </table>
-            </Panel>
+            </PhotoPanel>
           )}
         </div>
       )}

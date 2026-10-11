@@ -3,11 +3,14 @@ import { ReactNode, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 
+import { SiteImage } from "@/lib/images";
+
 interface ModalFormProps {
   title: string;
   children?: ReactNode;
   onSubmit: () => void | Promise<void>;
   triggerText?: string;
+  image?: SiteImage;
 }
 
 export default function ModalForm({
@@ -15,6 +18,7 @@ export default function ModalForm({
   children,
   onSubmit,
   triggerText,
+  image,
 }: ModalFormProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -39,6 +43,7 @@ export default function ModalForm({
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         title={title}
+        image={image}
         footer={
           <>
             <Button variant="ghost" onClick={() => setIsOpen(false)}>

@@ -8,10 +8,10 @@ import RowActions from "@/components/RowActions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
-import { Field, PageHeader, Panel, PanelHeader } from "@/components/ui/page";
+import { Field, PageHeader, PanelHeader } from "@/components/ui/page";
 import CustomSelect from "@/components/ui/custom-select";
-import Figure from "@/components/ui/figure";
-import { siteImages } from "@/lib/images";
+import PhotoPanel from "@/components/ui/photo-panel";
+import { siteImages, adminCardBackgrounds } from "@/lib/images";
 import { cn } from "@/lib/utils";
 import { ImageIcon } from "lucide-react";
 import toast from "react-hot-toast";
@@ -239,24 +239,9 @@ export default function PaymentsPage() {
 
   return (
     <div className="space-y-6">
-      <Figure
-        src={siteImages.paymentBanner}
-        alt="Payments"
-        ratio="ultrawide"
-        className="min-h-[140px] sm:min-h-[180px]"
-        priority
-        scrim
-      >
-        <p className="text-primary text-xs font-semibold tracking-[0.18em] uppercase">
-          አስተዳዳሪ ፖርታል · Admin Portal
-        </p>
-        <h1 className="mt-1.5 text-2xl font-bold sm:text-3xl text-foreground">
-          የክፍያ ማረጋገጫ (Payments & Verification)
-        </h1>
-      </Figure>
-
       <PageHeader
-        title="Payments & Verification"
+        eyebrow="አስተዳዳሪ ፖርታል · Admin Portal"
+        title="የክፍያ ማረጋገጫ (Payments & Verification)"
         description="Review submitted receipts, verify bank transfer proofs and track monthly payment status."
         action={
           <div className="bg-surface inline-flex rounded-lg border border-white/5 p-1">
@@ -308,15 +293,20 @@ export default function PaymentsPage() {
             value: stats.rejected,
             className: "text-red-400",
           },
-        ].map((stat) => (
-          <Panel key={stat.label} className="bg-surface/85 backdrop-blur-md p-4 border border-white/10">
+        ].map((stat, idx) => (
+          <PhotoPanel
+            key={stat.label}
+            src={adminCardBackgrounds[idx % adminCardBackgrounds.length]}
+            className="border-white/10"
+            contentClassName="p-4"
+          >
             <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
               {stat.label}
             </p>
             <p className={cn("mt-1.5 text-2xl font-bold", stat.className)}>
               {stat.value}
             </p>
-          </Panel>
+          </PhotoPanel>
         ))}
       </div>
 
@@ -398,6 +388,7 @@ export default function PaymentsPage() {
       {/* Tab 1: receipts */}
       {activeTab === "list" && (
         <DataTable
+          image={siteImages.adminCard5}
           columns={[
             {
               key: "studentIdDisplay",
@@ -509,7 +500,7 @@ export default function PaymentsPage() {
 
       {/* Tab 2: monthly matrix */}
       {activeTab === "matrix" && (
-        <Panel>
+        <PhotoPanel src={siteImages.adminAncient} contentClassName="p-0">
           <PanelHeader
             title="Monthly payment matrix"
             className="flex-col sm:flex-row sm:items-center gap-3"
@@ -602,7 +593,7 @@ export default function PaymentsPage() {
               </tbody>
             </table>
           </div>
-        </Panel>
+        </PhotoPanel>
       )}
 
       {/* Receipt inspection */}

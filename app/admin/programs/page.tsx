@@ -8,7 +8,6 @@ import EditModal from "@/components/EditModal";
 import RowActions from "@/components/RowActions";
 import { Badge } from "@/components/ui/badge";
 import { Field, PageHeader } from "@/components/ui/page";
-import Figure from "@/components/ui/figure";
 import { siteImages } from "@/lib/images";
 import toast from "react-hot-toast";
 
@@ -105,30 +104,16 @@ export default function ProgramsPage() {
 
   return (
     <div className="space-y-6">
-      <Figure
-        src={siteImages.mezmurHero}
-        alt="Programs"
-        ratio="ultrawide"
-        className="min-h-[140px] sm:min-h-[180px]"
-        priority
-        scrim
-      >
-        <p className="text-primary text-xs font-semibold tracking-[0.18em] uppercase">
-          አስተዳዳሪ ፖርታል · Admin Portal
-        </p>
-        <h1 className="mt-1.5 text-2xl font-bold sm:text-3xl text-foreground">
-          የስልጠና ፕሮግራሞች (Programs)
-        </h1>
-      </Figure>
-
       <PageHeader
-        title="Programs"
+        eyebrow="አስተዳዳሪ ፖርታል · Admin Portal"
+        title="የስልጠና ፕሮግራሞች (Programs)"
         description="Instrument programs and the ID code prefix assigned to each."
         action={
           <ModalForm
             title="Create New Program"
             triggerText="Add Program"
             onSubmit={handleCreateProgram}
+            image={siteImages.adminCard1}
           >
             <Field label="Program Name" htmlFor="programName" required>
               <input

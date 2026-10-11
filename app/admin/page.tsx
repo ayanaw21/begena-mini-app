@@ -28,21 +28,21 @@ const sections = [
         icon: BookOpen,
         title: "Programs",
         description: "Begena, Masinko, Kirar and other instruments.",
-        image: siteImages.mezmurHero,
+        image: siteImages.adminCard1,
       },
       {
         href: "/admin/sections",
         icon: Layers,
         title: "Sections & Teachers",
         description: "Main and assistant teacher assignments.",
-        image: siteImages.scheduleBanner,
+        image: siteImages.adminTeacher,
       },
       {
         href: "/admin/schedules",
         icon: CalendarDays,
         title: "Class Schedules",
         description: "Flexible weekly timetables per section.",
-        image: siteImages.scheduleCard,
+        image: siteImages.adminCard2,
       },
     ],
   },
@@ -54,21 +54,21 @@ const sections = [
         icon: Users,
         title: "Students",
         description: "In-person registration and student ID records.",
-        image: siteImages.studentsBanner,
+        image: siteImages.adminPhoto1,
       },
       {
         href: "/admin/staff",
         icon: UserCog,
         title: "Staff & Instructors",
         description: "Admins, main and assistant staff.",
-        image: siteImages.blessingBegena,
+        image: siteImages.adminPhoto2,
       },
       {
         href: "/admin/attendance",
         icon: ClipboardCheck,
         title: "Attendance",
         description: "Track present, absent and at-risk students.",
-        image: siteImages.noticeCard,
+        image: siteImages.adminPhoto3,
       },
     ],
   },
@@ -80,14 +80,14 @@ const sections = [
         icon: CreditCard,
         title: "Payments",
         description: "Verify receipt slips, approve or reject.",
-        image: siteImages.paymentBanner,
+        image: siteImages.adminCard5,
       },
       {
         href: "/admin/announcements",
         icon: Megaphone,
         title: "Announcements",
         description: "Broadcast notices to students.",
-        image: siteImages.begenaGirl,
+        image: siteImages.adminAncient,
       },
     ],
   },
@@ -121,16 +121,17 @@ export default function AdminHome() {
       <Figure
         src={siteImages.zmarieHero}
         alt="Control Panel"
-        ratio="wide"
-        className="min-h-[200px] sm:min-h-[260px]"
+        ratio="auto"
+        className="w-full max-w-full h-[200px] sm:h-[240px]"
         priority
         scrim
       >
         <p className="text-primary text-xs font-semibold tracking-[0.18em] uppercase">
-          አስተዳዳሪ ፖርታል · Admin Dashboard
+        Admin Dashboard
         </p>
         <h1 className="mt-1.5 text-2xl font-bold sm:text-3xl text-foreground">
-          የአስተዳዳሪ ቁጥጥር ማዕከል (Control Panel)
+         
+         
         </h1>
         <p className="text-white/80 max-w-2xl text-xs sm:text-sm mt-1">
           የስልጠና ፕሮግራሞችን፣ የተማሪዎች ምዝገባን፣ የምድብ እና የመምህራን ስምሪትን፣ የክፍያ እና የክትትል ሁኔታዎችን በአንድ ቦታ ይቆጣጠሩ።

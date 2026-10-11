@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import api from "@/lib/api";
-import DataTable from "@/components/DataTable";
+import DataCards from "@/components/DataCards";
 import ModalForm from "@/components/ModalForm";
 import ConfirmModal from "@/components/ConfirmModal";
 import EditModal from "@/components/EditModal";
@@ -9,8 +9,7 @@ import RowActions from "@/components/RowActions";
 import { Badge } from "@/components/ui/badge";
 import { Field, PageHeader } from "@/components/ui/page";
 import CustomSelect from "@/components/ui/custom-select";
-import Figure from "@/components/ui/figure";
-import { siteImages } from "@/lib/images";
+import { siteImages, adminCardBackgrounds } from "@/lib/images";
 import toast from "react-hot-toast";
 
 interface StaffMember {
@@ -108,30 +107,16 @@ export default function StaffPage() {
 
   return (
     <div className="space-y-6">
-      <Figure
-        src={siteImages.blessingBegena}
-        alt="Staff"
-        ratio="ultrawide"
-        className="min-h-[140px] sm:min-h-[180px]"
-        priority
-        scrim
-      >
-        <p className="text-primary text-xs font-semibold tracking-[0.18em] uppercase">
-          አስተዳዳሪ ፖርታል · Admin Portal
-        </p>
-        <h1 className="mt-1.5 text-2xl font-bold sm:text-3xl text-foreground">
-          አስተማሪዎች እና አባላት (Staff & Instructors)
-        </h1>
-      </Figure>
-
       <PageHeader
-        title="Staff & Instructors"
+        eyebrow="አስተዳዳሪ ፖርታል · Admin Portal"
+        title="አስተማሪዎች እና አባላት (Staff & Instructors)"
         description="Admins and teachers who can sign in to the panel."
         action={
           <ModalForm
             title="Create New Staff Member"
             triggerText="Add Staff"
             onSubmit={handleCreateStaff}
+            image={siteImages.adminTeacher}
           >
             <Field label="Full Name" htmlFor="staffName" required>
               <input
@@ -190,21 +175,23 @@ export default function StaffPage() {
         }
       />
 
-      <DataTable
-        columns={[
-          { key: "fullName", label: "Full Name" },
-          { key: "role", label: "Role" },
-          { key: "phoneNumber", label: "Phone Number" },
-          { key: "actions", label: "" },
-        ]}
-        data={staff.map((s) => ({
-          ...s,
-          role: (
+      <DataCards
+        emptyTitle="No staff members registered"
+        emptyDescription="Create a staff member to grant access."
+        items={staff.map((s, idx) => ({
+          id: s._id || s.fullName,
+          title: s.fullName,
+          subtitle: s.phoneNumber || "No phone number",
+          badge: (
             <Badge tone={s.role === "admin" ? "primary" : "info"}>
               {s.role === "admin" ? "Admin & Instructor" : "Teacher"}
             </Badge>
           ),
-          phoneNumber: s.phoneNumber || "—",
+          image: adminCardBackgrounds[idx % adminCardBackgrounds.length],
+          fields: [
+            { label: "Role", value: s.role === "admin" ? "System Admin" : "Instructor" },
+            { label: "Phone", value: s.phoneNumber || "—" },
+          ],
           actions: (
             <RowActions
               key={s._id}

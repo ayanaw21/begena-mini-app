@@ -17,6 +17,20 @@ import lalibelaPriest from "@/public/images/lalibela-priest.webp";
 import blessingBegena from "@/public/images/blessing-begena.webp";
 import zmarieMshtBegena from "@/public/images/zmarie-msht-begena.webp";
 
+import adminPhoto1 from "@/public/images/admin-photo-1.webp";
+import adminPhoto2 from "@/public/images/admin-photo-2.webp";
+import adminPhoto3 from "@/public/images/admin-photo-3.webp";
+import adminCard1 from "@/public/images/admin-card-1.webp";
+import adminCard2 from "@/public/images/admin-card-2.webp";
+import adminCard3 from "@/public/images/admin-card-3.webp";
+import adminCard4 from "@/public/images/admin-card-4.webp";
+import adminCard5 from "@/public/images/admin-card-5.webp";
+import adminAncient from "@/public/images/admin-ancient.webp";
+import adminCloseup from "@/public/images/admin-closeup.webp";
+import adminHeart from "@/public/images/admin-heart.webp";
+import adminOrthodox from "@/public/images/admin-orthodox.webp";
+import adminTeacher from "@/public/images/admin-teacher.webp";
+
 /**
  * Central registry for site imagery.
  *
@@ -69,6 +83,20 @@ export const siteImages: {
   begenaSunlight: SiteImage;
   /** Zmarie msht begena hero photo. */
   zmarieHero: SiteImage;
+  /** New admin card and modal images */
+  adminPhoto1: SiteImage;
+  adminPhoto2: SiteImage;
+  adminPhoto3: SiteImage;
+  adminCard1: SiteImage;
+  adminCard2: SiteImage;
+  adminCard3: SiteImage;
+  adminCard4: SiteImage;
+  adminCard5: SiteImage;
+  adminAncient: SiteImage;
+  adminCloseup: SiteImage;
+  adminHeart: SiteImage;
+  adminOrthodox: SiteImage;
+  adminTeacher: SiteImage;
 } = {
   hero: zmarieMshtBegena,
   about: begenaEnsemble,
@@ -88,4 +116,33 @@ export const siteImages: {
   blessingBegena: blessingBegena,
   begenaSunlight: begenaSunlight,
   zmarieHero: zmarieMshtBegena,
+  adminPhoto1: adminPhoto1,
+  adminPhoto2: adminPhoto2,
+  adminPhoto3: adminPhoto3,
+  adminCard1: adminCard1,
+  adminCard2: adminCard2,
+  adminCard3: adminCard3,
+  adminCard4: adminCard4,
+  adminCard5: adminCard5,
+  adminAncient: adminAncient,
+  adminCloseup: adminCloseup,
+  adminHeart: adminHeart,
+  adminOrthodox: adminOrthodox,
+  adminTeacher: adminTeacher,
 };
+
+export const adminCardBackgrounds: SiteImage[] = [
+  adminCard1,
+  adminCard2,
+  adminCard3,
+  adminCard4,
+  adminCard5,
+  adminAncient,
+  adminHeart,
+  adminOrthodox,
+  adminTeacher,
+  adminPhoto1,
+  adminPhoto2,
+  adminPhoto3,
+  adminCloseup,
+];
