@@ -15,6 +15,7 @@ import begenaGirl from "@/public/images/begena-girl.webp";
 import begenaMisc04 from "@/public/images/begena-misc-04.webp";
 import lalibelaPriest from "@/public/images/lalibela-priest.webp";
 import blessingBegena from "@/public/images/blessing-begena.webp";
+import zmarieMshtBegena from "@/public/images/zmarie-msht-begena.webp";
 
 /**
  * Central registry for site imagery.
@@ -64,8 +65,12 @@ export const siteImages: {
   lalibelaPriest: SiteImage;
   /** Blessing begena background image. 1400x700. */
   blessingBegena: SiteImage;
+  /** Begena sunlight image. */
+  begenaSunlight: SiteImage;
+  /** Zmarie msht begena hero photo. */
+  zmarieHero: SiteImage;
 } = {
-  hero: begenaSunlight,
+  hero: zmarieMshtBegena,
   about: begenaEnsemble,
   mezmurHero: begenaOrnate,
   begenaHistory: begenaDavid,
@@ -81,4 +86,6 @@ export const siteImages: {
   begenaMisc04: begenaMisc04,
   lalibelaPriest: lalibelaPriest,
   blessingBegena: blessingBegena,
+  begenaSunlight: begenaSunlight,
+  zmarieHero: zmarieMshtBegena,
 };

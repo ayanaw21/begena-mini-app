@@ -50,7 +50,8 @@ const Home = () => {
             <Figure
               src={siteImages.hero}
               alt="የበገና መሳሪያ"
-              ratio="ultrawide"
+              ratio="wide"
+              className="min-h-[280px] sm:min-h-[360px] md:min-h-[420px]"
               priority
               scrim
             >
