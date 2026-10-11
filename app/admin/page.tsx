@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getValidToken } from "@/lib/auth";
 import PhotoPanel from "@/components/ui/photo-panel";
+import Figure from "@/components/ui/figure";
 import { siteImages } from "@/lib/images";
 import {
   BookOpen,
@@ -117,23 +118,24 @@ export default function AdminHome() {
 
   return (
     <div className="space-y-8">
-      <PhotoPanel
-        src={siteImages.authPanel}
-        className="border-primary/25 shadow-2xl"
-        contentClassName="p-6 sm:p-8"
+      <Figure
+        src={siteImages.zmarieHero}
+        alt="Control Panel"
+        ratio="wide"
+        className="min-h-[200px] sm:min-h-[260px]"
+        priority
+        scrim
       >
-        <div className="space-y-2">
-          <span className="text-primary text-xs font-semibold tracking-[0.18em] uppercase">
-            አስተዳዳሪ ፖርታል (Admin Dashboard)
-          </span>
-          <h1 className="text-2xl font-bold sm:text-3xl text-foreground">
-            Control Panel
-          </h1>
-          <p className="text-muted-foreground max-w-2xl text-sm leading-relaxed sm:text-base">
-            Manage programs, student registrations, teacher assignments, weekly schedules, monthly payments, and announcements for the Begena class.
-          </p>
-        </div>
-      </PhotoPanel>
+        <p className="text-primary text-xs font-semibold tracking-[0.18em] uppercase">
+          አስተዳዳሪ ፖርታል · Admin Dashboard
+        </p>
+        <h1 className="mt-1.5 text-2xl font-bold sm:text-3xl text-foreground">
+          የአስተዳዳሪ ቁጥጥር ማዕከል (Control Panel)
+        </h1>
+        <p className="text-white/80 max-w-2xl text-xs sm:text-sm mt-1">
+          የስልጠና ፕሮግራሞችን፣ የተማሪዎች ምዝገባን፣ የምድብ እና የመምህራን ስምሪትን፣ የክፍያ እና የክትትል ሁኔታዎችን በአንድ ቦታ ይቆጣጠሩ።
+        </p>
+      </Figure>
 
       {sections.map((section) => (
         <section key={section.heading} className="space-y-3">

@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { Field, PageHeader, Panel, PanelHeader } from "@/components/ui/page";
 import CustomSelect from "@/components/ui/custom-select";
+import Figure from "@/components/ui/figure";
+import { siteImages } from "@/lib/images";
 import { cn } from "@/lib/utils";
 import { ImageIcon } from "lucide-react";
 import toast from "react-hot-toast";
@@ -237,6 +239,22 @@ export default function PaymentsPage() {
 
   return (
     <div className="space-y-6">
+      <Figure
+        src={siteImages.paymentBanner}
+        alt="Payments"
+        ratio="ultrawide"
+        className="min-h-[140px] sm:min-h-[180px]"
+        priority
+        scrim
+      >
+        <p className="text-primary text-xs font-semibold tracking-[0.18em] uppercase">
+          አስተዳዳሪ ፖርታል · Admin Portal
+        </p>
+        <h1 className="mt-1.5 text-2xl font-bold sm:text-3xl text-foreground">
+          የክፍያ ማረጋገጫ (Payments & Verification)
+        </h1>
+      </Figure>
+
       <PageHeader
         title="Payments & Verification"
         description="Review submitted receipts, verify bank transfer proofs and track monthly payment status."
@@ -494,7 +512,7 @@ export default function PaymentsPage() {
         <Panel>
           <PanelHeader
             title="Monthly payment matrix"
-            description="All registered students and their payment status per month."
+            className="flex-col sm:flex-row sm:items-center gap-3"
             action={
               <div className="text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 text-xs">
                 {[

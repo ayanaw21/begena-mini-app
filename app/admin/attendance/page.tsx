@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Field, PageHeader, Panel } from "@/components/ui/page";
 import CustomSelect from "@/components/ui/custom-select";
+import Figure from "@/components/ui/figure";
+import { siteImages } from "@/lib/images";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -261,6 +263,22 @@ export default function AttendancePage() {
 
   return (
     <div className="space-y-6">
+      <Figure
+        src={siteImages.noticeCard}
+        alt="Attendance"
+        ratio="ultrawide"
+        className="min-h-[140px] sm:min-h-[180px]"
+        priority
+        scrim
+      >
+        <p className="text-primary text-xs font-semibold tracking-[0.18em] uppercase">
+          አስተዳዳሪ ፖርታል · Admin Portal
+        </p>
+        <h1 className="mt-1.5 text-2xl font-bold sm:text-3xl text-foreground">
+          የክትትል እና የውሳኔ ማዕከል (Attendance & Decisions)
+        </h1>
+      </Figure>
+
       <PageHeader
         title="Attendance & Decision Center"
         description="Track daily class attendance and monitor students at risk of warnings or suspension."

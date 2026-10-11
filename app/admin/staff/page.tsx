@@ -9,6 +9,8 @@ import RowActions from "@/components/RowActions";
 import { Badge } from "@/components/ui/badge";
 import { Field, PageHeader } from "@/components/ui/page";
 import CustomSelect from "@/components/ui/custom-select";
+import Figure from "@/components/ui/figure";
+import { siteImages } from "@/lib/images";
 import toast from "react-hot-toast";
 
 interface StaffMember {
@@ -106,6 +108,22 @@ export default function StaffPage() {
 
   return (
     <div className="space-y-6">
+      <Figure
+        src={siteImages.blessingBegena}
+        alt="Staff"
+        ratio="ultrawide"
+        className="min-h-[140px] sm:min-h-[180px]"
+        priority
+        scrim
+      >
+        <p className="text-primary text-xs font-semibold tracking-[0.18em] uppercase">
+          አስተዳዳሪ ፖርታል · Admin Portal
+        </p>
+        <h1 className="mt-1.5 text-2xl font-bold sm:text-3xl text-foreground">
+          አስተማሪዎች እና አባላት (Staff & Instructors)
+        </h1>
+      </Figure>
+
       <PageHeader
         title="Staff & Instructors"
         description="Admins and teachers who can sign in to the panel."
