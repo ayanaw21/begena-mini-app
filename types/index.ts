@@ -14,6 +14,8 @@ export interface Program {
 	name: string;
 	code: string;
 	description?: string;
+	currentBatch?: string;
+	status?: "Active" | "Ended";
 	isActive?: boolean;
 }
 
