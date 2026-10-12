@@ -42,7 +42,7 @@ export default function StudentsPage() {
     programId: "",
     begenaId: "",
     program: "በገና (Begena)",
-    batch: "Batch 1",
+    batch: "Batch 8",
     section: "",
     department: "",
     phoneNumber: "",
@@ -115,7 +115,7 @@ export default function StudentsPage() {
         programId: formData.programId || formData.begenaId,
         begenaId: formData.programId || formData.begenaId,
         program: formData.program,
-        batch: formData.batch || "Batch 1",
+        batch: formData.batch || "Batch 8",
         section: formData.section || "Unassigned",
         department: formData.department,
         phoneNumber: formData.phoneNumber,
@@ -131,7 +131,7 @@ export default function StudentsPage() {
         programId: "",
         begenaId: "",
         program: programs.length > 0 ? programs[0].name : "በገና (Begena)",
-        batch: "Batch 1",
+        batch: "Batch 8",
         section: "",
         department: "",
         phoneNumber: "",
@@ -182,7 +182,7 @@ export default function StudentsPage() {
         programId: "",
         begenaId: "",
         program: programs.length > 0 ? programs[0].name : "በገና (Begena)",
-        batch: "Batch 1",
+        batch: "Batch 8",
         section: "",
         department: "",
         phoneNumber: "",
@@ -222,7 +222,9 @@ export default function StudentsPage() {
     fetchStudents();
   }, [fetchMetadata, fetchStudents]);
 
-  const uniqueBatches = Array.from(new Set(students.map((s) => s.batch || "Batch 1")));
+  const uniqueBatches = Array.from(
+    new Set(["Batch 8", ...students.map((s) => s.batch || "Batch 8")])
+  );
   const uniqueSections = Array.from(new Set(students.map((s) => s.section)));
 
   const filteredStudents = useMemo(() => {
@@ -313,6 +315,33 @@ export default function StudentsPage() {
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Enrolled Program" htmlFor="studentProgram">
+                <CustomSelect
+                  id="studentProgram"
+                  value={formData.program}
+                  onChange={(val) =>
+                    setFormData({ ...formData, program: val, section: "" })
+                  }
+                  options={programs.map((p) => ({
+                    value: p.name,
+                    label: `${p.name} (${p.code})`,
+                  }))}
+                />
+              </Field>
+
+              <Field label="Batch / ዙር" htmlFor="studentBatch" hint="e.g. Batch 8" required>
+                <input
+                  id="studentBatch"
+                  placeholder="Batch 8"
+                  value={formData.batch}
+                  onChange={(e) =>
+                    setFormData({ ...formData, batch: e.target.value })
+                  }
+                />
+              </Field>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
               <Field
                 label="School Department"
                 htmlFor="studentDepartment"
@@ -329,38 +358,6 @@ export default function StudentsPage() {
                 />
               </Field>
 
-              <Field label="Enrolled Program" htmlFor="studentProgram">
-                <CustomSelect
-                  id="studentProgram"
-                  value={formData.program}
-                  onChange={(val) =>
-                    setFormData({ ...formData, program: val, section: "" })
-                  }
-                  options={programs.map((p) => ({
-                    value: p.name,
-                    label: `${p.name} (${p.code})`,
-                  }))}
-                />
-              </Field>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Assigned Section" htmlFor="studentSection">
-                <CustomSelect
-                  id="studentSection"
-                  value={formData.section}
-                  onChange={(val) => setFormData({ ...formData, section: val })}
-                  placeholder="Choose section"
-                  options={[
-                    { value: "", label: "Choose section" },
-                    ...getSectionsForProgram(formData.program).map((sec) => ({
-                      value: sec.section,
-                      label: sec.section,
-                    })),
-                  ]}
-                />
-              </Field>
-
               <Field label="Phone Number" htmlFor="studentPhone" required>
                 <input
                   id="studentPhone"
@@ -373,6 +370,22 @@ export default function StudentsPage() {
                 />
               </Field>
             </div>
+
+            <Field label="Assigned Section" htmlFor="studentSection">
+              <CustomSelect
+                id="studentSection"
+                value={formData.section}
+                onChange={(val) => setFormData({ ...formData, section: val })}
+                placeholder="Choose section"
+                options={[
+                  { value: "", label: "Choose section" },
+                  ...getSectionsForProgram(formData.program).map((sec) => ({
+                    value: sec.section,
+                    label: sec.section,
+                  })),
+                ]}
+              />
+            </Field>
           </ModalForm>
         }
       />
@@ -431,6 +444,7 @@ export default function StudentsPage() {
           { key: "programIdDisplay", label: "Program ID" },
           { key: "studentIdDisplay", label: "University ID" },
           { key: "program", label: "Program" },
+          { key: "batchDisplay", label: "Batch" },
           { key: "department", label: "Department" },
           { key: "section", label: "Section" },
           { key: "phoneNumber", label: "Phone" },
@@ -447,6 +461,11 @@ export default function StudentsPage() {
           studentIdDisplay: (
             <span className="text-muted-foreground font-mono text-xs">
               {s.studentId || "—"}
+            </span>
+          ),
+          batchDisplay: (
+            <span className="text-xs font-medium text-foreground">
+              {s.batch || "Batch 8"}
             </span>
           ),
           academicStatusDisplay: (
@@ -541,6 +560,32 @@ export default function StudentsPage() {
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Enrolled Program" htmlFor="editStudentProgram">
+                  <CustomSelect
+                    id="editStudentProgram"
+                    value={data.program}
+                    onChange={(val) =>
+                      setData({ ...data, program: val, section: "" })
+                    }
+                    options={programs.map((p) => ({
+                      value: p.name,
+                      label: `${p.name} (${p.code})`,
+                    }))}
+                  />
+                </Field>
+
+                <Field label="Batch / ዙር" htmlFor="editStudentBatch" required>
+                  <input
+                    id="editStudentBatch"
+                    value={data.batch || "Batch 8"}
+                    onChange={(e) =>
+                      setData({ ...data, batch: e.target.value })
+                    }
+                  />
+                </Field>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
                 <Field
                   label="School Department"
                   htmlFor="editStudentDepartment"
@@ -555,38 +600,6 @@ export default function StudentsPage() {
                   />
                 </Field>
 
-                <Field label="Enrolled Program" htmlFor="editStudentProgram">
-                  <CustomSelect
-                    id="editStudentProgram"
-                    value={data.program}
-                    onChange={(val) =>
-                      setData({ ...data, program: val, section: "" })
-                    }
-                    options={programs.map((p) => ({
-                      value: p.name,
-                      label: `${p.name} (${p.code})`,
-                    }))}
-                  />
-                </Field>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Assigned Section" htmlFor="editStudentSection">
-                  <CustomSelect
-                    id="editStudentSection"
-                    value={data.section}
-                    onChange={(val) => setData({ ...data, section: val })}
-                    placeholder="Choose section"
-                    options={[
-                      { value: "", label: "Choose section" },
-                      ...getSectionsForProgram(data.program).map((sec) => ({
-                        value: sec.section,
-                        label: sec.section,
-                      })),
-                    ]}
-                  />
-                </Field>
-
                 <Field label="Phone Number" htmlFor="editStudentPhone" required>
                   <input
                     id="editStudentPhone"
@@ -598,6 +611,22 @@ export default function StudentsPage() {
                   />
                 </Field>
               </div>
+
+              <Field label="Assigned Section" htmlFor="editStudentSection">
+                <CustomSelect
+                  id="editStudentSection"
+                  value={data.section}
+                  onChange={(val) => setData({ ...data, section: val })}
+                  placeholder="Choose section"
+                  options={[
+                    { value: "", label: "Choose section" },
+                    ...getSectionsForProgram(data.program).map((sec) => ({
+                      value: sec.section,
+                      label: sec.section,
+                    })),
+                  ]}
+                />
+              </Field>
 
               <Field label="Academic Status" htmlFor="editStudentStatus">
                 <CustomSelect

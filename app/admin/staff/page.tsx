@@ -17,6 +17,9 @@ interface StaffMember {
   fullName: string;
   role: "admin" | "teacher";
   phoneNumber?: string;
+  department?: string;
+  specialization?: string;
+  status?: "Active" | "Inactive";
   password?: string;
 }
 
@@ -26,6 +29,9 @@ export default function StaffPage() {
     fullName: "",
     role: "teacher",
     phoneNumber: "",
+    department: "General",
+    specialization: "በገና (Begena)",
+    status: "Active",
     password: "",
   });
 
@@ -52,7 +58,15 @@ export default function StaffPage() {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       fetchStaff();
-      setFormData({ fullName: "", role: "teacher", phoneNumber: "", password: "" });
+      setFormData({
+        fullName: "",
+        role: "teacher",
+        phoneNumber: "",
+        department: "General",
+        specialization: "በገና (Begena)",
+        status: "Active",
+        password: "",
+      });
       toast.success("Staff member created successfully");
     } catch (err: unknown) {
       if (err instanceof Error && "response" in err) {
@@ -73,7 +87,15 @@ export default function StaffPage() {
       fetchStaff();
       setEditModalOpen(false);
       setStaffToEdit(null);
-      setFormData({ fullName: "", role: "teacher", phoneNumber: "", password: "" });
+      setFormData({
+        fullName: "",
+        role: "teacher",
+        phoneNumber: "",
+        department: "General",
+        specialization: "በገና (Begena)",
+        status: "Active",
+        password: "",
+      });
       toast.success("Staff member updated successfully");
     } catch (err: unknown) {
       if (err instanceof Error && "response" in err) {
@@ -128,49 +150,97 @@ export default function StaffPage() {
                 }
               />
             </Field>
-            <Field label="Role" htmlFor="staffRole" required>
-              <CustomSelect
-                id="staffRole"
-                value={formData.role}
-                onChange={(val) =>
-                  setFormData({
-                    ...formData,
-                    role: val as "admin" | "teacher",
-                  })
-                }
-                options={[
-                  { value: "teacher", label: "Teacher / Instructor" },
-                  { value: "admin", label: "Admin & Instructor" },
-                ]}
-              />
-            </Field>
-            <Field label="Phone Number" htmlFor="staffPhone">
-              <input
-                id="staffPhone"
-                inputMode="tel"
-                placeholder="0911223344"
-                value={formData.phoneNumber}
-                onChange={(e) =>
-                  setFormData({ ...formData, phoneNumber: e.target.value })
-                }
-              />
-            </Field>
-            <Field
-              label="Password"
-              htmlFor="staffPassword"
-              hint="Leave empty to use the default password."
-            >
-              <input
-                id="staffPassword"
-                type="password"
-                autoComplete="new-password"
-                placeholder="Set an initial password"
-                value={formData.password}
-                onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
-                }
-              />
-            </Field>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Role" htmlFor="staffRole" required>
+                <CustomSelect
+                  id="staffRole"
+                  value={formData.role}
+                  onChange={(val) =>
+                    setFormData({
+                      ...formData,
+                      role: val as "admin" | "teacher",
+                    })
+                  }
+                  options={[
+                    { value: "teacher", label: "Teacher / Instructor" },
+                    { value: "admin", label: "Admin & Instructor" },
+                  ]}
+                />
+              </Field>
+
+              <Field label="Service Status" htmlFor="staffStatus">
+                <CustomSelect
+                  id="staffStatus"
+                  value={formData.status || "Active"}
+                  onChange={(val) =>
+                    setFormData({
+                      ...formData,
+                      status: val as "Active" | "Inactive",
+                    })
+                  }
+                  options={[
+                    { value: "Active", label: "Active (Current Batch)" },
+                    { value: "Inactive", label: "Inactive / Past Servant" },
+                  ]}
+                />
+              </Field>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Specialization / Instrument" htmlFor="staffSpecialization" hint="e.g. በገና, ክራር">
+                <input
+                  id="staffSpecialization"
+                  placeholder="e.g. በገና (Begena)"
+                  value={formData.specialization || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, specialization: e.target.value })
+                  }
+                />
+              </Field>
+
+              <Field label="Department / Background" htmlFor="staffDepartment" hint="e.g. Software Eng, Alumni">
+                <input
+                  id="staffDepartment"
+                  placeholder="e.g. Software Engineering"
+                  value={formData.department || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, department: e.target.value })
+                  }
+                />
+              </Field>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Phone Number" htmlFor="staffPhone">
+                <input
+                  id="staffPhone"
+                  inputMode="tel"
+                  placeholder="0911223344"
+                  value={formData.phoneNumber}
+                  onChange={(e) =>
+                    setFormData({ ...formData, phoneNumber: e.target.value })
+                  }
+                />
+              </Field>
+
+              <Field
+                label="Password"
+                htmlFor="staffPassword"
+                hint="Default is teacher123 if empty."
+              >
+                <input
+                  id="staffPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  placeholder="Set an initial password"
+                  value={formData.password}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
+                />
+              </Field>
+            </div>
           </ModalForm>
         }
       />
@@ -181,23 +251,38 @@ export default function StaffPage() {
         items={staff.map((s, idx) => ({
           id: s._id || s.fullName,
           title: s.fullName,
-          subtitle: s.phoneNumber || "No phone number",
+          subtitle: s.specialization
+            ? `${s.specialization} · ${s.department || "General"}`
+            : (s.department || "General"),
           badge: (
-            <Badge tone={s.role === "admin" ? "primary" : "info"}>
-              {s.role === "admin" ? "Admin & Instructor" : "Teacher"}
-            </Badge>
+            <div className="flex gap-1.5 items-center">
+              <Badge tone={s.role === "admin" ? "primary" : "info"}>
+                {s.role === "admin" ? "Admin" : "Instructor"}
+              </Badge>
+              <Badge tone={s.status === "Inactive" ? "neutral" : "success"}>
+                {s.status || "Active"}
+              </Badge>
+            </div>
           ),
           image: adminCardBackgrounds[idx % adminCardBackgrounds.length],
           fields: [
-            { label: "Role", value: s.role === "admin" ? "System Admin" : "Instructor" },
+            { label: "Instrument", value: s.specialization || "በገና (Begena)" },
+            { label: "Department", value: s.department || "General" },
             { label: "Phone", value: s.phoneNumber || "—" },
+            { label: "Status", value: s.status || "Active" },
           ],
           actions: (
             <RowActions
               key={s._id}
               onEdit={() => {
                 setStaffToEdit(s);
-                setFormData({ ...s, password: "" });
+                setFormData({
+                  ...s,
+                  department: s.department || "General",
+                  specialization: s.specialization || "በገና (Begena)",
+                  status: s.status || "Active",
+                  password: "",
+                });
                 setEditModalOpen(true);
               }}
               onDelete={() => {
@@ -231,22 +316,65 @@ export default function StaffPage() {
                   }
                 />
               </Field>
-              <Field label="Role" htmlFor="editStaffRole">
-                <CustomSelect
-                  id="editStaffRole"
-                  value={data.role}
-                  onChange={(val) =>
-                    setData({
-                      ...data,
-                      role: val as "admin" | "teacher",
-                    })
-                  }
-                  options={[
-                    { value: "teacher", label: "Teacher / Instructor" },
-                    { value: "admin", label: "Admin & Instructor" },
-                  ]}
-                />
-              </Field>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Role" htmlFor="editStaffRole">
+                  <CustomSelect
+                    id="editStaffRole"
+                    value={data.role}
+                    onChange={(val) =>
+                      setData({
+                        ...data,
+                        role: val as "admin" | "teacher",
+                      })
+                    }
+                    options={[
+                      { value: "teacher", label: "Teacher / Instructor" },
+                      { value: "admin", label: "Admin & Instructor" },
+                    ]}
+                  />
+                </Field>
+
+                <Field label="Service Status" htmlFor="editStaffStatus">
+                  <CustomSelect
+                    id="editStaffStatus"
+                    value={data.status || "Active"}
+                    onChange={(val) =>
+                      setData({
+                        ...data,
+                        status: val as "Active" | "Inactive",
+                      })
+                    }
+                    options={[
+                      { value: "Active", label: "Active (Current Batch)" },
+                      { value: "Inactive", label: "Inactive / Past Servant" },
+                    ]}
+                  />
+                </Field>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Specialization / Instrument" htmlFor="editStaffSpecialization">
+                  <input
+                    id="editStaffSpecialization"
+                    value={data.specialization || ""}
+                    onChange={(e) =>
+                      setData({ ...data, specialization: e.target.value })
+                    }
+                  />
+                </Field>
+
+                <Field label="Department / Background" htmlFor="editStaffDepartment">
+                  <input
+                    id="editStaffDepartment"
+                    value={data.department || ""}
+                    onChange={(e) =>
+                      setData({ ...data, department: e.target.value })
+                    }
+                  />
+                </Field>
+              </div>
+
               <Field label="Phone Number" htmlFor="editStaffPhone">
                 <input
                   id="editStaffPhone"
@@ -257,6 +385,7 @@ export default function StaffPage() {
                   }
                 />
               </Field>
+
               <Field
                 label="New Password"
                 htmlFor="editStaffPassword"

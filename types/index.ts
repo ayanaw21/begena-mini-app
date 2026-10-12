@@ -1,8 +1,12 @@
 export interface Admin {
-	id: string;
+	id?: string;
+	_id?: string;
 	fullName: string;
 	role: "admin" | "teacher";
 	phoneNumber?: string;
+	department?: string;
+	specialization?: string;
+	status?: "Active" | "Inactive";
 }
 
 export interface Program {
@@ -48,6 +52,7 @@ export interface Section {
 	_id?: string;
 	section: string;
 	program?: string;
+	batch?: string;
 	mainTeacher?: string;
 	mainTeacherName?: string;
 	assistantTeacher?: string;

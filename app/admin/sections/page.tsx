@@ -21,6 +21,7 @@ export default function SectionsPage() {
   const [formData, setFormData] = useState<Section>({
     section: "",
     program: "Begena",
+    batch: "Batch 8",
     mainTeacherName: "",
     assistantTeacherName: "",
     capacity: 30,
@@ -69,6 +70,7 @@ export default function SectionsPage() {
     try {
       const payload = {
         ...formData,
+        batch: formData.batch || "Batch 8",
         assignedTeacher: formData.mainTeacherName
           ? `${formData.mainTeacherName}${formData.assistantTeacherName ? ` & ${formData.assistantTeacherName}` : ""}`
           : "TBA",
@@ -80,7 +82,8 @@ export default function SectionsPage() {
       fetchSections();
       setFormData({
         section: "",
-        program: "Begena",
+        program: programs.length > 0 ? programs[0].name : "Begena",
+        batch: "Batch 8",
         mainTeacherName: "",
         assistantTeacherName: "",
         capacity: 30,
@@ -98,6 +101,7 @@ export default function SectionsPage() {
     try {
       const payload = {
         ...formData,
+        batch: formData.batch || "Batch 8",
         assignedTeacher: formData.mainTeacherName
           ? `${formData.mainTeacherName}${formData.assistantTeacherName ? ` & ${formData.assistantTeacherName}` : ""}`
           : "TBA",
@@ -164,19 +168,32 @@ export default function SectionsPage() {
             onSubmit={handleCreateSection}
             image={siteImages.adminTeacher}
           >
-            <Field label="Program" htmlFor="sectionProgram" required>
-              <CustomSelect
-                id="sectionProgram"
-                value={formData.program}
-                onChange={(val) =>
-                  setFormData({ ...formData, program: val })
-                }
-                options={programs.map((prog) => ({
-                  value: prog.name,
-                  label: `${prog.name} (${prog.code})`,
-                }))}
-              />
-            </Field>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Program" htmlFor="sectionProgram" required>
+                <CustomSelect
+                  id="sectionProgram"
+                  value={formData.program}
+                  onChange={(val) =>
+                    setFormData({ ...formData, program: val })
+                  }
+                  options={programs.map((prog) => ({
+                    value: prog.name,
+                    label: `${prog.name} (${prog.code})`,
+                  }))}
+                />
+              </Field>
+
+              <Field label="Batch / ዙር" htmlFor="sectionBatch" hint="e.g. Batch 8" required>
+                <input
+                  id="sectionBatch"
+                  placeholder="Batch 8"
+                  value={formData.batch}
+                  onChange={(e) =>
+                    setFormData({ ...formData, batch: e.target.value })
+                  }
+                />
+              </Field>
+            </div>
 
             <Field label="Section Name" htmlFor="sectionName" required>
               <input
@@ -263,7 +280,11 @@ export default function SectionsPage() {
         items={filteredSections.map((s) => ({
           id: s._id ?? s.section,
           title: s.section,
-          badge: <Badge tone="primary">{s.program || "Begena"}</Badge>,
+          badge: (
+            <Badge tone="primary">
+              {`${s.program || "Begena"}${s.batch ? ` · ${s.batch}` : ""}`}
+            </Badge>
+          ),
           fields: [
             {
               label: "Main teacher",
@@ -283,6 +304,7 @@ export default function SectionsPage() {
                 setFormData({
                   section: s.section,
                   program: s.program || "Begena",
+                  batch: s.batch || "Batch 8",
                   mainTeacherName: s.mainTeacherName || s.assignedTeacher || "",
                   assistantTeacherName: s.assistantTeacherName || "",
                   capacity: s.capacity || 30,
@@ -311,17 +333,29 @@ export default function SectionsPage() {
             setData: React.Dispatch<React.SetStateAction<Section>>
           ) => (
             <>
-              <Field label="Program" htmlFor="editSectionProgram">
-                <CustomSelect
-                  id="editSectionProgram"
-                  value={data.program || "Begena"}
-                  onChange={(val) => setData({ ...data, program: val })}
-                  options={programs.map((prog) => ({
-                    value: prog.name,
-                    label: prog.name,
-                  }))}
-                />
-              </Field>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Program" htmlFor="editSectionProgram">
+                  <CustomSelect
+                    id="editSectionProgram"
+                    value={data.program || "Begena"}
+                    onChange={(val) => setData({ ...data, program: val })}
+                    options={programs.map((prog) => ({
+                      value: prog.name,
+                      label: prog.name,
+                    }))}
+                  />
+                </Field>
+
+                <Field label="Batch / ዙር" htmlFor="editSectionBatch" required>
+                  <input
+                    id="editSectionBatch"
+                    value={data.batch || "Batch 8"}
+                    onChange={(e) =>
+                      setData({ ...data, batch: e.target.value })
+                    }
+                  />
+                </Field>
+              </div>
 
               <Field label="Section Name" htmlFor="editSectionName">
                 <input
