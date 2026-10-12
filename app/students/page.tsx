@@ -260,7 +260,7 @@ const StudentsPage = () => {
 															<thead>
 																<tr className="text-muted-foreground text-xs tracking-wider uppercase border-b border-white/5 bg-white/[0.01]">
 																	<th className="px-5 py-2.5 text-left font-medium">
-																		ID / Begena ID
+																		Program ID
 																	</th>
 																	<th className="px-5 py-2.5 text-left font-medium">
 																		Full Name
@@ -277,7 +277,7 @@ const StudentsPage = () => {
 																		className="hover:bg-white/[0.03] transition-colors"
 																	>
 																		<td className="text-muted-foreground px-5 py-3 font-mono text-xs">
-																			{student.begenaId || student.studentId}
+																			{student.programId || student.begenaId || student.studentId}
 																		</td>
 																		<td className="px-5 py-3 font-medium text-foreground">
 																			{student.fullName}

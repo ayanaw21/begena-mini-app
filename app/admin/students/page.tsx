@@ -39,11 +39,12 @@ export default function StudentsPage() {
   const [formData, setFormData] = useState<Student>({
     fullName: "",
     studentId: "",
+    programId: "",
     begenaId: "",
     program: "በገና (Begena)",
     batch: "Batch 1",
     section: "",
-    department: "General",
+    department: "",
     phoneNumber: "",
     academicStatus: "Active",
   });
@@ -71,6 +72,29 @@ export default function StudentsPage() {
     }
   }, []);
 
+  const getSectionsForProgram = useCallback(
+    (selectedProgName?: string) => {
+      if (!selectedProgName) return sections;
+      const p = programs.find(
+        (pr) => pr.name.toLowerCase() === selectedProgName.toLowerCase()
+      );
+      const progCode = p?.code?.toLowerCase() || "";
+      const progName = selectedProgName.toLowerCase();
+      const matched = sections.filter((sec) => {
+        if (!sec.program) return true;
+        const sp = sec.program.toLowerCase();
+        return (
+          sp === progName ||
+          sp.includes(progName) ||
+          progName.includes(sp) ||
+          (progCode && (sp === progCode || sp.includes(progCode)))
+        );
+      });
+      return matched.length > 0 ? matched : sections;
+    },
+    [sections, programs]
+  );
+
   const fetchStudents = useCallback(async () => {
     try {
       const res = await api.get("/students", {
@@ -86,8 +110,16 @@ export default function StudentsPage() {
   const handleCreateStudent = async () => {
     try {
       const payload = {
-        ...formData,
-        begenaId: formData.studentId || formData.begenaId,
+        fullName: formData.fullName,
+        studentId: formData.studentId,
+        programId: formData.programId || formData.begenaId,
+        begenaId: formData.programId || formData.begenaId,
+        program: formData.program,
+        batch: formData.batch || "Batch 1",
+        section: formData.section || "Unassigned",
+        department: formData.department,
+        phoneNumber: formData.phoneNumber,
+        academicStatus: "Active",
       };
       await api.post("/students", payload, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -96,11 +128,12 @@ export default function StudentsPage() {
       setFormData({
         fullName: "",
         studentId: "",
+        programId: "",
         begenaId: "",
         program: programs.length > 0 ? programs[0].name : "በገና (Begena)",
         batch: "Batch 1",
         section: "",
-        department: "General",
+        department: "",
         phoneNumber: "",
         academicStatus: "Active",
       });
@@ -125,8 +158,9 @@ export default function StudentsPage() {
         `/students/${studentToEdit._id}`,
         {
           fullName: formData.fullName,
-          studentId: formData.studentId || formData.begenaId,
-          begenaId: formData.studentId || formData.begenaId,
+          studentId: formData.studentId,
+          programId: formData.programId || formData.begenaId,
+          begenaId: formData.programId || formData.begenaId,
           program: formData.program,
           batch: formData.batch,
           section: formData.section,
@@ -145,11 +179,12 @@ export default function StudentsPage() {
       setFormData({
         fullName: "",
         studentId: "",
+        programId: "",
         begenaId: "",
-        program: "በገና (Begena)",
+        program: programs.length > 0 ? programs[0].name : "በገና (Begena)",
         batch: "Batch 1",
         section: "",
-        department: "General",
+        department: "",
         phoneNumber: "",
         academicStatus: "Active",
       });
@@ -192,10 +227,15 @@ export default function StudentsPage() {
 
   const filteredStudents = useMemo(() => {
     return students.filter((s) => {
-      const idStr = s.studentId || s.begenaId || "";
+      const uIdStr = s.studentId || "";
+      const pIdStr = s.programId || s.begenaId || "";
+      const deptStr = s.department || "";
+      const q = searchQuery.toLowerCase();
       const matchesSearch =
-        s.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        idStr.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.fullName.toLowerCase().includes(q) ||
+        uIdStr.toLowerCase().includes(q) ||
+        pIdStr.toLowerCase().includes(q) ||
+        deptStr.toLowerCase().includes(q) ||
         (s.phoneNumber || "").includes(searchQuery);
 
       const matchesProgram = filterProgram ? s.program === filterProgram : true;
@@ -230,40 +270,81 @@ export default function StudentsPage() {
               />
             </Field>
 
-            <Field
-              label="Student ID"
-              htmlFor="studentIdInput"
-              hint="Use the program code prefix, e.g. BG2026-0001."
-              required
-            >
-              <input
-                id="studentIdInput"
-                className="font-mono"
-                placeholder="BG2026-0001"
-                value={formData.studentId || formData.begenaId}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    studentId: e.target.value,
-                    begenaId: e.target.value,
-                  })
-                }
-              />
-            </Field>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field
+                label="University Student ID"
+                htmlFor="studentUniversityId"
+                hint="University ID (e.g. ETS 0123/14)"
+                required
+              >
+                <input
+                  id="studentUniversityId"
+                  placeholder="ETS 0123/14"
+                  value={formData.studentId}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      studentId: e.target.value,
+                    })
+                  }
+                />
+              </Field>
+
+              <Field
+                label="Program ID (Assigned)"
+                htmlFor="studentProgramId"
+                hint="Assigned training ID (e.g. BG2026-0001)"
+                required
+              >
+                <input
+                  id="studentProgramId"
+                  className="font-mono"
+                  placeholder="BG2026-0001"
+                  value={formData.programId || formData.begenaId}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      programId: e.target.value,
+                      begenaId: e.target.value,
+                    })
+                  }
+                />
+              </Field>
+            </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
+              <Field
+                label="School Department"
+                htmlFor="studentDepartment"
+                hint="e.g. Software Engineering, Architecture"
+                required
+              >
+                <input
+                  id="studentDepartment"
+                  placeholder="e.g. Software Engineering"
+                  value={formData.department}
+                  onChange={(e) =>
+                    setFormData({ ...formData, department: e.target.value })
+                  }
+                />
+              </Field>
+
               <Field label="Enrolled Program" htmlFor="studentProgram">
                 <CustomSelect
                   id="studentProgram"
                   value={formData.program}
-                  onChange={(val) => setFormData({ ...formData, program: val })}
+                  onChange={(val) =>
+                    setFormData({ ...formData, program: val, section: "" })
+                  }
                   options={programs.map((p) => ({
                     value: p.name,
                     label: `${p.name} (${p.code})`,
                   }))}
                 />
               </Field>
+            </div>
 
+            <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Assigned Section" htmlFor="studentSection">
                 <CustomSelect
                   id="studentSection"
@@ -272,17 +353,15 @@ export default function StudentsPage() {
                   placeholder="Choose section"
                   options={[
                     { value: "", label: "Choose section" },
-                    ...sections.map((sec) => ({
+                    ...getSectionsForProgram(formData.program).map((sec) => ({
                       value: sec.section,
-                      label: `${sec.section} (${sec.program || "General"})`,
+                      label: sec.section,
                     })),
                   ]}
                 />
               </Field>
-            </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Phone Number" htmlFor="studentPhone">
+              <Field label="Phone Number" htmlFor="studentPhone" required>
                 <input
                   id="studentPhone"
                   inputMode="tel"
@@ -291,23 +370,6 @@ export default function StudentsPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, phoneNumber: e.target.value })
                   }
-                />
-              </Field>
-
-              <Field label="Academic Status" htmlFor="studentStatus">
-                <CustomSelect
-                  id="studentStatus"
-                  value={formData.academicStatus || "Active"}
-                  onChange={(val) =>
-                    setFormData({
-                      ...formData,
-                      academicStatus: val as AcademicStatus,
-                    })
-                  }
-                  options={academicStatuses.map((status) => ({
-                    value: status,
-                    label: status,
-                  }))}
                 />
               </Field>
             </div>
@@ -366,8 +428,10 @@ export default function StudentsPage() {
         image={siteImages.adminCard3}
         columns={[
           { key: "fullName", label: "Full Name" },
-          { key: "studentIdDisplay", label: "Student ID" },
+          { key: "programIdDisplay", label: "Program ID" },
+          { key: "studentIdDisplay", label: "University ID" },
           { key: "program", label: "Program" },
+          { key: "department", label: "Department" },
           { key: "section", label: "Section" },
           { key: "phoneNumber", label: "Phone" },
           { key: "academicStatusDisplay", label: "Status" },
@@ -375,9 +439,14 @@ export default function StudentsPage() {
         ]}
         data={filteredStudents.map((s) => ({
           ...s,
+          programIdDisplay: (
+            <span className="text-primary font-mono text-xs font-semibold">
+              {s.programId || s.begenaId || "—"}
+            </span>
+          ),
           studentIdDisplay: (
-            <span className="text-primary font-mono text-xs">
-              {s.studentId || s.begenaId}
+            <span className="text-muted-foreground font-mono text-xs">
+              {s.studentId || "—"}
             </span>
           ),
           academicStatusDisplay: (
@@ -390,7 +459,13 @@ export default function StudentsPage() {
               key={s._id}
               onEdit={() => {
                 setStudentToEdit(s);
-                setFormData({ ...s, studentId: s.studentId || s.begenaId });
+                setFormData({
+                  ...s,
+                  studentId: s.studentId || "",
+                  programId: s.programId || s.begenaId || "",
+                  begenaId: s.programId || s.begenaId || "",
+                  department: s.department || "",
+                });
                 setEditModalOpen(true);
               }}
               onDelete={() => {
@@ -415,7 +490,7 @@ export default function StudentsPage() {
             setData: React.Dispatch<React.SetStateAction<Student>>
           ) => (
             <>
-              <Field label="Full Name" htmlFor="editStudentName">
+              <Field label="Full Name" htmlFor="editStudentName" required>
                 <input
                   id="editStudentName"
                   value={data.fullName}
@@ -425,34 +500,77 @@ export default function StudentsPage() {
                 />
               </Field>
 
-              <Field label="Student ID" htmlFor="editStudentId">
-                <input
-                  id="editStudentId"
-                  className="font-mono"
-                  value={data.studentId || data.begenaId}
-                  onChange={(e) =>
-                    setData({
-                      ...data,
-                      studentId: e.target.value,
-                      begenaId: e.target.value,
-                    })
-                  }
-                />
-              </Field>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field
+                  label="University Student ID"
+                  htmlFor="editStudentUniversityId"
+                  hint="Official university ID (e.g. ETS 0123/14)"
+                  required
+                >
+                  <input
+                    id="editStudentUniversityId"
+                    value={data.studentId}
+                    onChange={(e) =>
+                      setData({
+                        ...data,
+                        studentId: e.target.value,
+                      })
+                    }
+                  />
+                </Field>
+
+                <Field
+                  label="Program ID (Assigned)"
+                  htmlFor="editStudentProgramId"
+                  hint="Assigned training ID (e.g. BG2026-0001)"
+                  required
+                >
+                  <input
+                    id="editStudentProgramId"
+                    className="font-mono"
+                    value={data.programId || data.begenaId}
+                    onChange={(e) =>
+                      setData({
+                        ...data,
+                        programId: e.target.value,
+                        begenaId: e.target.value,
+                      })
+                    }
+                  />
+                </Field>
+              </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
+                <Field
+                  label="School Department"
+                  htmlFor="editStudentDepartment"
+                  required
+                >
+                  <input
+                    id="editStudentDepartment"
+                    value={data.department}
+                    onChange={(e) =>
+                      setData({ ...data, department: e.target.value })
+                    }
+                  />
+                </Field>
+
                 <Field label="Enrolled Program" htmlFor="editStudentProgram">
                   <CustomSelect
                     id="editStudentProgram"
                     value={data.program}
-                    onChange={(val) => setData({ ...data, program: val })}
+                    onChange={(val) =>
+                      setData({ ...data, program: val, section: "" })
+                    }
                     options={programs.map((p) => ({
                       value: p.name,
                       label: `${p.name} (${p.code})`,
                     }))}
                   />
                 </Field>
+              </div>
 
+              <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Assigned Section" htmlFor="editStudentSection">
                   <CustomSelect
                     id="editStudentSection"
@@ -461,17 +579,15 @@ export default function StudentsPage() {
                     placeholder="Choose section"
                     options={[
                       { value: "", label: "Choose section" },
-                      ...sections.map((sec) => ({
+                      ...getSectionsForProgram(data.program).map((sec) => ({
                         value: sec.section,
                         label: sec.section,
                       })),
                     ]}
                   />
                 </Field>
-              </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Phone Number" htmlFor="editStudentPhone">
+                <Field label="Phone Number" htmlFor="editStudentPhone" required>
                   <input
                     id="editStudentPhone"
                     inputMode="tel"
@@ -481,24 +597,24 @@ export default function StudentsPage() {
                     }
                   />
                 </Field>
-
-                <Field label="Academic Status" htmlFor="editStudentStatus">
-                  <CustomSelect
-                    id="editStudentStatus"
-                    value={data.academicStatus || "Active"}
-                    onChange={(val) =>
-                      setData({
-                        ...data,
-                        academicStatus: val as AcademicStatus,
-                      })
-                    }
-                    options={academicStatuses.map((status) => ({
-                      value: status,
-                      label: status,
-                    }))}
-                  />
-                </Field>
               </div>
+
+              <Field label="Academic Status" htmlFor="editStudentStatus">
+                <CustomSelect
+                  id="editStudentStatus"
+                  value={data.academicStatus || "Active"}
+                  onChange={(val) =>
+                    setData({
+                      ...data,
+                      academicStatus: val as AcademicStatus,
+                    })
+                  }
+                  options={academicStatuses.map((status) => ({
+                    value: status,
+                    label: status,
+                  }))}
+                />
+              </Field>
             </>
           )}
         />

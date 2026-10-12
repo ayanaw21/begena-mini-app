@@ -16,7 +16,8 @@ export interface Program {
 export interface Student {
 	_id?: string;
 	fullName: string;
-	studentId?: string;
+	studentId: string;
+	programId?: string;
 	begenaId: string;
 	program?: string;
 	batch: string;
