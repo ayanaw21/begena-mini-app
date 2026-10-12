@@ -8,6 +8,8 @@ import ConfirmModal from "@/components/ConfirmModal";
 import EditModal from "@/components/EditModal";
 import RowActions from "@/components/RowActions";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 import { Field, PageHeader } from "@/components/ui/page";
 import CustomSelect from "@/components/ui/custom-select";
 import { siteImages } from "@/lib/images";
@@ -58,6 +60,13 @@ export default function StudentsPage() {
   const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [studentToEdit, setStudentToEdit] = useState<Student | null>(null);
+
+  const [gradModalOpen, setGradModalOpen] = useState(false);
+  const [gradProgram, setGradProgram] = useState("በገና (Begena)");
+  const [gradBatch, setGradBatch] = useState("Batch 8");
+  const [gradSelectedIds, setGradSelectedIds] = useState<string[]>([]);
+  const [gradNonGradStatus, setGradNonGradStatus] = useState<"Suspended" | "Warning">("Suspended");
+  const [gradSubmitting, setGradSubmitting] = useState(false);
 
   const fetchMetadata = useCallback(async () => {
     try {
@@ -227,6 +236,55 @@ export default function StudentsPage() {
   );
   const uniqueSections = Array.from(new Set(students.map((s) => s.section)));
 
+  const batchCandidates = useMemo(() => {
+    return students.filter(
+      (s) =>
+        s.program === gradProgram &&
+        (s.batch || "Batch 8") === gradBatch &&
+        (s.academicStatus === "Active" || !s.academicStatus)
+    );
+  }, [students, gradProgram, gradBatch]);
+
+  useEffect(() => {
+    if (gradModalOpen) {
+      setGradSelectedIds(batchCandidates.map((s) => s._id || "").filter(Boolean));
+    }
+  }, [gradModalOpen, batchCandidates]);
+
+  const handleProcessGraduation = async () => {
+    if (batchCandidates.length === 0) {
+      toast.error("No active students found in this batch to graduate");
+      return;
+    }
+    setGradSubmitting(true);
+    try {
+      const res = await api.post(
+        "/students/batch-graduation",
+        {
+          program: gradProgram,
+          batch: gradBatch,
+          graduatedStudentIds: gradSelectedIds,
+          nonGraduatedStatus: gradNonGradStatus,
+        },
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+      toast.success(res.data.message || "Batch graduation processed successfully");
+      fetchStudents();
+      setGradModalOpen(false);
+    } catch (err: unknown) {
+      if (err instanceof Error && "response" in err) {
+        const apiErr = err as { response?: { data?: { message?: string } } };
+        toast.error(apiErr.response?.data?.message || "Failed to process graduation");
+      } else {
+        toast.error("Failed to process graduation");
+      }
+    } finally {
+      setGradSubmitting(false);
+    }
+  };
+
   const filteredStudents = useMemo(() => {
     return students.filter((s) => {
       const uIdStr = s.studentId || "";
@@ -255,12 +313,26 @@ export default function StudentsPage() {
         title="የተማሪዎች ዝርዝር (Students Registry)"
         description={`${filteredStudents.length} of ${students.length} students shown.`}
         action={
-          <ModalForm
-            title="Add Student"
-            triggerText="Add Student"
-            onSubmit={handleCreateStudent}
-            image={siteImages.adminPhoto1}
-          >
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                if (programs.length > 0 && !programs.some((p) => p.name === gradProgram)) {
+                  setGradProgram(programs[0].name);
+                }
+                setGradModalOpen(true);
+              }}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 text-xs sm:text-sm font-medium transition cursor-pointer shadow-sm"
+            >
+              🎓 Graduate Batch
+            </button>
+
+            <ModalForm
+              title="Add Student"
+              triggerText="Add Student"
+              onSubmit={handleCreateStudent}
+              image={siteImages.adminPhoto1}
+            >
             <Field label="Full Name" htmlFor="studentFullName" required>
               <input
                 id="studentFullName"
@@ -387,6 +459,7 @@ export default function StudentsPage() {
               />
             </Field>
           </ModalForm>
+          </div>
         }
       />
 
@@ -648,6 +721,151 @@ export default function StudentsPage() {
           )}
         />
       )}
+
+      <Modal
+        isOpen={gradModalOpen}
+        onClose={() => setGradModalOpen(false)}
+        title="🎓 Set Batch Graduation (የምረቃ ማስተዳደሪያ)"
+        description="Select who graduated and update remaining active students for this program & batch."
+        className="max-w-2xl"
+        footer={
+          <div className="flex w-full items-center justify-between gap-3">
+            <span className="text-xs text-muted-foreground">
+              {gradSelectedIds.length} of {batchCandidates.length} graduating
+            </span>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                onClick={() => setGradModalOpen(false)}
+                disabled={gradSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="default"
+                onClick={handleProcessGraduation}
+                disabled={gradSubmitting || batchCandidates.length === 0}
+              >
+                {gradSubmitting ? "Processing..." : `Graduate ${gradSelectedIds.length} Students`}
+              </Button>
+            </div>
+          </div>
+        }
+      >
+        <div className="space-y-4 pt-2">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field label="Program" htmlFor="gradProgramSelect">
+              <CustomSelect
+                id="gradProgramSelect"
+                value={gradProgram}
+                onChange={(val) => setGradProgram(val)}
+                options={programs.map((p) => ({
+                  value: p.name,
+                  label: `${p.name} (${p.code})`,
+                }))}
+              />
+            </Field>
+
+            <Field label="Batch / ዙር" htmlFor="gradBatchSelect">
+              <CustomSelect
+                id="gradBatchSelect"
+                value={gradBatch}
+                onChange={(val) => setGradBatch(val)}
+                options={uniqueBatches.map((b) => ({
+                  value: b,
+                  label: b,
+                }))}
+              />
+            </Field>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-2 border-y border-white/5 py-2.5">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() =>
+                  setGradSelectedIds(
+                    gradSelectedIds.length === batchCandidates.length
+                      ? []
+                      : batchCandidates.map((s) => s._id || "").filter(Boolean)
+                  )
+                }
+                className="text-xs font-semibold text-primary hover:underline cursor-pointer"
+              >
+                {gradSelectedIds.length === batchCandidates.length
+                  ? "Deselect All"
+                  : `Select All (${batchCandidates.length})`}
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span>Non-graduated outcome:</span>
+              <select
+                className="rounded border border-white/10 bg-black/40 px-2 py-1 text-xs text-foreground"
+                value={gradNonGradStatus}
+                onChange={(e) =>
+                  setGradNonGradStatus(e.target.value as "Suspended" | "Warning")
+                }
+              >
+                <option value="Suspended">Suspended (Incomplete)</option>
+                <option value="Warning">Warning</option>
+              </select>
+            </div>
+          </div>
+
+          {batchCandidates.length === 0 ? (
+            <div className="py-8 text-center text-sm text-muted-foreground">
+              No active students found in {gradProgram} ({gradBatch}).
+            </div>
+          ) : (
+            <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
+              {batchCandidates.map((s) => {
+                const sId = s._id || "";
+                const isSelected = gradSelectedIds.includes(sId);
+                return (
+                  <label
+                    key={sId}
+                    className={`flex items-center justify-between gap-3 p-2.5 rounded-lg border transition cursor-pointer ${
+                      isSelected
+                        ? "border-primary/40 bg-primary/5"
+                        : "border-white/5 bg-white/[0.02] hover:bg-white/[0.04]"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setGradSelectedIds([...gradSelectedIds, sId]);
+                          } else {
+                            setGradSelectedIds(
+                              gradSelectedIds.filter((id) => id !== sId)
+                            );
+                          }
+                        }}
+                        className="h-4 w-4 rounded border-white/20 text-primary focus:ring-primary"
+                      />
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium text-foreground truncate">
+                          {s.fullName}
+                        </div>
+                        <div className="text-xs text-muted-foreground font-mono truncate">
+                          {s.programId || s.begenaId} · {s.studentId} · {s.section || "No section"}
+                        </div>
+                      </div>
+                    </div>
+
+                    <Badge tone={isSelected ? "success" : "warning"}>
+                      {isSelected ? "Will Graduate" : gradNonGradStatus}
+                    </Badge>
+                  </label>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </Modal>
 
       <ConfirmModal
         isOpen={deleteModalOpen}
