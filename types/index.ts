@@ -57,8 +57,10 @@ export interface Section {
 	batch?: string;
 	mainTeacher?: string;
 	mainTeacherName?: string;
+	mainTeacherNames?: string[];
 	assistantTeacher?: string;
 	assistantTeacherName?: string;
+	assistantTeacherNames?: string[];
 	assignedTeacher?: string;
 	capacity?: number;
 	classDate?: string;

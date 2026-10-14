@@ -10,6 +10,7 @@ import RowActions from "@/components/RowActions";
 import { Badge } from "@/components/ui/badge";
 import { Field, PageHeader } from "@/components/ui/page";
 import CustomSelect from "@/components/ui/custom-select";
+import CustomMultiSelect from "@/components/ui/custom-multi-select";
 import { siteImages } from "@/lib/images";
 import toast from "react-hot-toast";
 
@@ -23,7 +24,9 @@ export default function SectionsPage() {
     program: "Begena",
     batch: "Batch 8",
     mainTeacherName: "",
+    mainTeacherNames: [],
     assistantTeacherName: "",
+    assistantTeacherNames: [],
     capacity: 30,
   });
 
@@ -66,14 +69,65 @@ export default function SectionsPage() {
     }
   }, []);
 
+  const getMainTeachers = (s: Section): string[] => {
+    if (s.mainTeacherNames && s.mainTeacherNames.length > 0) {
+      return s.mainTeacherNames;
+    }
+    if (s.mainTeacherName) {
+      return s.mainTeacherName
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean);
+    }
+    if (s.assignedTeacher && s.assignedTeacher !== "TBA") {
+      const parts = s.assignedTeacher.split("&").map((t) => t.trim());
+      return parts[0]
+        ? parts[0]
+            .split(",")
+            .map((t) => t.trim())
+            .filter(Boolean)
+        : [];
+    }
+    return [];
+  };
+
+  const getAssistantTeachers = (s: Section): string[] => {
+    if (s.assistantTeacherNames && s.assistantTeacherNames.length > 0) {
+      return s.assistantTeacherNames;
+    }
+    if (s.assistantTeacherName) {
+      return s.assistantTeacherName
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean);
+    }
+    return [];
+  };
+
   const handleCreateSection = async () => {
     try {
+      const mainNames = formData.mainTeacherNames || [];
+      const asstNames = formData.assistantTeacherNames || [];
+      const mainJoined = mainNames.join(", ");
+      const asstJoined = asstNames.join(", ");
+
+      let assigned = "TBA";
+      if (mainJoined && asstJoined) {
+        assigned = `${mainJoined} & ${asstJoined}`;
+      } else if (mainJoined) {
+        assigned = mainJoined;
+      } else if (asstJoined) {
+        assigned = asstJoined;
+      }
+
       const payload = {
         ...formData,
         batch: formData.batch || "Batch 8",
-        assignedTeacher: formData.mainTeacherName
-          ? `${formData.mainTeacherName}${formData.assistantTeacherName ? ` & ${formData.assistantTeacherName}` : ""}`
-          : "TBA",
+        mainTeacherNames: mainNames,
+        mainTeacherName: mainJoined,
+        assistantTeacherNames: asstNames,
+        assistantTeacherName: asstJoined,
+        assignedTeacher: assigned,
       };
 
       await api.post("/sections", payload, {
@@ -85,7 +139,9 @@ export default function SectionsPage() {
         program: programs.length > 0 ? programs[0].name : "Begena",
         batch: "Batch 8",
         mainTeacherName: "",
+        mainTeacherNames: [],
         assistantTeacherName: "",
+        assistantTeacherNames: [],
         capacity: 30,
       });
       toast.success("Section created successfully");
@@ -99,12 +155,28 @@ export default function SectionsPage() {
     if (!sectionToEdit?._id) return;
 
     try {
+      const mainNames = formData.mainTeacherNames || [];
+      const asstNames = formData.assistantTeacherNames || [];
+      const mainJoined = mainNames.join(", ");
+      const asstJoined = asstNames.join(", ");
+
+      let assigned = "TBA";
+      if (mainJoined && asstJoined) {
+        assigned = `${mainJoined} & ${asstJoined}`;
+      } else if (mainJoined) {
+        assigned = mainJoined;
+      } else if (asstJoined) {
+        assigned = asstJoined;
+      }
+
       const payload = {
         ...formData,
         batch: formData.batch || "Batch 8",
-        assignedTeacher: formData.mainTeacherName
-          ? `${formData.mainTeacherName}${formData.assistantTeacherName ? ` & ${formData.assistantTeacherName}` : ""}`
-          : "TBA",
+        mainTeacherNames: mainNames,
+        mainTeacherName: mainJoined,
+        assistantTeacherNames: asstNames,
+        assistantTeacherName: asstJoined,
+        assignedTeacher: assigned,
       };
 
       await api.put(`/sections/${sectionToEdit._id}`, payload, {
@@ -206,46 +278,49 @@ export default function SectionsPage() {
               />
             </Field>
 
-            <Field label="Main Teacher (ዋና መምህር)" htmlFor="sectionMainTeacher">
-              <CustomSelect
-                id="sectionMainTeacher"
-                value={formData.mainTeacherName || ""}
-                onChange={(val) =>
-                  setFormData({ ...formData, mainTeacherName: val })
+            <Field
+              label="Main Teachers (ዋና መምህራን)"
+              htmlFor="sectionMainTeachers"
+              hint="አንድ ወይም ከዚያ በላይ ዋና መምህራንን መምረጥ ይችላሉ (Select 1 or more main teachers)"
+            >
+              <CustomMultiSelect
+                id="sectionMainTeachers"
+                values={formData.mainTeacherNames || []}
+                onChange={(vals) =>
+                  setFormData({
+                    ...formData,
+                    mainTeacherNames: vals,
+                    mainTeacherName: vals.join(", "),
+                  })
                 }
-                placeholder="Select main teacher"
-                options={[
-                  { value: "", label: "Select main teacher" },
-                  ...staffList.map((staff) => ({
-                    value: staff.fullName,
-                    label: `${staff.fullName} (${staff.role})`,
-                  })),
-                ]}
+                placeholder="ዋና መምህራንን ይምረጡ..."
+                options={staffList.map((staff) => ({
+                  value: staff.fullName,
+                  label: `${staff.fullName} (${staff.role})`,
+                }))}
               />
             </Field>
 
             <Field
-              label="Assistant Teacher (ረዳት መምህር)"
-              htmlFor="sectionAssistantTeacher"
-              hint="Optional."
+              label="Assistant Teachers (ረዳት መምህራን)"
+              htmlFor="sectionAssistantTeachers"
+              hint="አንድ ወይም ከዚያ በላይ ረዳት መምህራንን መምረጥ ይችላሉ (Select 1 or more assistant teachers)"
             >
-              <CustomSelect
-                id="sectionAssistantTeacher"
-                value={formData.assistantTeacherName || ""}
-                onChange={(val) =>
+              <CustomMultiSelect
+                id="sectionAssistantTeachers"
+                values={formData.assistantTeacherNames || []}
+                onChange={(vals) =>
                   setFormData({
                     ...formData,
-                    assistantTeacherName: val,
+                    assistantTeacherNames: vals,
+                    assistantTeacherName: vals.join(", "),
                   })
                 }
-                placeholder="Select assistant teacher"
-                options={[
-                  { value: "", label: "Select assistant teacher" },
-                  ...staffList.map((staff) => ({
-                    value: staff.fullName,
-                    label: `${staff.fullName} (${staff.role})`,
-                  })),
-                ]}
+                placeholder="ረዳት መምህራንን ይምረጡ..."
+                options={staffList.map((staff) => ({
+                  value: staff.fullName,
+                  label: `${staff.fullName} (${staff.role})`,
+                }))}
               />
             </Field>
           </ModalForm>
@@ -277,47 +352,84 @@ export default function SectionsPage() {
       <DataCards
         emptyTitle="No sections found"
         emptyDescription="Create a section, or clear the filters above."
-        items={filteredSections.map((s) => ({
-          id: s._id ?? s.section,
-          title: s.section,
-          badge: (
-            <Badge tone="primary">
-              {`${s.program || "Begena"}${s.batch ? ` · ${s.batch}` : ""}`}
-            </Badge>
-          ),
-          fields: [
-            {
-              label: "Main teacher",
-              value: s.mainTeacherName || s.assignedTeacher || "TBA",
-              wide: true,
-            },
-            {
-              label: "Assistant teacher",
-              value: s.assistantTeacherName || "—",
-              wide: true,
-            },
-          ],
-          actions: (
-            <RowActions
-              onEdit={() => {
-                setSectionToEdit(s);
-                setFormData({
-                  section: s.section,
-                  program: s.program || "Begena",
-                  batch: s.batch || "Batch 8",
-                  mainTeacherName: s.mainTeacherName || s.assignedTeacher || "",
-                  assistantTeacherName: s.assistantTeacherName || "",
-                  capacity: s.capacity || 30,
-                });
-                setEditModalOpen(true);
-              }}
-              onDelete={() => {
-                setSectionToDelete(s);
-                setDeleteModalOpen(true);
-              }}
-            />
-          ),
-        }))}
+        items={filteredSections.map((s) => {
+          const mainTeachers = getMainTeachers(s);
+          const assistantTeachers = getAssistantTeachers(s);
+
+          return {
+            id: s._id ?? s.section,
+            title: s.section,
+            badge: (
+              <Badge tone="primary">
+                {`${s.program || "Begena"}${s.batch ? ` · ${s.batch}` : ""}`}
+              </Badge>
+            ),
+            fields: [
+              {
+                label: "Main teachers / ዋና መምህራን",
+                value:
+                  mainTeachers.length > 0 ? (
+                    <div className="flex flex-wrap gap-1 mt-0.5">
+                      {mainTeachers.map((name) => (
+                        <span
+                          key={name}
+                          className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-500/15 text-amber-300 border border-amber-500/30"
+                        >
+                          {name}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground">TBA</span>
+                  ),
+                wide: true,
+              },
+              {
+                label: "Assistant teachers / ረዳት መምህራን",
+                value:
+                  assistantTeachers.length > 0 ? (
+                    <div className="flex flex-wrap gap-1 mt-0.5">
+                      {assistantTeachers.map((name) => (
+                        <span
+                          key={name}
+                          className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-500/15 text-blue-300 border border-blue-500/30"
+                        >
+                          {name}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  ),
+                wide: true,
+              },
+            ],
+            actions: (
+              <RowActions
+                onEdit={() => {
+                  setSectionToEdit(s);
+                  const mTeachers = getMainTeachers(s);
+                  const aTeachers = getAssistantTeachers(s);
+                  setFormData({
+                    section: s.section,
+                    program: s.program || "Begena",
+                    batch: s.batch || "Batch 8",
+                    mainTeacherName: mTeachers.join(", "),
+                    mainTeacherNames: mTeachers,
+                    assistantTeacherName: aTeachers.join(", "),
+                    assistantTeacherNames: aTeachers,
+                    capacity: s.capacity || 30,
+                  });
+                  setEditModalOpen(true);
+                }}
+                onDelete={() => {
+                  setSectionToDelete(s);
+                  setDeleteModalOpen(true);
+                }}
+              />
+            ),
+          };
+        })}
       />
 
       {sectionToEdit && (
@@ -365,42 +477,49 @@ export default function SectionsPage() {
                 />
               </Field>
 
-              <Field label="Main Teacher" htmlFor="editSectionMainTeacher">
-                <CustomSelect
-                  id="editSectionMainTeacher"
-                  value={data.mainTeacherName || ""}
-                  onChange={(val) =>
-                    setData({ ...data, mainTeacherName: val })
+              <Field
+                label="Main Teachers (ዋና መምህራን)"
+                htmlFor="editSectionMainTeachers"
+                hint="አንድ ወይም ከዚያ በላይ ዋና መምህራንን መምረጥ ይችላሉ (Select 1 or more main teachers)"
+              >
+                <CustomMultiSelect
+                  id="editSectionMainTeachers"
+                  values={data.mainTeacherNames || []}
+                  onChange={(vals) =>
+                    setData({
+                      ...data,
+                      mainTeacherNames: vals,
+                      mainTeacherName: vals.join(", "),
+                    })
                   }
-                  placeholder="Select main teacher"
-                  options={[
-                    { value: "", label: "Select main teacher" },
-                    ...staffList.map((staff) => ({
-                      value: staff.fullName,
-                      label: staff.fullName,
-                    })),
-                  ]}
+                  placeholder="ዋና መምህራንን ይምረጡ..."
+                  options={staffList.map((staff) => ({
+                    value: staff.fullName,
+                    label: `${staff.fullName} (${staff.role})`,
+                  }))}
                 />
               </Field>
 
               <Field
-                label="Assistant Teacher"
-                htmlFor="editSectionAssistantTeacher"
+                label="Assistant Teachers (ረዳት መምህራን)"
+                htmlFor="editSectionAssistantTeachers"
+                hint="አንድ ወይም ከዚያ በላይ ረዳት መምህራንን መምረጥ ይችላሉ (Select 1 or more assistant teachers)"
               >
-                <CustomSelect
-                  id="editSectionAssistantTeacher"
-                  value={data.assistantTeacherName || ""}
-                  onChange={(val) =>
-                    setData({ ...data, assistantTeacherName: val })
+                <CustomMultiSelect
+                  id="editSectionAssistantTeachers"
+                  values={data.assistantTeacherNames || []}
+                  onChange={(vals) =>
+                    setData({
+                      ...data,
+                      assistantTeacherNames: vals,
+                      assistantTeacherName: vals.join(", "),
+                    })
                   }
-                  placeholder="Select assistant teacher"
-                  options={[
-                    { value: "", label: "Select assistant teacher" },
-                    ...staffList.map((staff) => ({
-                      value: staff.fullName,
-                      label: staff.fullName,
-                    })),
-                  ]}
+                  placeholder="ረዳት መምህራንን ይምረጡ..."
+                  options={staffList.map((staff) => ({
+                    value: staff.fullName,
+                    label: `${staff.fullName} (${staff.role})`,
+                  }))}
                 />
               </Field>
             </>
