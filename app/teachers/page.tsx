@@ -24,89 +24,182 @@ export interface Teacher {
 
 // Default fallback list in case backend is loading or offline
 const defaultTeachers: Teacher[] = [
+  // Sec-A
   {
     _id: "t1",
-    fullName: "Teacher Solomon",
+    fullName: "Dagmawit Yoseph",
     role: "teacher",
-    phoneNumber: "0911000001",
     department: "የበገና ንዑስ ክፍል (Begena Department)",
-    specialization: "በገና ድርደራና ቅኝት (Begena Tuning & Playing)",
+    specialization: "መሰረታዊ በገና (Sec-A ዋና መምህርት)",
     status: "Active",
   },
   {
     _id: "t2",
-    fullName: "Teacher Martha",
+    fullName: "Solomon Mehabaw",
     role: "teacher",
-    phoneNumber: "0911000002",
     department: "የበገና ንዑስ ክፍል (Begena Department)",
-    specialization: "የበገና ዜማና መሰረታዊ ስልጠና (Begena Chants & Basic Training)",
+    specialization: "መሰረታዊ በገና (Sec-A ዋና መምህር)",
     status: "Active",
   },
   {
     _id: "t3",
-    fullName: "Teacher Ephrem",
+    fullName: "Selam",
     role: "teacher",
-    phoneNumber: "0911000003",
     department: "የበገና ንዑስ ክፍል (Begena Department)",
-    specialization: "የበገና ታሪክ፣ ቅኝቶችና ዜማ (Begena History, Scales & Melody)",
+    specialization: "መሰረታዊ በገና (Sec-A ረዳት መምህርት)",
     status: "Active",
   },
   {
     _id: "t4",
-    fullName: "መምህር ዮሐንስ አየለ (Teacher Yohannes)",
+    fullName: "Soliyana Shewalante",
     role: "teacher",
-    phoneNumber: "0911456780",
-    department: "የበገና ንዑስ ክፍል",
-    specialization: "አድቫንስድ የበገና ድርደራ (Advanced Begena Course)",
+    department: "የበገና ንዑስ ክፍል (Begena Department)",
+    specialization: "መሰረታዊ በገና (Sec-A ረዳት መምህርት)",
     status: "Active",
   },
+  // Sec-B
   {
     _id: "t5",
-    fullName: "ዲያቆን ያረጋል አበራ (Deacon Yaregal)",
+    fullName: "Henok Damtew",
     role: "teacher",
-    phoneNumber: "0911567891",
-    department: "የዜማና መንፈሳዊ ትምህርት ክፍል",
-    specialization: "የዜማ ምልክቶችና የበገና ስርዓት (Begena Liturgical Practice)",
+    department: "የበገና ንዑስ ክፍል (Begena Department)",
+    specialization: "መሰረታዊ በገና (Sec-B ዋና መምህር)",
     status: "Active",
   },
   {
     _id: "t6",
-    fullName: "መምህርት ሰላማዊት ታደሰ (Teacher Selamawit)",
+    fullName: "Lidya Tibebu",
     role: "teacher",
-    phoneNumber: "0911678902",
-    department: "የበገና ንዑስ ክፍል",
-    specialization: "የጀማሪዎች የበገና ስልጠና (Beginners Begena Training)",
+    department: "የበገና ንዑስ ክፍል (Begena Department)",
+    specialization: "መሰረታዊ በገና (Sec-B ዋና መምህርት)",
     status: "Active",
   },
   {
     _id: "t7",
-    fullName: "መምህር ዳዊት ተመስገን (Teacher Dawit)",
+    fullName: "Habtamu Shitaw",
     role: "teacher",
-    phoneNumber: "0911789013",
-    department: "የመሰንቆና ክራር ንዑስ ክፍል",
-    specialization: "መሰንቆ ስልጠና (Traditional Masinko Training)",
+    department: "የበገና ንዑስ ክፍል (Begena Department)",
+    specialization: "መሰረታዊ በገና (Sec-B ረዳት መምህር)",
     status: "Active",
   },
   {
     _id: "t8",
-    fullName: "መምህር በረከት ግርማ (Teacher Bereket)",
+    fullName: "Dagmawit",
     role: "teacher",
-    phoneNumber: "0911890124",
-    department: "የመሰንቆና ክራር ንዑስ ክፍል",
-    specialization: "ክራር ስልጠና (Traditional Kirar Training)",
+    department: "የበገና ንዑስ ክፍል (Begena Department)",
+    specialization: "መሰረታዊ በገና (Sec-B ረዳት መምህርት)",
     status: "Active",
   },
+  // Sec-C
   {
     _id: "t9",
-    fullName: "መጋቤ ስብሐት አለሙ አጋ (Master Alemu Aga)",
+    fullName: "Befkadu Sahilu",
     role: "teacher",
-    phoneNumber: "0911000005",
-    department: "የበገና ንዑስ ክፍል (ክብር መምህር)",
-    specialization: "ጥንታዊ የበገና ድርደራና ትውፊት (Master of Begena)",
+    department: "የበገና ንዑስ ክፍል (Begena Department)",
+    specialization: "መሰረታዊ በገና (Sec-C ዋና መምህር)",
     status: "Active",
   },
   {
     _id: "t10",
+    fullName: "Israel",
+    role: "teacher",
+    department: "የበገና ንዑስ ክፍል (Begena Department)",
+    specialization: "መሰረታዊ በገና (Sec-C ዋና መምህር)",
+    status: "Active",
+  },
+  {
+    _id: "t11",
+    fullName: "Yared Melkamu",
+    role: "teacher",
+    department: "የበገና ንዑስ ክፍል (Begena Department)",
+    specialization: "መሰረታዊ በገና (Sec-C ረዳት መምህር)",
+    status: "Active",
+  },
+  {
+    _id: "t12",
+    fullName: "Soliyana Wasihun",
+    role: "teacher",
+    department: "የበገና ንዑስ ክፍል (Begena Department)",
+    specialization: "መሰረታዊ በገና (Sec-C ረዳት መምህርት)",
+    status: "Active",
+  },
+  // Sec-D
+  {
+    _id: "t13",
+    fullName: "Nahom Hailu",
+    role: "teacher",
+    department: "የበገና ንዑስ ክፍል (Begena Department)",
+    specialization: "መሰረታዊ በገና (Sec-D ዋና መምህር)",
+    status: "Active",
+  },
+  {
+    _id: "t14",
+    fullName: "Soliyana Sisay",
+    role: "teacher",
+    department: "የበገና ንዑስ ክፍል (Begena Department)",
+    specialization: "መሰረታዊ በገና (Sec-D ዋና መምህርት)",
+    status: "Active",
+  },
+  {
+    _id: "t15",
+    fullName: "Eyob",
+    role: "teacher",
+    department: "የበገና ንዑስ ክፍል (Begena Department)",
+    specialization: "መሰረታዊ በገና (Sec-D ረዳት መምህር)",
+    status: "Active",
+  },
+  {
+    _id: "t16",
+    fullName: "Yanet Amaha",
+    role: "teacher",
+    department: "የበገና ንዑስ ክፍል (Begena Department)",
+    specialization: "መሰረታዊ በገና (Sec-D ረዳት መምህርት)",
+    status: "Active",
+  },
+  // Sec-E
+  {
+    _id: "t17",
+    fullName: "Ayanaw Mengesha",
+    role: "teacher",
+    department: "የበገና ንዑስ ክፍል (Begena Department)",
+    specialization: "መሰረታዊ በገና (Sec-E ዋና መምህር)",
+    status: "Active",
+  },
+  {
+    _id: "t18",
+    fullName: "Abdisa",
+    role: "teacher",
+    department: "የበገና ንዑስ ክፍል (Begena Department)",
+    specialization: "መሰረታዊ በገና (Sec-E ዋና መምህር)",
+    status: "Active",
+  },
+  {
+    _id: "t19",
+    fullName: "Kaleab",
+    role: "teacher",
+    department: "የበገና ንዑስ ክፍል (Begena Department)",
+    specialization: "መሰረታዊ በገና (Sec-E ረዳት መምህር)",
+    status: "Active",
+  },
+  {
+    _id: "t20",
+    fullName: "Etalem",
+    role: "teacher",
+    department: "የበገና ንዑስ ክፍል (Begena Department)",
+    specialization: "መሰረታዊ በገና (Sec-E ረዳት መምህርት)",
+    status: "Active",
+  },
+  {
+    _id: "t21",
+    fullName: "Tebibu",
+    role: "teacher",
+    department: "የበገና ንዑስ ክፍል (Begena Department)",
+    specialization: "መሰረታዊ በገና (Sec-E ረዳት መምህር)",
+    status: "Active",
+  },
+  // Admin
+  {
+    _id: "admin",
     fullName: "Admin",
     role: "admin",
     phoneNumber: "0911000000",
@@ -147,24 +240,20 @@ export default function TeachersPage() {
 
   const filterCategories = [
     { id: "All", label: "ሁሉም መምህራን (All)" },
-    { id: "Begena", label: "በገና (Begena)" },
-    { id: "Masinko", label: "መሰንቆ (Masinko)" },
-    { id: "Kirar", label: "ክራር (Kirar)" },
+    { id: "Sec-A", label: "ምድብ ሀ (Sec-A)" },
+    { id: "Sec-B", label: "ምድብ ለ (Sec-B)" },
+    { id: "Sec-C", label: "ምድብ ሐ (Sec-C)" },
+    { id: "Sec-D", label: "ምድብ መ (Sec-D)" },
+    { id: "Sec-E", label: "ምድብ ሠ (Sec-E)" },
     { id: "Admin", label: "አስተዳደር (Admin)" },
   ];
 
   const filteredTeachers = useMemo(() => {
     return teachers.filter((t) => {
-      // Filter by category
-      if (selectedFilter === "Begena") {
+      // Filter by category / section
+      if (selectedFilter.startsWith("Sec-")) {
         const text = `${t.specialization || ""} ${t.department || ""}`.toLowerCase();
-        if (!text.includes("begena") && !text.includes("በገና")) return false;
-      } else if (selectedFilter === "Masinko") {
-        const text = `${t.specialization || ""} ${t.department || ""}`.toLowerCase();
-        if (!text.includes("masinko") && !text.includes("መሰንቆ")) return false;
-      } else if (selectedFilter === "Kirar") {
-        const text = `${t.specialization || ""} ${t.department || ""}`.toLowerCase();
-        if (!text.includes("kirar") && !text.includes("ክራር")) return false;
+        if (!text.includes(selectedFilter.toLowerCase())) return false;
       } else if (selectedFilter === "Admin") {
         if (t.role !== "admin") return false;
       }
@@ -357,3 +446,4 @@ export default function TeachersPage() {
     </div>
   );
 }
+
