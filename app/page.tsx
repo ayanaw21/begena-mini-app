@@ -11,6 +11,12 @@ import Navbar from "@/components/Navbar";
 
 const quickLinks = [
   {
+    href: "/teachers",
+    emoji: "👨‍🏫",
+    title: "የመምህራን እና አሰልጣኞች ዝርዝር",
+    description: "የበገና፣ የመሰንቆና የክራር መምህራን እና አሰልጣኞችን ይመልከቱ።",
+  },
+  {
     href: "/mezmurlist",
     emoji: "🎵",
     title: "የበገና ዝማሬዎች ማውጫ",

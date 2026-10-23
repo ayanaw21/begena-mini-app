@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 const links = [
   { href: "/schedule", label: "የትምህርት ሰዓት" },
   { href: "/students", label: "ተማሪዎች" },
+  { href: "/teachers", label: "መምህራን" },
   { href: "/mezmurlist", label: "ዝማሬዎች" },
   { href: "/payment", label: "ክፍያ" },
 ];
