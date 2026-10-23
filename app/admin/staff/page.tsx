@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import api from "@/lib/api";
 import DataCards from "@/components/DataCards";
 import ModalForm from "@/components/ModalForm";
@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Field, PageHeader } from "@/components/ui/page";
 import CustomSelect from "@/components/ui/custom-select";
 import { siteImages, adminCardBackgrounds } from "@/lib/images";
+import { Program } from "@/types";
 import toast from "react-hot-toast";
 
 interface StaffMember {
@@ -25,12 +26,13 @@ interface StaffMember {
 
 export default function StaffPage() {
   const [staff, setStaff] = useState<StaffMember[]>([]);
+  const [programs, setPrograms] = useState<Program[]>([]);
   const [formData, setFormData] = useState<StaffMember>({
     fullName: "",
     role: "teacher",
     phoneNumber: "",
     department: "General",
-    specialization: "በገና (Begena)",
+    specialization: "Basic በገና",
     status: "Active",
     password: "",
   });
@@ -39,6 +41,15 @@ export default function StaffPage() {
   const [staffToDelete, setStaffToDelete] = useState<StaffMember | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [staffToEdit, setStaffToEdit] = useState<StaffMember | null>(null);
+
+  const fetchPrograms = useCallback(async () => {
+    try {
+      const res = await api.get("/programs");
+      setPrograms(res.data.programs || []);
+    } catch (err) {
+      console.error("Failed to fetch programs:", err);
+    }
+  }, []);
 
   const fetchStaff = useCallback(async () => {
     try {
@@ -123,9 +134,25 @@ export default function StaffPage() {
     }
   };
 
+  const programOptions = useMemo(() => {
+    if (programs.length > 0) {
+      return programs.map((p) => ({
+        value: p.name,
+        label: `${p.name} (${p.code})`,
+      }));
+    }
+    return [
+      { value: "Basic በገና", label: "Basic በገና (BASIC-BG)" },
+      { value: "በገና (Begena)", label: "በገና (Begena)" },
+      { value: "መሰንቆ (Masinko)", label: "መሰንቆ (Masinko)" },
+      { value: "ክራር (Kirar)", label: "ክራር (Kirar)" },
+    ];
+  }, [programs]);
+
   useEffect(() => {
     fetchStaff();
-  }, [fetchStaff]);
+    fetchPrograms();
+  }, [fetchStaff, fetchPrograms]);
 
   return (
     <div className="space-y-6">
@@ -188,13 +215,19 @@ export default function StaffPage() {
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Specialization / Instrument" htmlFor="staffSpecialization" hint="e.g. በገና, ክራር">
-                <input
-                  id="staffSpecialization"
-                  placeholder="e.g. በገና (Begena)"
-                  value={formData.specialization || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, specialization: e.target.value })
+              <Field label="Program" htmlFor="staffProgram" required hint="Select assigned program">
+                <CustomSelect
+                  id="staffProgram"
+                  value={formData.specialization || (programs[0]?.name || "Basic በገና")}
+                  onChange={(val) =>
+                    setFormData({ ...formData, specialization: val })
+                  }
+                  options={
+                    programOptions.some((o) => o.value === formData.specialization)
+                      ? programOptions
+                      : formData.specialization
+                      ? [{ value: formData.specialization, label: formData.specialization }, ...programOptions]
+                      : programOptions
                   }
                 />
               </Field>
@@ -266,7 +299,7 @@ export default function StaffPage() {
           ),
           image: adminCardBackgrounds[idx % adminCardBackgrounds.length],
           fields: [
-            { label: "Instrument", value: s.specialization || "በገና (Begena)" },
+            { label: "Program", value: s.specialization || "Basic በገና" },
             { label: "Department", value: s.department || "General" },
             { label: "Phone", value: s.phoneNumber || "—" },
             { label: "Status", value: s.status || "Active" },
@@ -275,11 +308,16 @@ export default function StaffPage() {
             <RowActions
               key={s._id}
               onEdit={() => {
+                const normalizedProg =
+                  s.specialization?.includes("መሰረታዊ") || s.specialization?.includes("Basic")
+                    ? "Basic በገና"
+                    : s.specialization || (programs[0]?.name || "Basic በገና");
+
                 setStaffToEdit(s);
                 setFormData({
                   ...s,
-                  department: s.department || "General",
-                  specialization: s.specialization || "በገና (Begena)",
+                  department: s.department || "የበገና ንዑስ ክፍል",
+                  specialization: normalizedProg,
                   status: s.status || "Active",
                   password: "",
                 });
@@ -354,12 +392,23 @@ export default function StaffPage() {
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Specialization / Instrument" htmlFor="editStaffSpecialization">
-                  <input
-                    id="editStaffSpecialization"
-                    value={data.specialization || ""}
-                    onChange={(e) =>
-                      setData({ ...data, specialization: e.target.value })
+                <Field label="Program" htmlFor="editStaffProgram" required hint="Pick related program">
+                  <CustomSelect
+                    id="editStaffProgram"
+                    value={
+                      data.specialization?.includes("መሰረታዊ") || data.specialization?.includes("Basic")
+                        ? "Basic በገና"
+                        : data.specialization || (programs[0]?.name || "Basic በገና")
+                    }
+                    onChange={(val) =>
+                      setData({ ...data, specialization: val })
+                    }
+                    options={
+                      programOptions.some((o) => o.value === data.specialization)
+                        ? programOptions
+                        : data.specialization
+                        ? [{ value: data.specialization, label: data.specialization }, ...programOptions]
+                        : programOptions
                     }
                   />
                 </Field>

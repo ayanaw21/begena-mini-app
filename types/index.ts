@@ -6,6 +6,7 @@ export interface Admin {
 	phoneNumber?: string;
 	department?: string;
 	specialization?: string;
+	program?: string;
 	status?: "Active" | "Inactive";
 }
 
