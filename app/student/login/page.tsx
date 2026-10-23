@@ -33,6 +33,9 @@ export default function StudentLogin() {
       const res = await api.post("/auth/student/login", { studentId, password });
       if (res.data.token) {
         localStorage.setItem("studentToken", res.data.token);
+        if (res.data.student) {
+          localStorage.setItem("studentData", JSON.stringify(res.data.student));
+        }
         toast.success("Welcome to your Student Portal!");
         router.push("/student/dashboard");
       }

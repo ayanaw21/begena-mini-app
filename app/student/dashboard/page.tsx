@@ -78,6 +78,7 @@ export default function StudentDashboard() {
 
       if (res.data.success) {
         setStudent(res.data.student);
+        localStorage.setItem("studentData", JSON.stringify(res.data.student));
         setPayments(res.data.payments || []);
         setSchedules(res.data.schedules || []);
         setAttendance(res.data.attendance || []);
@@ -104,6 +105,7 @@ export default function StudentDashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem("studentToken");
+    localStorage.removeItem("studentData");
     toast.success("Logged out successfully");
     router.push("/student/login");
   };

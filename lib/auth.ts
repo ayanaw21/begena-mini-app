@@ -89,3 +89,54 @@ export const getValidToken = () => {
   }
   return token;
 };
+
+export interface StudentUser {
+  id?: string;
+  fullName?: string;
+  studentId?: string;
+  programId?: string;
+  begenaId?: string;
+  program?: string;
+  batch?: string;
+  section?: string;
+  department?: string;
+  academicStatus?: string;
+}
+
+export const getStudentToken = () => {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("studentToken");
+};
+
+export const removeStudentToken = () => {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem("studentToken");
+  localStorage.removeItem("studentData");
+};
+
+export const getValidStudentToken = () => {
+  const token = getStudentToken();
+  if (!token || isTokenExpired(token)) {
+    removeStudentToken();
+    return null;
+  }
+  return token;
+};
+
+export const getStudentData = (): StudentUser | null => {
+  if (typeof window === "undefined") return null;
+  const token = getValidStudentToken();
+  if (!token) return null;
+  const raw = localStorage.getItem("studentData");
+  if (raw) {
+    try {
+      return JSON.parse(raw);
+    } catch {}
+  }
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload;
+  } catch {
+    return null;
+  }
+};

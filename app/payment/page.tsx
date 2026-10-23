@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import Figure from "@/components/ui/figure";
 import PhotoPanel from "@/components/ui/photo-panel";
 import CustomSelect from "@/components/ui/custom-select";
+import { Badge } from "@/components/ui/badge";
 import { siteImages } from "@/lib/images";
 import {
 	Field,
@@ -12,10 +13,26 @@ import {
 	PanelBody,
 	PanelHeader,
 } from "@/components/ui/page";
-import React, { useState, useTransition, useCallback } from "react";
+import React, { useState, useTransition, useCallback, useEffect } from "react";
 import Image from "next/image";
-import { Check, Upload, X, Building2, UserCheck, Calendar, UploadCloud, ShieldCheck } from "lucide-react";
+import Link from "next/link";
+import {
+	Check,
+	Upload,
+	X,
+	Building2,
+	UserCheck,
+	Calendar,
+	UploadCloud,
+	ShieldCheck,
+	History,
+	ExternalLink,
+	Loader2,
+	ArrowRight,
+} from "lucide-react";
 import { sendPayment } from "@/lib/actions/payment";
+import { getValidStudentToken, getStudentData } from "@/lib/auth";
+import { Payment as PaymentRecord } from "@/types";
 import Footer from "@/components/footer";
 import Navbar from "@/components/Navbar";
 import toast from "react-hot-toast";
@@ -58,14 +75,20 @@ const Payment = () => {
 
 	// Auto-filled / fallback values
 	const [fullName, setFullName] = useState("");
-	const [selectedProgram, setSelectedProgram] = useState("በገና (Begena)");
-	const [selectedSection, setSelectedSection] = useState("Section A");
-	const [selectedBatch, setSelectedBatch] = useState("Batch 1");
+	const [selectedProgram, setSelectedProgram] = useState("Basic በገና");
+	const [selectedSection, setSelectedSection] = useState("Sec-A");
+	const [selectedBatch, setSelectedBatch] = useState("Batch 8");
 
 	// Lookup state
 	const [foundStudent, setFoundStudent] = useState<FoundStudent | null>(null);
 	const [isLookingUp, setIsLookingUp] = useState(false);
 	const [manualMode, setManualMode] = useState(false);
+
+	// Student Login & History state
+	const [isLoggedInStudent, setIsLoggedInStudent] = useState(false);
+	const [paymentHistory, setPaymentHistory] = useState<PaymentRecord[]>([]);
+	const [loadingPayments, setLoadingPayments] = useState(false);
+	const [selectedReceipt, setSelectedReceipt] = useState<string | null>(null);
 
 	const months = [
 		{ value: "October", label: "ጥቅምት (October)" },
@@ -77,6 +100,55 @@ const Payment = () => {
 		{ value: "April", label: "ሚያዚያ (April)" },
 		{ value: "May", label: "ግንቦት (May)" },
 	];
+
+	// Fetch payments for a given student ID
+	const fetchPaymentsForStudent = useCallback(async (studentId: string) => {
+		if (!studentId || studentId.trim().length < 2) {
+			setPaymentHistory([]);
+			return;
+		}
+		setLoadingPayments(true);
+		try {
+			const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+			const res = await fetch(`${baseUrl}/payments/student/${encodeURIComponent(studentId.trim())}`);
+			if (res.ok) {
+				const data = await res.json();
+				if (data.success && Array.isArray(data.payments)) {
+					setPaymentHistory(data.payments);
+				} else {
+					setPaymentHistory([]);
+				}
+			}
+		} catch (err) {
+			console.error("Payment history fetch error:", err);
+		} finally {
+			setLoadingPayments(false);
+		}
+	}, []);
+
+	// Auto-fill logged in student info on load
+	useEffect(() => {
+		const token = getValidStudentToken();
+		const student = getStudentData();
+		if (token && student?.studentId) {
+			setIsLoggedInStudent(true);
+			const sId = student.studentId;
+			setBegenaId(sId);
+			setFullName(student.fullName || "");
+			if (student.program) setSelectedProgram(student.program);
+			if (student.section) setSelectedSection(student.section);
+			if (student.batch) setSelectedBatch(student.batch);
+			setFoundStudent({
+				fullName: student.fullName || "",
+				studentId: sId,
+				program: student.program || "Basic በገና",
+				section: student.section || "Sec-A",
+				batch: student.batch || "Batch 8",
+				academicStatus: student.academicStatus || "Active",
+			});
+			fetchPaymentsForStudent(sId);
+		}
+	}, [fetchPaymentsForStudent]);
 
 	// Auto-lookup student by Student ID
 	const performStudentLookup = useCallback(async (idToLookup: string) => {
@@ -99,6 +171,7 @@ const Payment = () => {
 					if (s.section) setSelectedSection(s.section);
 					if (s.batch) setSelectedBatch(s.batch);
 					toast.success(`Verified: ${s.fullName}`);
+					fetchPaymentsForStudent(s.studentId);
 				}
 			} else {
 				setFoundStudent(null);
@@ -108,7 +181,7 @@ const Payment = () => {
 		} finally {
 			setIsLookingUp(false);
 		}
-	}, []);
+	}, [fetchPaymentsForStudent]);
 
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -155,9 +228,9 @@ const Payment = () => {
 		formData.set("begenaId", sId);
 		formData.set("studentId", sId);
 		formData.set("fullName", foundStudent?.fullName || fullName.trim() || `Student ${sId}`);
-		formData.set("program", foundStudent?.program || selectedProgram || "በገና (Begena)");
-		formData.set("section", foundStudent?.section || selectedSection || "Section A");
-		formData.set("batch", foundStudent?.batch || selectedBatch || "Batch 1");
+		formData.set("program", foundStudent?.program || selectedProgram || "Basic በገና");
+		formData.set("section", foundStudent?.section || selectedSection || "Sec-A");
+		formData.set("batch", foundStudent?.batch || selectedBatch || "Batch 8");
 		formData.set("month", selectedMonth);
 		formData.set("screenshot", selectedFile);
 
@@ -166,13 +239,19 @@ const Payment = () => {
 			if (result?.error) {
 				toast.error(result.error);
 			} else {
-				toast.success("Payment submitted successfully!");
+				toast.success("Payment submitted successfully! Your submission is now Pending review.");
 				removeImage();
-				setBegenaId("");
-				setFullName("");
 				setSelectedMonth("");
-				setFoundStudent(null);
-				(e.target as HTMLFormElement).reset();
+				const currentStudentId = foundStudent?.studentId || begenaId.trim();
+				if (currentStudentId) {
+					fetchPaymentsForStudent(currentStudentId);
+				}
+				if (!isLoggedInStudent) {
+					setBegenaId("");
+					setFullName("");
+					setFoundStudent(null);
+					(e.target as HTMLFormElement).reset();
+				}
 			}
 		});
 	};
@@ -197,6 +276,34 @@ const Payment = () => {
 							Submit Payment Proof
 						</h1>
 					</Figure>
+
+					{/* Logged in student banner */}
+					{isLoggedInStudent && foundStudent && (
+						<div className="rounded-2xl border border-primary/30 bg-primary/10 p-4 sm:p-5 backdrop-blur-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg">
+							<div className="flex items-center gap-3">
+								<div className="size-11 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-lg shrink-0 border border-primary/30">
+									🎓
+								</div>
+								<div>
+									<p className="text-sm font-semibold text-foreground flex items-center gap-2">
+										{foundStudent.fullName}
+										<span className="text-xs font-mono text-primary font-normal bg-primary/20 px-2 py-0.5 rounded-full">
+											{foundStudent.studentId}
+										</span>
+									</p>
+									<p className="text-xs text-muted-foreground mt-0.5">
+										{foundStudent.program} · {foundStudent.section} · {foundStudent.batch}
+									</p>
+								</div>
+							</div>
+							<Button asChild size="sm" className="bg-primary text-primary-foreground font-semibold shrink-0 gap-1.5">
+								<Link href="/student/dashboard">
+									<span>ዳሽቦርድ ሂድ (Dashboard)</span>
+									<ArrowRight size={14} />
+								</Link>
+							</Button>
+						</div>
+					)}
 
 					<PageHeader
 						title="የክፍያ ማረጋገጫ ማስገቢያ"
@@ -271,7 +378,7 @@ const Payment = () => {
 										value={begenaId}
 										onChange={(e) => setBegenaId(e.target.value)}
 										onBlur={() => performStudentLookup(begenaId)}
-										placeholder="BG2026-0001"
+										placeholder="001/08"
 										className="flex-1 font-mono bg-black/40 border-white/15 focus:border-primary/50"
 										disabled={isPending}
 									/>
@@ -439,8 +546,139 @@ const Payment = () => {
 							{isPending ? "Submitting..." : "Submit Payment (ክፍያውን መዝግብ)"}
 						</Button>
 					</form>
+
+					{/* Step 4 — Payment History Section */}
+					{(foundStudent || paymentHistory.length > 0 || loadingPayments) && (
+						<PhotoPanel
+							src={siteImages.orthodoxChurch}
+							contentClassName="p-0"
+							className="border-white/10 shadow-2xl backdrop-blur mt-8"
+						>
+							<PanelHeader
+								title={
+									<span className="flex items-center gap-2">
+										<History size={18} className="text-primary" />
+										<span>የክፍያ ታሪክ (Payment History)</span>
+									</span>
+								}
+								description={
+									foundStudent
+										? `የ ${foundStudent.fullName} (${foundStudent.studentId}) የተመዘገቡ ክፍያዎች`
+										: "የተመዘገቡ ክፍያዎች ዝርዝር"
+								}
+								action={
+									loadingPayments ? (
+										<span className="flex items-center gap-1.5 text-xs text-primary animate-pulse">
+											<Loader2 size={12} className="animate-spin" /> በማምጣት ላይ...
+										</span>
+									) : (
+										<span className="text-xs text-muted-foreground font-mono">
+											{paymentHistory.length} ክፍያ(ዎች)
+										</span>
+									)
+								}
+							/>
+							<PanelBody className="p-0">
+								{loadingPayments && paymentHistory.length === 0 ? (
+									<div className="flex items-center justify-center py-12">
+										<Loader2 size={24} className="animate-spin text-primary" />
+									</div>
+								) : paymentHistory.length === 0 ? (
+									<div className="py-12 text-center text-muted-foreground text-sm">
+										ምንም የተመዘገበ ክፍያ አልተገኘም (No payment records found).
+									</div>
+								) : (
+									<div className="divide-y divide-white/5">
+										{paymentHistory.map((p, idx) => {
+											const status = p.status || "Pending";
+											const tone = status === "Approved" ? "success" : status === "Rejected" ? "danger" : "warning";
+											return (
+												<div
+													key={p._id || idx}
+													className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:px-6 gap-3 hover:bg-white/[0.02] transition-colors"
+												>
+													<div className="flex items-start gap-3">
+														<div className="bg-white/5 rounded-lg p-2.5 shrink-0 text-center min-w-[62px] border border-white/5">
+															<span className="text-[10px] uppercase font-bold text-muted-foreground block">
+																{p.year || "2026"}
+															</span>
+															<span className="text-xs font-semibold text-primary block truncate max-w-[80px]">
+																{p.month}
+															</span>
+														</div>
+														<div>
+															<div className="flex items-center gap-2">
+																<span className="text-sm font-semibold text-foreground">
+																	{p.month} {p.year || "2026"}
+																</span>
+																<Badge tone={tone}>
+																	{status === "Approved" ? "✓ ጸድቋል" : status === "Rejected" ? "✕ አልተፈቀደም" : "⏳ በመጠባበቅ ላይ"}
+																</Badge>
+															</div>
+															<p className="text-xs text-muted-foreground mt-0.5">
+																{p.program || "Basic በገና"} · {p.section} · {p.batch}
+															</p>
+															{p.adminNotes && (
+																<p className="text-xs text-amber-300/90 mt-1 italic">
+																	ማስታወሻ: {p.adminNotes}
+																</p>
+															)}
+														</div>
+													</div>
+
+													<div className="flex items-center gap-2 self-end sm:self-center">
+														{p.screenshot && (
+															<Button
+																type="button"
+																variant="outline"
+																size="sm"
+																onClick={() => setSelectedReceipt(p.screenshot)}
+																className="text-xs gap-1.5 border-white/10 hover:border-primary/40"
+															>
+																<ExternalLink size={12} /> ደረሰኝ እይ
+															</Button>
+														)}
+													</div>
+												</div>
+											);
+										})}
+									</div>
+								)}
+							</PanelBody>
+						</PhotoPanel>
+					)}
 				</PageContainer>
 			</PageBody>
+
+			{/* Screenshot preview modal */}
+			{selectedReceipt && (
+				<div
+					className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+					onClick={() => setSelectedReceipt(null)}
+				>
+					<div
+						className="relative max-w-2xl w-full bg-slate-900 rounded-2xl p-4 border border-white/10 shadow-2xl"
+						onClick={(e) => e.stopPropagation()}
+					>
+						<div className="flex items-center justify-between pb-3 border-b border-white/10 mb-3">
+							<h3 className="text-sm font-semibold text-foreground">የክፍያ ደረሰኝ (Payment Receipt)</h3>
+							<button
+								onClick={() => setSelectedReceipt(null)}
+								className="text-muted-foreground hover:text-foreground text-sm p-1 rounded-lg"
+							>
+								<X size={18} />
+							</button>
+						</div>
+						<div className="relative max-h-[75vh] w-full flex items-center justify-center overflow-auto">
+							<img
+								src={selectedReceipt}
+								alt="Receipt preview"
+								className="max-h-[70vh] w-auto rounded-lg object-contain"
+							/>
+						</div>
+					</div>
+				</div>
+			)}
 
 			<Footer />
 		</div>
@@ -448,4 +686,3 @@ const Payment = () => {
 };
 
 export default Payment;
-
