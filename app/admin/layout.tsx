@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { getValidToken } from "@/lib/auth";
+import { getValidToken, isTeacher } from "@/lib/auth";
 import AdminSidebar from "@/components/AdminSidebar";
 import AdminNavbar from "@/components/AdminNavbar";
 import { Loader2 } from "lucide-react";
@@ -26,6 +26,10 @@ export default function AdminLayoutClient({
       toast.error("Please log in to continue");
       router.push("/admin/login");
     } else if (token) {
+      if (isTeacher() && pathname !== "/admin/login") {
+        router.replace("/teacher/dashboard");
+        return;
+      }
       setIsAuthenticated(true);
     }
     setIsChecking(false);
@@ -60,9 +64,8 @@ export default function AdminLayoutClient({
             isSidebarOpen={isSidebarOpen}
           />
         )}
-        <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
-          <div className="mx-auto w-full max-w-6xl">{children}</div>
-        </main>
+
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
     </div>
   );

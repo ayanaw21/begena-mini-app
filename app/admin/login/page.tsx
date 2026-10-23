@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import PhotoPanel from "@/components/ui/photo-panel";
 import { Field } from "@/components/ui/page";
 import { siteImages } from "@/lib/images";
-import { setToken, getValidToken } from "@/lib/auth";
+import { setToken, getValidToken, isTeacher } from "@/lib/auth";
 import toast from "react-hot-toast";
 
 export default function AdminLogin() {
@@ -19,7 +19,11 @@ export default function AdminLogin() {
   useEffect(() => {
     const token = getValidToken();
     if (token) {
-      router.replace("/admin");
+      if (isTeacher()) {
+        router.replace("/teacher/dashboard");
+      } else {
+        router.replace("/admin");
+      }
     }
   }, [router]);
 
@@ -32,11 +36,19 @@ export default function AdminLogin() {
     setIsLoading(true);
     try {
       const res = await api.post("/auth/admin/login", { fullName, password });
-      setToken(res.data.token);
-      router.push("/admin");
-    } catch (err) {
+      setToken(res.data.token, res.data.user);
+
+      const role = res.data.user?.role;
+      if (role === "teacher") {
+        toast.success(`እንኳን ደህና መጡ መምህር ${res.data.user.fullName || ""}`);
+        router.push("/teacher/dashboard");
+      } else {
+        toast.success(`እንኳን ደህና መጡ አስተዳዳሪ ${res.data.user.fullName || ""}`);
+        router.push("/admin");
+      }
+    } catch (err: any) {
       console.error(err);
-      toast.error("Login failed. Check your credentials.");
+      toast.error(err.response?.data?.message || "Login failed. Check your credentials.");
     } finally {
       setIsLoading(false);
     }
@@ -54,9 +66,9 @@ export default function AdminLogin() {
 
         <PhotoPanel src={siteImages.authPanel} sizes="(max-width: 640px) 100vw, 420px" priority>
           <div className="space-y-1">
-            <h1 className="text-xl font-bold">Admin Login</h1>
+            <h1 className="text-xl font-bold">Admin & Staff Login</h1>
             <p className="text-muted-foreground text-sm">
-              Sign in to manage students, payments and schedules.
+              የአስተዳዳሪ እና የመምህራን መግቢያ ፖርታል (Sign in to access dashboard).
             </p>
           </div>
 
@@ -71,7 +83,7 @@ export default function AdminLogin() {
               <input
                 id="fullName"
                 autoComplete="username"
-                placeholder="Enter your full name"
+                placeholder="Enter full name (e.g. Admin or Teacher name)"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 disabled={isLoading}
@@ -98,7 +110,7 @@ export default function AdminLogin() {
 
         <p className="text-muted-foreground mt-5 text-center text-sm">
           <Link href="/" className="hover:text-primary transition-colors">
-            ← Back to home
+            ← Return to Home
           </Link>
         </p>
       </div>

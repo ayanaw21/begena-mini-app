@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 
 import { PageContainer } from "./ui/page";
 import { cn } from "@/lib/utils";
+import { getValidToken, isTeacher } from "@/lib/auth";
 
 const links = [
   { href: "/schedule", label: "የትምህርት ሰዓት" },
@@ -18,10 +19,18 @@ const links = [
 const Navbar = () => {
   const pathname = usePathname();
   const [studentHref, setStudentHref] = useState("/student/login");
+  const [adminHref, setAdminHref] = useState("/admin/login");
 
   useEffect(() => {
-    const token = localStorage.getItem("studentToken");
-    setStudentHref(token ? "/student/dashboard" : "/student/login");
+    const studentToken = localStorage.getItem("studentToken");
+    setStudentHref(studentToken ? "/student/dashboard" : "/student/login");
+
+    const token = getValidToken();
+    if (token) {
+      setAdminHref(isTeacher() ? "/teacher/dashboard" : "/admin");
+    } else {
+      setAdminHref("/admin/login");
+    }
   }, [pathname]);
 
   return (
@@ -58,7 +67,7 @@ const Navbar = () => {
             <Link href={studentHref}>🎓 ተማሪ</Link>
           </Button>
           <Button asChild size="sm">
-            <Link href="/admin/login">Admin</Link>
+            <Link href={adminHref}>Admin</Link>
           </Button>
         </div>
       </PageContainer>
