@@ -19,7 +19,8 @@ import {
   PanelBody,
   PanelHeader,
 } from "@/components/ui/page";
-import { Loader2, LogOut } from "lucide-react";
+import { Loader2, LogOut, Edit3, Upload, X, ExternalLink } from "lucide-react";
+import { updatePendingPayment } from "@/lib/actions/payment";
 import toast from "react-hot-toast";
 
 interface AttendanceRecord {
@@ -62,6 +63,74 @@ export default function StudentDashboard() {
   const [newPassword, setNewPassword] = useState("");
   const [updatingPassword, setUpdatingPassword] = useState(false);
   const router = useRouter();
+
+  const [editingPayment, setEditingPayment] = useState<Payment | null>(null);
+  const [editMonth, setEditMonth] = useState("");
+  const [editFile, setEditFile] = useState<File | null>(null);
+  const [editPreviewUrl, setEditPreviewUrl] = useState<string | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [selectedReceipt, setSelectedReceipt] = useState<string | null>(null);
+
+  const months = [
+    { value: "October", label: "ጥቅምት (October)" },
+    { value: "November", label: "ሕዳር (November)" },
+    { value: "December", label: "ታሕሳስ (December)" },
+    { value: "January", label: "ጥር (January)" },
+    { value: "February", label: "የካቲት (February)" },
+    { value: "March", label: "መጋቢት (March)" },
+    { value: "April", label: "ሚያዚያ (April)" },
+    { value: "May", label: "ግንቦት (May)" },
+  ];
+
+  const submittedMonths = new Set(
+    payments
+      .filter((p) => p.status === "Pending" || p.status === "Approved")
+      .map((p) => p.month)
+  );
+
+  const openEditModal = (p: Payment) => {
+    setEditingPayment(p);
+    setEditMonth(p.month || "");
+    setEditFile(null);
+    setEditPreviewUrl(p.screenshot || null);
+  };
+
+  const closeEditModal = () => {
+    setEditingPayment(null);
+    setEditFile(null);
+    setEditPreviewUrl(null);
+  };
+
+  const handleUpdatePayment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPayment?._id) return;
+    if (!editMonth) {
+      toast.error("Please select a month");
+      return;
+    }
+    setIsUpdating(true);
+    try {
+      const formData = new FormData();
+      formData.set("month", editMonth);
+      if (student?.studentId) formData.set("studentId", student.studentId);
+      if (editFile) {
+        formData.set("screenshot", editFile);
+      }
+      const res = await updatePendingPayment(editingPayment._id, formData);
+      if (res?.error) {
+        toast.error(res.error);
+      } else {
+        toast.success("Payment updated successfully!");
+        closeEditModal();
+        fetchPortalData();
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update payment");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   const fetchPortalData = useCallback(async () => {
     const token = localStorage.getItem("studentToken");
@@ -278,19 +347,52 @@ export default function StudentDashboard() {
                     {filteredPayments.map((p) => {
                       const status =
                         (p as unknown as { status?: string }).status || "Pending";
+                      const isPending = status === "Pending";
                       return (
                         <li
                           key={p._id}
-                          className="flex items-center justify-between gap-3 px-5 py-4 hover:bg-white/[0.03] transition-colors"
+                          className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-4 hover:bg-white/[0.03] transition-colors"
                         >
                           <div className="min-w-0">
-                            <p className="font-medium text-foreground">{p.month}</p>
+                            <div className="flex items-center gap-2">
+                              <p className="font-semibold text-foreground">{p.month} {p.year || "2026"}</p>
+                              <Badge tone={paymentTone(status)}>{status}</Badge>
+                            </div>
                             <p className="text-muted-foreground mt-0.5 text-xs">
                               Section {p.section} · Batch {p.batch} · submitted{" "}
                               {new Date(p.createdAt || "").toLocaleDateString()}
                             </p>
+                            {p.adminNotes && (
+                              <p className="text-xs text-amber-300/90 mt-1 italic">
+                                ማስታወሻ: {p.adminNotes}
+                              </p>
+                            )}
                           </div>
-                          <Badge tone={paymentTone(status)}>{status}</Badge>
+
+                          <div className="flex items-center gap-2 self-end sm:self-center">
+                            {isPending && (
+                              <Button
+                                type="button"
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => openEditModal(p)}
+                                className="text-xs gap-1.5 bg-amber-500/10 text-amber-300 border border-amber-500/30 hover:bg-amber-500/20"
+                              >
+                                <Edit3 size={13} /> አስተካክል (Edit)
+                              </Button>
+                            )}
+                            {p.screenshot && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setSelectedReceipt(p.screenshot)}
+                                className="text-xs gap-1 border-white/10 hover:border-primary/40"
+                              >
+                                <ExternalLink size={12} /> ደረሰኝ
+                              </Button>
+                            )}
+                          </div>
                         </li>
                       );
                     })}
@@ -440,6 +542,151 @@ export default function StudentDashboard() {
           )}
         </PageContainer>
       </PageBody>
+
+      {/* Edit Pending Payment Modal */}
+      {editingPayment && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-md"
+          onClick={closeEditModal}
+        >
+          <div
+            className="relative max-w-lg w-full bg-slate-900 rounded-2xl p-6 border border-white/15 shadow-2xl space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2 text-primary font-semibold">
+                <Edit3 size={18} />
+                <h3>የክፍያ ማስተካከያ (Edit Pending Payment)</h3>
+              </div>
+              <button
+                onClick={closeEditModal}
+                className="text-muted-foreground hover:text-foreground p-1 rounded-lg"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              ክፍያው በአስተዳዳሪው ከመጽደቁ በፊት የከፈሉበትን ወር ወይም የደረሰኝ ፎቶ እዚህ ማስተካከል ይችላሉ።
+            </p>
+
+            <form onSubmit={handleUpdatePayment} className="space-y-4">
+              <div>
+                <label className="text-xs font-medium text-foreground block mb-1.5">
+                  የሚከፍሉበት ወር (Month)
+                </label>
+                <CustomSelect
+                  value={editMonth}
+                  onChange={setEditMonth}
+                  options={months.map((m) => {
+                    const isTaken =
+                      submittedMonths.has(m.value) && m.value !== editingPayment.month;
+                    return {
+                      value: m.value,
+                      label: isTaken ? `${m.label} — (ቀድሞ ተከፍሏል)` : m.label,
+                      disabled: isTaken,
+                    };
+                  })}
+                  disabled={isUpdating}
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-foreground block mb-1.5">
+                  አዲስ ደረሰኝ Screenshot (አስፈላጊ ከሆነ ይምረጡ)
+                </label>
+                {editPreviewUrl ? (
+                  <div className="relative mb-2">
+                    <img
+                      src={editPreviewUrl}
+                      alt="Receipt preview"
+                      className="max-h-48 w-full rounded-xl border border-white/15 object-contain bg-black/40"
+                    />
+                    <label
+                      htmlFor="dashboard-edit-screenshot"
+                      className="absolute bottom-2 right-2 bg-black/80 hover:bg-black text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-white/20 cursor-pointer flex items-center gap-1.5"
+                    >
+                      <Upload size={12} /> ፎቶ ቀይር
+                    </label>
+                  </div>
+                ) : (
+                  <label
+                    htmlFor="dashboard-edit-screenshot"
+                    className="bg-black/30 hover:bg-black/40 border border-dashed border-white/20 rounded-xl p-4 flex flex-col items-center justify-center gap-2 cursor-pointer text-center"
+                  >
+                    <Upload size={18} className="text-primary" />
+                    <span className="text-xs text-muted-foreground">አዲስ ደረሰኝ ይምረጡ (PNG, JPG)</span>
+                  </label>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  id="dashboard-edit-screenshot"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setEditFile(file);
+                      setEditPreviewUrl(URL.createObjectURL(file));
+                    }
+                  }}
+                  disabled={isUpdating}
+                  className="hidden"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={closeEditModal}
+                  disabled={isUpdating}
+                >
+                  ሰርዝ (Cancel)
+                </Button>
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={isUpdating || !editMonth}
+                  className="bg-primary text-primary-foreground font-semibold"
+                >
+                  {isUpdating ? "በማስቀመጥ ላይ..." : "አስቀምጥ (Save Changes)"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Screenshot preview modal */}
+      {selectedReceipt && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+          onClick={() => setSelectedReceipt(null)}
+        >
+          <div
+            className="relative max-w-2xl w-full bg-slate-900 rounded-2xl p-4 border border-white/10 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-3">
+              <h3 className="text-sm font-semibold text-foreground">የክፍያ ደረሰኝ (Payment Receipt)</h3>
+              <button
+                onClick={() => setSelectedReceipt(null)}
+                className="text-muted-foreground hover:text-foreground text-sm p-1 rounded-lg"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="relative max-h-[75vh] w-full flex items-center justify-center overflow-auto">
+              <img
+                src={selectedReceipt}
+                alt="Receipt preview"
+                className="max-h-[70vh] w-auto rounded-lg object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>

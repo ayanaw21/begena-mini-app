@@ -39,3 +39,25 @@ export const sendPayment = async (formData: FormData) => {
 		};
 	}
 };
+
+export const updatePendingPayment = async (paymentId: string, formData: FormData) => {
+	try {
+		const response = await fetch(`${BASE_URL}/student/${encodeURIComponent(paymentId)}`, {
+			method: "PUT",
+			body: formData,
+		});
+
+		const data = await response.json();
+
+		if (!response.ok) {
+			return { error: data.message || `Server error: ${response.status}` };
+		}
+
+		return data;
+	} catch (error) {
+		console.error("API Update Payment Error:", error);
+		return {
+			error: "Could not connect to the server. Please check your connection.",
+		};
+	}
+};

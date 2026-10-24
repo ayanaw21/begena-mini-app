@@ -6,14 +6,13 @@ import CustomSelect from "@/components/ui/custom-select";
 import { Badge } from "@/components/ui/badge";
 import { siteImages } from "@/lib/images";
 import {
-	Field,
 	PageBody,
 	PageContainer,
 	PageHeader,
 	PanelBody,
 	PanelHeader,
 } from "@/components/ui/page";
-import React, { useState, useTransition, useCallback, useEffect } from "react";
+import React, { useState, useTransition, useCallback, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -29,8 +28,11 @@ import {
 	ExternalLink,
 	Loader2,
 	ArrowRight,
+	AlertCircle,
+	Edit3,
+	Lock,
 } from "lucide-react";
-import { sendPayment } from "@/lib/actions/payment";
+import { sendPayment, updatePendingPayment } from "@/lib/actions/payment";
 import { getValidStudentToken, getStudentData } from "@/lib/auth";
 import { Payment as PaymentRecord } from "@/types";
 import Footer from "@/components/footer";
@@ -82,13 +84,20 @@ const Payment = () => {
 	// Lookup state
 	const [foundStudent, setFoundStudent] = useState<FoundStudent | null>(null);
 	const [isLookingUp, setIsLookingUp] = useState(false);
-	const [manualMode, setManualMode] = useState(false);
+	const [hasSearched, setHasSearched] = useState(false);
 
 	// Student Login & History state
 	const [isLoggedInStudent, setIsLoggedInStudent] = useState(false);
 	const [paymentHistory, setPaymentHistory] = useState<PaymentRecord[]>([]);
 	const [loadingPayments, setLoadingPayments] = useState(false);
 	const [selectedReceipt, setSelectedReceipt] = useState<string | null>(null);
+
+	// Edit Pending Payment state
+	const [editingPayment, setEditingPayment] = useState<PaymentRecord | null>(null);
+	const [editMonth, setEditMonth] = useState("");
+	const [editFile, setEditFile] = useState<File | null>(null);
+	const [editPreviewUrl, setEditPreviewUrl] = useState<string | null>(null);
+	const [isUpdating, setIsUpdating] = useState(false);
 
 	const months = [
 		{ value: "October", label: "ጥቅምት (October)" },
@@ -100,6 +109,15 @@ const Payment = () => {
 		{ value: "April", label: "ሚያዚያ (April)" },
 		{ value: "May", label: "ግንቦት (May)" },
 	];
+
+	// Set of months already submitted (Pending or Approved)
+	const submittedMonths = useMemo(() => {
+		return new Set(
+			paymentHistory
+				.filter((p) => p.status === "Pending" || p.status === "Approved")
+				.map((p) => p.month)
+		);
+	}, [paymentHistory]);
 
 	// Fetch payments for a given student ID
 	const fetchPaymentsForStudent = useCallback(async (studentId: string) => {
@@ -146,6 +164,7 @@ const Payment = () => {
 				batch: student.batch || "Batch 8",
 				academicStatus: student.academicStatus || "Active",
 			});
+			setHasSearched(true);
 			fetchPaymentsForStudent(sId);
 		}
 	}, [fetchPaymentsForStudent]);
@@ -154,10 +173,13 @@ const Payment = () => {
 	const performStudentLookup = useCallback(async (idToLookup: string) => {
 		if (!idToLookup || idToLookup.trim().length < 2) {
 			setFoundStudent(null);
+			setHasSearched(false);
+			setPaymentHistory([]);
 			return;
 		}
 
 		setIsLookingUp(true);
+		setHasSearched(true);
 		try {
 			const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 			const res = await fetch(`${baseUrl}/students/lookup/${encodeURIComponent(idToLookup.trim())}`);
@@ -170,14 +192,19 @@ const Payment = () => {
 					if (s.program) setSelectedProgram(s.program);
 					if (s.section) setSelectedSection(s.section);
 					if (s.batch) setSelectedBatch(s.batch);
-					toast.success(`Verified: ${s.fullName}`);
+					toast.success(`Verified student: ${s.fullName}`);
 					fetchPaymentsForStudent(s.studentId);
+				} else {
+					setFoundStudent(null);
+					setPaymentHistory([]);
 				}
 			} else {
 				setFoundStudent(null);
+				setPaymentHistory([]);
 			}
 		} catch (err) {
 			console.error("Lookup error:", err);
+			setFoundStudent(null);
 		} finally {
 			setIsLookingUp(false);
 		}
@@ -203,18 +230,85 @@ const Payment = () => {
 		}
 	};
 
+	const handleEditFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (file) {
+			if (file.size > 5 * 1024 * 1024) {
+				toast.error("File size must be less than 5MB");
+				return;
+			}
+			setEditFile(file);
+			setEditPreviewUrl(URL.createObjectURL(file));
+		}
+	};
+
+	const openEditModal = (p: PaymentRecord) => {
+		setEditingPayment(p);
+		setEditMonth(p.month || "");
+		setEditFile(null);
+		setEditPreviewUrl(p.screenshot || null);
+	};
+
+	const closeEditModal = () => {
+		setEditingPayment(null);
+		setEditFile(null);
+		setEditPreviewUrl(null);
+	};
+
+	const handleUpdatePendingPayment = async (e: React.FormEvent) => {
+		e.preventDefault();
+		if (!editingPayment?._id) return;
+
+		if (!editMonth) {
+			toast.error("Please select a month");
+			return;
+		}
+
+		setIsUpdating(true);
+		try {
+			const formData = new FormData();
+			formData.set("month", editMonth);
+			const sId = foundStudent?.studentId || begenaId.trim();
+			if (sId) formData.set("studentId", sId);
+			if (editFile) {
+				formData.set("screenshot", editFile);
+			}
+
+			const res = await updatePendingPayment(editingPayment._id, formData);
+			if (res?.error) {
+				toast.error(res.error);
+			} else {
+				toast.success("Payment receipt updated successfully!");
+				closeEditModal();
+				if (sId) {
+					fetchPaymentsForStudent(sId);
+				}
+			}
+		} catch (err) {
+			console.error(err);
+			toast.error("Failed to update payment");
+		} finally {
+			setIsUpdating(false);
+		}
+	};
+
 	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
 		if (isPending) return;
 
-		if (!begenaId.trim()) {
-			toast.error("Please enter your Student ID");
+		if (!foundStudent) {
+			toast.error("You must enter and verify a registered Student ID first.");
 			return;
 		}
 
 		if (!selectedMonth) {
 			toast.error("Please select the month you are paying for");
+			return;
+		}
+
+		if (submittedMonths.has(selectedMonth)) {
+			toast.error(`A payment for ${selectedMonth} has already been submitted. You cannot submit a duplicate.`);
 			return;
 		}
 
@@ -224,13 +318,13 @@ const Payment = () => {
 		}
 
 		const formData = new FormData();
-		const sId = begenaId.trim();
+		const sId = foundStudent.studentId;
 		formData.set("begenaId", sId);
 		formData.set("studentId", sId);
-		formData.set("fullName", foundStudent?.fullName || fullName.trim() || `Student ${sId}`);
-		formData.set("program", foundStudent?.program || selectedProgram || "Basic በገና");
-		formData.set("section", foundStudent?.section || selectedSection || "Sec-A");
-		formData.set("batch", foundStudent?.batch || selectedBatch || "Batch 8");
+		formData.set("fullName", foundStudent.fullName);
+		formData.set("program", foundStudent.program || selectedProgram || "Basic በገና");
+		formData.set("section", foundStudent.section || selectedSection || "Sec-A");
+		formData.set("batch", foundStudent.batch || selectedBatch || "Batch 8");
 		formData.set("month", selectedMonth);
 		formData.set("screenshot", selectedFile);
 
@@ -242,19 +336,23 @@ const Payment = () => {
 				toast.success("Payment submitted successfully! Your submission is now Pending review.");
 				removeImage();
 				setSelectedMonth("");
-				const currentStudentId = foundStudent?.studentId || begenaId.trim();
-				if (currentStudentId) {
-					fetchPaymentsForStudent(currentStudentId);
-				}
-				if (!isLoggedInStudent) {
-					setBegenaId("");
-					setFullName("");
-					setFoundStudent(null);
-					(e.target as HTMLFormElement).reset();
-				}
+				fetchPaymentsForStudent(sId);
 			}
 		});
 	};
+
+	// Options for month select, disabling months already submitted
+	const monthOptions = [
+		{ value: "", label: "ወር ይምረጡ (Select a month)..." },
+		...months.map((m) => {
+			const isAlreadySubmitted = submittedMonths.has(m.value);
+			return {
+				value: m.value,
+				label: isAlreadySubmitted ? `${m.label} — (ቀድሞ ተከፍሏል / Already Submitted)` : m.label,
+				disabled: isAlreadySubmitted,
+			};
+		}),
+	];
 
 	return (
 		<div className="flex min-h-screen flex-col">
@@ -370,37 +468,54 @@ const Payment = () => {
 							/>
 							<PanelBody className="space-y-4 p-6">
 								<div className="flex flex-col gap-2 sm:flex-row">
-									<input
-										type="text"
-										id="begenaId"
-										name="begenaId"
-										required
-										value={begenaId}
-										onChange={(e) => setBegenaId(e.target.value)}
-										onBlur={() => performStudentLookup(begenaId)}
-										placeholder="001/08"
-										className="flex-1 font-mono bg-black/40 border-white/15 focus:border-primary/50"
-										disabled={isPending}
-									/>
-									<Button
-										type="button"
-										variant="outline"
-										onClick={() => performStudentLookup(begenaId)}
-										className="sm:w-auto"
-									>
-										Verify ID
-									</Button>
+									<div className="relative flex-1">
+										<input
+											type="text"
+											id="begenaId"
+											name="begenaId"
+											required
+											value={begenaId}
+											onChange={(e) => {
+												setBegenaId(e.target.value);
+												setHasSearched(false);
+											}}
+											onBlur={() => !isLoggedInStudent && performStudentLookup(begenaId)}
+											placeholder="001/08"
+											readOnly={isLoggedInStudent}
+											className={`w-full font-mono bg-black/40 border-white/15 focus:border-primary/50 rounded-lg px-3 py-2 text-sm ${
+												isLoggedInStudent ? "cursor-not-allowed opacity-80" : ""
+											}`}
+											disabled={isPending || isLoggedInStudent}
+										/>
+										{isLoggedInStudent && (
+											<Lock size={14} className="absolute right-3 top-3 text-muted-foreground" />
+										)}
+									</div>
+
+									{!isLoggedInStudent && (
+										<Button
+											type="button"
+											variant="outline"
+											onClick={() => performStudentLookup(begenaId)}
+											disabled={isLookingUp || !begenaId.trim()}
+											className="sm:w-auto"
+										>
+											{isLookingUp ? "Verifying..." : "Verify ID"}
+										</Button>
+									)}
 								</div>
+
 								<p className="text-muted-foreground text-xs">
-									Enter your assigned Student ID to auto-link your program,
-									section and full name.
+									{isLoggedInStudent
+										? "ይህ መለያ ከገቡበት የተማሪ መለያ ጋር ተቆልፏል (Locked to your authenticated account)."
+										: "ክፍያ ከመላክዎ በፊት በቅድሚያ የተማሪ መለያዎን (ID) አስገብተው Verify ያድርጉ።"}
 								</p>
 
 								{foundStudent ? (
 									<div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4 backdrop-blur-sm">
 										<div className="flex items-center justify-between gap-3">
 											<span className="flex items-center gap-2 text-sm font-medium text-emerald-300">
-												<Check size={16} /> Verified student
+												<Check size={16} /> የተረጋገጠ ተማሪ (Verified Student)
 											</span>
 											<span className="text-muted-foreground font-mono text-xs">
 												{foundStudent.studentId}
@@ -425,35 +540,19 @@ const Payment = () => {
 										</dl>
 									</div>
 								) : (
-									begenaId.length >= 3 &&
-									!isLookingUp && (
-										<div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/10 bg-black/30 px-4 py-3">
-											<span className="text-muted-foreground text-xs">
-												ID not pre-registered yet? You can still submit your
-												receipt.
-											</span>
-											<button
-												type="button"
-												onClick={() => setManualMode(!manualMode)}
-												className="text-primary cursor-pointer text-xs font-semibold hover:underline"
-											>
-												{manualMode ? "Hide form" : "Enter name manually"}
-											</button>
+									hasSearched &&
+									!isLookingUp &&
+									begenaId.trim().length >= 2 && (
+										<div className="flex items-start gap-2.5 rounded-xl border border-red-500/30 bg-red-500/10 p-3.5 text-red-300 text-xs">
+											<AlertCircle size={16} className="shrink-0 mt-0.5 text-red-400" />
+											<div>
+												<p className="font-semibold text-red-200">የተማሪ መለያ አልተገኘም (Student ID Not Registered)</p>
+												<p className="text-red-300/80 mt-0.5">
+													ያስገቡት የተማሪ ID በሲስተሙ ውስጥ አልተገኘም። ክፍያ መላክ የሚችሉት በ 8ኛ ዙር የተመዘገቡ ተማሪዎች ብቻ ናቸው።
+												</p>
+											</div>
 										</div>
 									)
-								)}
-
-								{!foundStudent && manualMode && (
-									<Field label="Full Name (ሙሉ ስም)" htmlFor="fullName">
-										<input
-											id="fullName"
-											type="text"
-											value={fullName}
-											onChange={(e) => setFullName(e.target.value)}
-											placeholder="Enter your full name"
-											className="bg-black/40 border-white/15"
-										/>
-									</Field>
 								)}
 							</PanelBody>
 						</PhotoPanel>
@@ -470,13 +569,21 @@ const Payment = () => {
 								<CustomSelect
 									id="month"
 									value={selectedMonth}
-									onChange={setSelectedMonth}
-									options={[
-										{ value: "", label: "ወር ይምረጡ (Select a month)..." },
-										...months.map((m) => ({ value: m.value, label: m.label })),
-									]}
-									disabled={isPending}
+									onChange={(val) => {
+										if (submittedMonths.has(val)) {
+											toast.error(`A payment for ${val} has already been submitted.`);
+											return;
+										}
+										setSelectedMonth(val);
+									}}
+									options={monthOptions}
+									disabled={isPending || !foundStudent}
 								/>
+								{!foundStudent && (
+									<p className="text-amber-300/80 text-xs mt-2">
+										⚠️ ወር ለመምረጥ በቅድሚያ የተማሪ መለያዎን ያረጋግጡ (Verify ID first).
+									</p>
+								)}
 							</PanelBody>
 						</PhotoPanel>
 
@@ -511,7 +618,9 @@ const Payment = () => {
 								) : (
 									<label
 										htmlFor="screenshot-input"
-										className="hover:border-primary/50 hover:bg-primary/10 bg-black/30 flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-white/20 px-4 py-10 text-center transition-all"
+										className={`hover:border-primary/50 hover:bg-primary/10 bg-black/30 flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-white/20 px-4 py-10 text-center transition-all ${
+											!foundStudent ? "opacity-50 cursor-not-allowed" : ""
+										}`}
 									>
 										<div className="bg-primary/15 text-primary flex size-12 items-center justify-center rounded-full border border-primary/25">
 											<Upload size={22} />
@@ -529,7 +638,7 @@ const Payment = () => {
 											accept="image/*"
 											id="screenshot-input"
 											onChange={handleFileChange}
-											disabled={isPending}
+											disabled={isPending || !foundStudent}
 											className="hidden"
 										/>
 									</label>
@@ -540,14 +649,18 @@ const Payment = () => {
 						<Button
 							type="submit"
 							size="lg"
-							disabled={isPending || !selectedFile || !begenaId}
+							disabled={isPending || !selectedFile || !foundStudent || !selectedMonth || submittedMonths.has(selectedMonth)}
 							className="w-full py-6 text-base font-semibold shadow-xl"
 						>
-							{isPending ? "Submitting..." : "Submit Payment (ክፍያውን መዝግብ)"}
+							{isPending
+								? "Submitting..."
+								: !foundStudent
+									? "Please verify Student ID first (መለያ ያረጋግጡ)"
+									: "Submit Payment (ክፍያውን መዝግብ)"}
 						</Button>
 					</form>
 
-					{/* Step 4 — Payment History Section */}
+					{/* Payment History Section */}
 					{(foundStudent || paymentHistory.length > 0 || loadingPayments) && (
 						<PhotoPanel
 							src={siteImages.orthodoxChurch}
@@ -592,6 +705,8 @@ const Payment = () => {
 										{paymentHistory.map((p, idx) => {
 											const status = p.status || "Pending";
 											const tone = status === "Approved" ? "success" : status === "Rejected" ? "danger" : "warning";
+											const isPendingPayment = status === "Pending";
+
 											return (
 												<div
 													key={p._id || idx}
@@ -627,6 +742,18 @@ const Payment = () => {
 													</div>
 
 													<div className="flex items-center gap-2 self-end sm:self-center">
+														{isPendingPayment && (
+															<Button
+																type="button"
+																variant="secondary"
+																size="sm"
+																onClick={() => openEditModal(p)}
+																className="text-xs gap-1.5 bg-amber-500/10 text-amber-300 border border-amber-500/30 hover:bg-amber-500/20"
+															>
+																<Edit3 size={13} /> አስተካክል (Edit)
+															</Button>
+														)}
+
 														{p.screenshot && (
 															<Button
 																type="button"
@@ -649,6 +776,116 @@ const Payment = () => {
 					)}
 				</PageContainer>
 			</PageBody>
+
+			{/* Edit Pending Payment Modal */}
+			{editingPayment && (
+				<div
+					className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-md"
+					onClick={closeEditModal}
+				>
+					<div
+						className="relative max-w-lg w-full bg-slate-900 rounded-2xl p-6 border border-white/15 shadow-2xl space-y-4"
+						onClick={(e) => e.stopPropagation()}
+					>
+						<div className="flex items-center justify-between pb-3 border-b border-white/10">
+							<div className="flex items-center gap-2 text-primary font-semibold">
+								<Edit3 size={18} />
+								<h3>የክፍያ ማስተካከያ (Edit Pending Payment)</h3>
+							</div>
+							<button
+								onClick={closeEditModal}
+								className="text-muted-foreground hover:text-foreground p-1 rounded-lg"
+							>
+								<X size={18} />
+							</button>
+						</div>
+
+						<p className="text-xs text-muted-foreground">
+							ክፍያው በአስተዳዳሪው ከመጽደቁ በፊት የከፈሉበትን ወር ወይም የደረሰኝ ፎቶ እዚህ ማስተካከል ይችላሉ።
+						</p>
+
+						<form onSubmit={handleUpdatePendingPayment} className="space-y-4">
+							<div>
+								<label className="text-xs font-medium text-foreground block mb-1.5">
+									የሚከፍሉበት ወር (Month)
+								</label>
+								<CustomSelect
+									id="editMonth"
+									value={editMonth}
+									onChange={setEditMonth}
+									options={months.map((m) => {
+										const isTakenByOther =
+											submittedMonths.has(m.value) && m.value !== editingPayment.month;
+										return {
+											value: m.value,
+											label: isTakenByOther ? `${m.label} — (ቀድሞ ተከፍሏል)` : m.label,
+											disabled: isTakenByOther,
+										};
+									})}
+									disabled={isUpdating}
+								/>
+							</div>
+
+							<div>
+								<label className="text-xs font-medium text-foreground block mb-1.5">
+									አዲስ ደረሰኝ Screenshot (አስፈላጊ ከሆነ ይምረጡ)
+								</label>
+								{editPreviewUrl ? (
+									<div className="relative mb-2">
+										<img
+											src={editPreviewUrl}
+											alt="Current receipt"
+											className="max-h-48 w-full rounded-xl border border-white/15 object-contain bg-black/40"
+										/>
+										<label
+											htmlFor="edit-screenshot-input"
+											className="absolute bottom-2 right-2 bg-black/80 hover:bg-black text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-white/20 cursor-pointer flex items-center gap-1.5"
+										>
+											<Upload size={12} /> ፎቶ ቀይር
+										</label>
+									</div>
+								) : (
+									<label
+										htmlFor="edit-screenshot-input"
+										className="bg-black/30 hover:bg-black/40 border border-dashed border-white/20 rounded-xl p-4 flex flex-col items-center justify-center gap-2 cursor-pointer text-center"
+									>
+										<Upload size={18} className="text-primary" />
+										<span className="text-xs text-muted-foreground">አዲስ ደረሰኝ ይምረጡ (PNG, JPG)</span>
+									</label>
+								)}
+								<input
+									type="file"
+									accept="image/*"
+									id="edit-screenshot-input"
+									onChange={handleEditFileChange}
+									disabled={isUpdating}
+									className="hidden"
+								/>
+							</div>
+
+							<div className="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
+								<Button
+									type="button"
+									variant="ghost"
+									size="sm"
+									onClick={closeEditModal}
+									disabled={isUpdating}
+								>
+									ሰርዝ (Cancel)
+								</Button>
+								<Button
+									type="submit"
+									size="sm"
+									disabled={isUpdating || !editMonth}
+									className="bg-primary text-primary-foreground font-semibold"
+								>
+									{isUpdating ? "በማስቀመጥ ላይ..." : "አስቀምጥ (Save Changes)"}
+								</Button>
+							</div>
+						</form>
+					</div>
+				</div>
+			)}
 
 			{/* Screenshot preview modal */}
 			{selectedReceipt && (
