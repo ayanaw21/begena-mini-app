@@ -16,7 +16,7 @@ import {
   removeToken,
 } from "@/lib/auth";
 import api from "@/lib/api";
-import { Section, Student } from "@/types";
+import { Section, Student, ClassSchedule } from "@/types";
 import {
   Users,
   Calendar,
@@ -24,21 +24,16 @@ import {
   BookOpen,
   LogOut,
   Layers,
-  Phone,
-  CheckCircle2,
-  XCircle,
-  Clock,
+
+
+
+
   Loader2,
   ShieldCheck,
-  Lock,
+
   KeyRound,
 } from "lucide-react";
 import toast from "react-hot-toast";
-
-interface AttendanceRecord {
-  studentId: string;
-  status: "Present" | "Absent" | "Permission";
-}
 
 export default function TeacherDashboard() {
   const router = useRouter();
@@ -50,7 +45,7 @@ export default function TeacherDashboard() {
   const [assignedSections, setAssignedSections] = useState<Section[]>([]);
   const [allSections, setAllSections] = useState<Section[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
-  const [schedules, setSchedules] = useState<any[]>([]);
+  const [schedules, setSchedules] = useState<ClassSchedule[]>([]);
 
   // Active view tab
   const [activeTab, setActiveTab] = useState<
@@ -197,9 +192,10 @@ export default function TeacherDashboard() {
       });
 
       toast.success("የተማሪዎች ክትትል (Attendance) በተሳካ ሁኔታ ተመዝግቧል!");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.response?.data?.message || "Failed to record attendance");
+      const apiErr = err as { response?: { data?: { message?: string } } };
+      toast.error(apiErr.response?.data?.message || "Failed to record attendance");
     } finally {
       setSavingAttendance(false);
     }
@@ -219,9 +215,10 @@ export default function TeacherDashboard() {
         );
         if (res.data?.attendance && isMounted) {
           const loadedMap: Record<string, "Present" | "Absent" | "Permission"> = {};
-          res.data.attendance.forEach((att: any) => {
-            const key = att.student?._id || att.student || att.studentId;
-            if (key && att.status) {
+          res.data.attendance.forEach((att: { student?: { _id?: string } | string; studentId?: string; status?: "Present" | "Absent" | "Permission" }) => {
+            const s = att.student;
+            const key = typeof s === "string" ? s : s?._id || att.studentId;
+            if (typeof key === "string" && att.status) {
               loadedMap[key] = att.status;
             }
           });

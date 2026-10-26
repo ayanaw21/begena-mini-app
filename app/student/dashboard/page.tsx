@@ -19,7 +19,7 @@ import {
   PanelBody,
   PanelHeader,
 } from "@/components/ui/page";
-import { Loader2, LogOut, Edit3, Upload, X, ExternalLink, Lock, User, CheckCircle } from "lucide-react";
+import { Loader2, LogOut, Edit3, Upload, X, ExternalLink, Lock, CheckCircle } from "lucide-react";
 import { updatePendingPayment } from "@/lib/actions/payment";
 import toast from "react-hot-toast";
 

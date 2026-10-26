@@ -46,9 +46,10 @@ export default function AdminLogin() {
         toast.success(`እንኳን ደህና መጡ አስተዳዳሪ ${res.data.user.fullName || ""}`);
         router.push("/admin");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.response?.data?.message || "Login failed. Check your credentials.");
+      const apiErr = err as { response?: { data?: { message?: string } } };
+      toast.error(apiErr.response?.data?.message || "Login failed. Check your credentials.");
     } finally {
       setIsLoading(false);
     }
