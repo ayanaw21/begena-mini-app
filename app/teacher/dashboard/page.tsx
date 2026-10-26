@@ -30,6 +30,8 @@ import {
   Clock,
   Loader2,
   ShieldCheck,
+  Lock,
+  KeyRound,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -51,7 +53,9 @@ export default function TeacherDashboard() {
   const [schedules, setSchedules] = useState<any[]>([]);
 
   // Active view tab
-  const [activeTab, setActiveTab] = useState<"sections" | "students" | "attendance" | "schedule">("sections");
+  const [activeTab, setActiveTab] = useState<
+    "sections" | "students" | "attendance" | "schedule" | "security"
+  >("sections");
 
   // Attendance state
   const [selectedSectionForAttendance, setSelectedSectionForAttendance] = useState<string>("");
@@ -60,6 +64,13 @@ export default function TeacherDashboard() {
   );
   const [attendanceRecords, setAttendanceRecords] = useState<Record<string, "Present" | "Absent" | "Permission">>({});
   const [savingAttendance, setSavingAttendance] = useState(false);
+  const [loadingAttendanceData, setLoadingAttendanceData] = useState(false);
+
+  // Teacher self-password change state
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
 
   // Authentication check
   useEffect(() => {
@@ -191,6 +202,88 @@ export default function TeacherDashboard() {
       toast.error(err.response?.data?.message || "Failed to record attendance");
     } finally {
       setSavingAttendance(false);
+    }
+  };
+
+  // Pre-load existing attendance whenever section or date changes
+  useEffect(() => {
+    if (!selectedSectionForAttendance || !attendanceDate) return;
+    let isMounted = true;
+
+    const fetchExistingAttendance = async () => {
+      try {
+        setLoadingAttendanceData(true);
+        const res = await api.get(
+          `/attendance?section=${encodeURIComponent(selectedSectionForAttendance)}&date=${attendanceDate}`,
+          { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+        );
+        if (res.data?.attendance && isMounted) {
+          const loadedMap: Record<string, "Present" | "Absent" | "Permission"> = {};
+          res.data.attendance.forEach((att: any) => {
+            const key = att.student?._id || att.student || att.studentId;
+            if (key && att.status) {
+              loadedMap[key] = att.status;
+            }
+          });
+          setAttendanceRecords(loadedMap);
+        }
+      } catch (err) {
+        console.error("Failed to load attendance for date:", err);
+      } finally {
+        if (isMounted) setLoadingAttendanceData(false);
+      }
+    };
+
+    fetchExistingAttendance();
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedSectionForAttendance, attendanceDate]);
+
+  // Attendance stats for selected date
+  const attendanceStats = useMemo(() => {
+    let present = 0;
+    let absent = 0;
+    let permission = 0;
+    sectionStudentsForAttendance.forEach((st) => {
+      const sId = st._id || st.studentId;
+      const status = attendanceRecords[sId] || "Present";
+      if (status === "Present") present++;
+      else if (status === "Absent") absent++;
+      else if (status === "Permission") permission++;
+    });
+    return { present, absent, permission, total: sectionStudentsForAttendance.length };
+  }, [sectionStudentsForAttendance, attendanceRecords]);
+
+  // Handle teacher self-password update
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPassword || newPassword.length < 4) {
+      toast.error("አዲሱ የይለፍ ቃል ቢያንስ 4 ፊደላት/ቁጥሮች መሆን አለበት (Password must be at least 4 chars)");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("የይለፍ ቃሎቹ አይመሳሰሉም (Passwords do not match)");
+      return;
+    }
+
+    try {
+      setChangingPassword(true);
+      const res = await api.put(
+        "/auth/change-password",
+        { currentPassword, newPassword },
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      );
+      toast.success(res.data.message || "የይለፍ ቃልዎ በተሳካ ሁኔታ ተቀይሯል!");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err: unknown) {
+      console.error(err);
+      const apiErr = err as { response?: { data?: { message?: string } } };
+      toast.error(apiErr.response?.data?.message || "የይለፍ ቃል መቀየር አልተቻለም");
+    } finally {
+      setChangingPassword(false);
     }
   };
 
@@ -368,6 +461,18 @@ export default function TeacherDashboard() {
               <Calendar className="h-4 w-4" />
               <span>የትምህርት ሰዓት (Schedule)</span>
             </button>
+
+            <button
+              onClick={() => setActiveTab("security")}
+              className={`px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-t-xl transition-all flex items-center gap-2 ${
+                activeTab === "security"
+                  ? "bg-[#172b4c] text-amber-300 border-t-2 border-amber-400"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              <KeyRound className="h-4 w-4" />
+              <span>ደህንነት (Security)</span>
+            </button>
           </div>
 
           {/* TAB 1: Assigned Sections View */}
@@ -527,6 +632,25 @@ export default function TeacherDashboard() {
                   </div>
                 ) : (
                   <div className="space-y-2 border-t border-[#234578] pt-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                      <span className="text-xs font-medium text-slate-300">
+                        የተማሪዎች ስም ዝርዝር ({sectionStudentsForAttendance.length} ተማሪዎች)
+                      </span>
+                      <div className="flex items-center gap-2 text-xs">
+                        <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                          ተገኝቷል: {attendanceStats.present}
+                        </span>
+                        <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                          ፈቃድ: {attendanceStats.permission}
+                        </span>
+                        <span className="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                          ቀሪ: {attendanceStats.absent}
+                        </span>
+                        {loadingAttendanceData && (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin text-amber-400" />
+                        )}
+                      </div>
+                    </div>
                     <p className="text-xs font-medium text-slate-300 mb-2">
                       የተማሪዎች ስም ዝርዝር ({sectionStudentsForAttendance.length} ተማሪዎች)
                     </p>
@@ -633,6 +757,80 @@ export default function TeacherDashboard() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+          {/* TAB 5: Teacher Security / Password Change */}
+          {activeTab === "security" && (
+            <div className="space-y-4 max-w-xl">
+              <PageHeader
+                title="ደህንነት እና የይለፍ ቃል (Security)"
+                description="የእርስዎን የመምህርነት መለያ ደህንነት ለመጠበቅ የይለፍ ቃልዎን እዚህ ይቀይሩ።"
+              />
+
+              <div className="bg-[#172b4c] border border-[#234578] rounded-2xl p-5 space-y-4">
+                <div className="flex items-center gap-3 pb-3 border-b border-[#234578]">
+                  <div className="h-10 w-10 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-300">
+                    <KeyRound className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white">የይለፍ ቃል ማደሻ</h3>
+                    <p className="text-xs text-slate-400">የአስተማሪ መለያ የይለፍ ቃልዎን ይቀይሩ</p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleUpdatePassword} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      የአሁኑ የይለፍ ቃል (Current Password)
+                    </label>
+                    <input
+                      type="password"
+                      placeholder="የአሁኑን የይለፍ ቃል ያስገቡ (default: teacher123)"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      className="w-full h-11 px-3 rounded-xl bg-[#101e36] border border-[#234578] text-white text-sm focus:outline-none focus:border-amber-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      አዲስ የይለፍ ቃል (New Password) *
+                    </label>
+                    <input
+                      type="password"
+                      required
+                      placeholder="ቢያንስ 4 ፊደላት ወይም ቁጥሮች"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="w-full h-11 px-3 rounded-xl bg-[#101e36] border border-[#234578] text-white text-sm focus:outline-none focus:border-amber-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      አዲሱን የይለፍ ቃል ያረጋግጡ (Confirm New Password) *
+                    </label>
+                    <input
+                      type="password"
+                      required
+                      placeholder="አዲሱን የይለፍ ቃል ደግመው ያስገቡ"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="w-full h-11 px-3 rounded-xl bg-[#101e36] border border-[#234578] text-white text-sm focus:outline-none focus:border-amber-400"
+                    />
+                  </div>
+
+                  <div className="pt-2">
+                    <Button
+                      type="submit"
+                      disabled={changingPassword || !newPassword}
+                      className="w-full bg-amber-400 text-slate-950 hover:bg-amber-300 font-bold text-sm h-11"
+                    >
+                      {changingPassword ? "በመቀየር ላይ..." : "የይለፍ ቃል ቀይር (Update Password)"}
+                    </Button>
+                  </div>
+                </form>
               </div>
             </div>
           )}

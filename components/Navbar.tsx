@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 
 import { PageContainer } from "./ui/page";
 import { cn } from "@/lib/utils";
-import { getValidToken, isTeacher, getValidStudentToken, removeStudentToken, getStudentData } from "@/lib/auth";
+import { getValidToken, isTeacher, removeToken, getValidStudentToken, removeStudentToken } from "@/lib/auth";
 
 const links = [
   { href: "/schedule", label: "የትምህርት ሰዓት" },
@@ -19,6 +19,8 @@ const links = [
 const Navbar = () => {
   const pathname = usePathname();
   const [isStudentLoggedIn, setIsStudentLoggedIn] = useState(false);
+  const [isTeacherLoggedIn, setIsTeacherLoggedIn] = useState(false);
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [adminHref, setAdminHref] = useState("/admin/login");
 
   useEffect(() => {
@@ -27,8 +29,18 @@ const Navbar = () => {
 
     const token = getValidToken();
     if (token) {
-      setAdminHref(isTeacher() ? "/teacher/dashboard" : "/admin");
+      if (isTeacher()) {
+        setIsTeacherLoggedIn(true);
+        setIsAdminLoggedIn(false);
+        setAdminHref("/teacher/dashboard");
+      } else {
+        setIsTeacherLoggedIn(false);
+        setIsAdminLoggedIn(true);
+        setAdminHref("/admin");
+      }
     } else {
+      setIsTeacherLoggedIn(false);
+      setIsAdminLoggedIn(false);
       setAdminHref("/admin/login");
     }
   }, [pathname]);
@@ -46,6 +58,32 @@ const Navbar = () => {
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
+          {isTeacherLoggedIn && (
+            <Link
+              href="/teacher/dashboard"
+              className={cn(
+                "rounded-md px-2.5 py-1.5 text-sm font-semibold transition-colors mr-1",
+                pathname === "/teacher/dashboard"
+                  ? "text-amber-300 bg-amber-400/20"
+                  : "text-amber-300 bg-amber-400/10 hover:bg-amber-400/20"
+              )}
+            >
+              መምህር Dashboard
+            </Link>
+          )}
+          {isAdminLoggedIn && (
+            <Link
+              href="/admin"
+              className={cn(
+                "rounded-md px-2.5 py-1.5 text-sm font-semibold transition-colors mr-1",
+                pathname.startsWith("/admin")
+                  ? "text-primary bg-primary/20"
+                  : "text-primary bg-primary/10 hover:bg-primary/20"
+              )}
+            >
+              Admin Dashboard
+            </Link>
+          )}
           {isStudentLoggedIn && (
             <Link
               href="/student/dashboard"
@@ -93,6 +131,40 @@ const Navbar = () => {
                 Logout
               </Button>
             </>
+          ) : isTeacherLoggedIn ? (
+            <>
+              <Button asChild size="sm" className="bg-amber-400 text-slate-950 hover:bg-amber-300 font-semibold">
+                <Link href="/teacher/dashboard">መምህር Dashboard</Link>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  removeToken();
+                  window.location.href = "/admin/login";
+                }}
+                className="text-muted-foreground hover:text-foreground text-xs"
+              >
+                Logout
+              </Button>
+            </>
+          ) : isAdminLoggedIn ? (
+            <>
+              <Button asChild size="sm">
+                <Link href="/admin">Admin</Link>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  removeToken();
+                  window.location.href = "/admin/login";
+                }}
+                className="text-muted-foreground hover:text-foreground text-xs"
+              >
+                Logout
+              </Button>
+            </>
           ) : (
             <>
               <Button asChild variant="ghost" size="sm">
@@ -109,6 +181,32 @@ const Navbar = () => {
       {/* On small screens the primary links move to a scrollable strip under the bar. */}
       <nav className="w-full max-w-full overflow-hidden border-t border-white/5 md:hidden">
         <PageContainer className="flex gap-1 overflow-x-auto py-1.5 scrollbar-none">
+          {isTeacherLoggedIn && (
+            <Link
+              href="/teacher/dashboard"
+              className={cn(
+                "rounded-md px-2.5 py-1 text-xs whitespace-nowrap transition-colors font-semibold",
+                pathname === "/teacher/dashboard"
+                  ? "text-amber-300 bg-amber-400/20"
+                  : "text-amber-300 bg-amber-400/10 hover:bg-amber-400/20"
+              )}
+            >
+              መምህር Dashboard
+            </Link>
+          )}
+          {isAdminLoggedIn && (
+            <Link
+              href="/admin"
+              className={cn(
+                "rounded-md px-2.5 py-1 text-xs whitespace-nowrap transition-colors font-semibold",
+                pathname.startsWith("/admin")
+                  ? "text-primary bg-primary/20"
+                  : "text-primary bg-primary/10 hover:bg-primary/20"
+              )}
+            >
+              Admin Dashboard
+            </Link>
+          )}
           {isStudentLoggedIn && (
             <Link
               href="/student/dashboard"

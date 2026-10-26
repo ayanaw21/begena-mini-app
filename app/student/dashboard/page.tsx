@@ -19,7 +19,7 @@ import {
   PanelBody,
   PanelHeader,
 } from "@/components/ui/page";
-import { Loader2, LogOut, Edit3, Upload, X, ExternalLink } from "lucide-react";
+import { Loader2, LogOut, Edit3, Upload, X, ExternalLink, Lock, User, CheckCircle } from "lucide-react";
 import { updatePendingPayment } from "@/lib/actions/payment";
 import toast from "react-hot-toast";
 
@@ -31,12 +31,13 @@ interface AttendanceRecord {
   academicYear: string;
 }
 
-type TabId = "payments" | "schedules" | "attendance" | "password";
+type TabId = "payments" | "schedules" | "attendance" | "profile" | "password";
 
 const tabs: { id: TabId; label: string }[] = [
   { id: "payments", label: "Payments" },
   { id: "schedules", label: "Schedule" },
   { id: "attendance", label: "Attendance" },
+  { id: "profile", label: "Profile (መረጃ ማስተካከያ)" },
   { id: "password", label: "Security" },
 ];
 
@@ -70,6 +71,16 @@ export default function StudentDashboard() {
   const [editPreviewUrl, setEditPreviewUrl] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState<string | null>(null);
+
+  // Student Profile Edit State
+  const [profileForm, setProfileForm] = useState({
+    fullName: "",
+    christianName: "",
+    phoneNumber: "",
+    gender: "",
+    department: "",
+  });
+  const [savingProfile, setSavingProfile] = useState(false);
 
   const months = [
     { value: "October", label: "ጥቅምት (October)" },
@@ -171,6 +182,50 @@ export default function StudentDashboard() {
   useEffect(() => {
     fetchPortalData();
   }, [fetchPortalData]);
+
+  useEffect(() => {
+    if (student) {
+      setProfileForm({
+        fullName: student.fullName || "",
+        christianName: student.christianName || "",
+        phoneNumber: student.phoneNumber || "",
+        gender: student.gender || "",
+        department: student.department || "",
+      });
+    }
+  }, [student]);
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!profileForm.fullName.trim()) {
+      toast.error("እባክዎ ሙሉ ስምዎን ያስገቡ (Full name is required)");
+      return;
+    }
+    if (!profileForm.phoneNumber.trim()) {
+      toast.error("እባክዎ ስልክ ቁጥርዎን ያስገቡ (Phone number is required)");
+      return;
+    }
+
+    setSavingProfile(true);
+    try {
+      const token = localStorage.getItem("studentToken");
+      const res = await api.put("/auth/student/profile", profileForm, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.data.success) {
+        toast.success(res.data.message || "መረጃዎ በተሳካ ሁኔታ ተስተካክሏል!");
+        setStudent(res.data.student);
+        localStorage.setItem("studentData", JSON.stringify(res.data.student));
+      }
+    } catch (err: unknown) {
+      console.error(err);
+      const apiErr = err as { response?: { data?: { message?: string } } };
+      toast.error(apiErr.response?.data?.message || "Failed to update profile");
+    } finally {
+      setSavingProfile(false);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("studentToken");
@@ -501,6 +556,123 @@ export default function StudentDashboard() {
                   </tbody>
                 </table>
               )}
+            </Panel>
+          )}
+
+          {/* Profile Editing */}
+          {activeTab === "profile" && (
+            <Panel className="max-w-2xl">
+              <PanelHeader
+                title="የግል መረጃ ማስተካከያ (Edit Profile)"
+                description="የእርስዎን የግል መረጃ እዚህ ማስተካከል ይችላሉ። የተማሪ መለያ ቁጥር (Student ID) እና ፕሮግራም (Program) በአድሚን ብቻ የሚወሰኑ በመሆናቸው ሊቀየሩ አይችሉም።"
+              />
+              <PanelBody>
+                {/* Locked System Fields Notice */}
+                <div className="mb-6 rounded-xl border border-primary/20 bg-primary/5 p-4 text-xs space-y-2">
+                  <div className="flex items-center gap-2 text-primary font-semibold">
+                    <Lock size={14} />
+                    <span>የተቆለፉ መለያዎች (Locked Identifiers)</span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 font-mono text-xs">
+                    <div className="bg-background/80 p-2.5 rounded-lg border border-white/5">
+                      <span className="block text-[10px] text-muted-foreground uppercase font-sans">Student ID</span>
+                      <span className="text-primary font-bold text-sm">{student?.studentId || student?.begenaId}</span>
+                    </div>
+                    <div className="bg-background/80 p-2.5 rounded-lg border border-white/5">
+                      <span className="block text-[10px] text-muted-foreground uppercase font-sans">Program</span>
+                      <span className="text-foreground text-sm">{student?.program || "Basic በገና"}</span>
+                    </div>
+                    <div className="bg-background/80 p-2.5 rounded-lg border border-white/5">
+                      <span className="block text-[10px] text-muted-foreground uppercase font-sans">Batch</span>
+                      <span className="text-foreground text-sm">{student?.batch || "Batch 8"}</span>
+                    </div>
+                    <div className="bg-background/80 p-2.5 rounded-lg border border-white/5">
+                      <span className="block text-[10px] text-muted-foreground uppercase font-sans">Section</span>
+                      <span className="text-foreground text-sm">{student?.section || "Sec-A"}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <form onSubmit={handleUpdateProfile} className="space-y-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Field label="ሙሉ ስም (Full Name) *" htmlFor="fullName">
+                      <input
+                        id="fullName"
+                        type="text"
+                        required
+                        placeholder="የተማሪው ሙሉ ስም"
+                        value={profileForm.fullName}
+                        onChange={(e) =>
+                          setProfileForm({ ...profileForm, fullName: e.target.value })
+                        }
+                      />
+                    </Field>
+
+                    <Field label="የክርስትና ስም (Christian Name)" htmlFor="christianName" hint="አማራጭ (Optional)">
+                      <input
+                        id="christianName"
+                        type="text"
+                        placeholder="ምሳሌ፡ ገብረ ማርያም"
+                        value={profileForm.christianName}
+                        onChange={(e) =>
+                          setProfileForm({ ...profileForm, christianName: e.target.value })
+                        }
+                      />
+                    </Field>
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Field label="ስልክ ቁጥር (Phone Number) *" htmlFor="phoneNumber">
+                      <input
+                        id="phoneNumber"
+                        type="tel"
+                        required
+                        placeholder="09..."
+                        value={profileForm.phoneNumber}
+                        onChange={(e) =>
+                          setProfileForm({ ...profileForm, phoneNumber: e.target.value })
+                        }
+                      />
+                    </Field>
+
+                    <Field label="ጾታ (Gender)" htmlFor="gender">
+                      <select
+                        id="gender"
+                        value={profileForm.gender}
+                        onChange={(e) =>
+                          setProfileForm({ ...profileForm, gender: e.target.value })
+                        }
+                        className="w-full h-10 px-3 rounded-md bg-background border border-input text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                      >
+                        <option value="">ይምረጡ (Select)</option>
+                        <option value="F">ሴት (Female)</option>
+                        <option value="M">ወንድ (Male)</option>
+                      </select>
+                    </Field>
+                  </div>
+
+                  <Field label="ዲፓርትመንት (Department)" htmlFor="department" hint="ምሳሌ፡ EM, ECE, SW, Mech, Food, Civ">
+                    <input
+                      id="department"
+                      type="text"
+                      placeholder="የዩኒቨርሲቲ ዲፓርትመንት"
+                      value={profileForm.department}
+                      onChange={(e) =>
+                        setProfileForm({ ...profileForm, department: e.target.value })
+                      }
+                    />
+                  </Field>
+
+                  <div className="pt-2 flex items-center justify-between gap-3">
+                    <Button type="submit" disabled={savingProfile} className="bg-primary text-primary-foreground font-semibold">
+                      {savingProfile ? "በማስቀመጥ ላይ..." : "መረጃዬን መዝግብ (Save Changes)"}
+                    </Button>
+                    <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                      <CheckCircle size={12} className="text-emerald-400" /> የተቀየረው መረጃ በዳታቤዝ ውስጥ ይቀመጣል
+                    </span>
+                  </div>
+                </form>
+              </PanelBody>
             </Panel>
           )}
 

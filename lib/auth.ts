@@ -100,6 +100,9 @@ export interface StudentUser {
   batch?: string;
   section?: string;
   department?: string;
+  gender?: string;
+  christianName?: string;
+  phoneNumber?: string;
   academicStatus?: string;
 }
 

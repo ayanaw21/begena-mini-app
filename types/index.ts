@@ -30,6 +30,8 @@ export interface Student {
 	batch: string;
 	section: string;
 	department: string;
+	gender?: string;
+	christianName?: string;
 	phoneNumber: string;
 	registrationYear?: number;
 	academicStatus?: "Active" | "Graduated" | "Suspended" | "Warning";
