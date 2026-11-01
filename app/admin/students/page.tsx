@@ -13,6 +13,7 @@ import { Modal } from "@/components/ui/modal";
 import { Field, PageHeader } from "@/components/ui/page";
 import CustomSelect from "@/components/ui/custom-select";
 import { siteImages } from "@/lib/images";
+import { isAdmin } from "@/lib/auth";
 import toast from "react-hot-toast";
 
 type AcademicStatus = "Active" | "Graduated" | "Suspended" | "Warning";
@@ -34,6 +35,7 @@ const statusTone = (status?: string) =>
         : "success";
 
 export default function StudentsPage() {
+  const [isAdminUser, setIsAdminUser] = useState(false);
   const [students, setStudents] = useState<Student[]>([]);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [sections, setSections] = useState<Section[]>([]);
@@ -227,6 +229,7 @@ export default function StudentsPage() {
   };
 
   useEffect(() => {
+    setIsAdminUser(isAdmin());
     fetchMetadata();
     fetchStudents();
   }, [fetchMetadata, fetchStudents]);
@@ -313,153 +316,168 @@ export default function StudentsPage() {
         title="የተማሪዎች ዝርዝር (Students Registry)"
         description={`${filteredStudents.length} of ${students.length} students shown.`}
         action={
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                if (programs.length > 0 && !programs.some((p) => p.name === gradProgram)) {
-                  setGradProgram(programs[0].name);
-                }
-                setGradModalOpen(true);
-              }}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 text-xs sm:text-sm font-medium transition cursor-pointer shadow-sm"
-            >
-              🎓 Graduate Batch
-            </button>
-
-            <ModalForm
-              title="Add Student"
-              triggerText="Add Student"
-              onSubmit={handleCreateStudent}
-              image={siteImages.adminPhoto1}
-            >
-            <Field label="Full Name" htmlFor="studentFullName" required>
-              <input
-                id="studentFullName"
-                placeholder="Full name"
-                value={formData.fullName}
-                onChange={(e) =>
-                  setFormData({ ...formData, fullName: e.target.value })
-                }
-              />
-            </Field>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field
-                label="University Student ID"
-                htmlFor="studentUniversityId"
-                hint="University ID (e.g. ETS 0123/14)"
-                required
+          !isAdminUser ? (
+            <Badge tone="info">የማየት ብቻ ፈቃድ (View Only)</Badge>
+          ) : (
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  if (programs.length > 0 && !programs.some((p) => p.name === gradProgram)) {
+                    setGradProgram(programs[0].name);
+                  }
+                  setGradModalOpen(true);
+                }}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 text-xs sm:text-sm font-medium transition cursor-pointer shadow-sm"
               >
-                <input
-                  id="studentUniversityId"
-                  placeholder="ETS 0123/14"
-                  value={formData.studentId}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      studentId: e.target.value,
-                    })
-                  }
-                />
-              </Field>
+                🎓 Graduate Batch
+              </button>
 
-              <Field
-                label="Program ID (Assigned)"
-                htmlFor="studentProgramId"
-                hint="Assigned training ID (e.g. BG2026-0001)"
-                required
+              <ModalForm
+                title="Add Student"
+                triggerText="Add Student"
+                onSubmit={handleCreateStudent}
+                image={siteImages.adminPhoto1}
               >
-                <input
-                  id="studentProgramId"
-                  className="font-mono"
-                  placeholder="BG2026-0001"
-                  value={formData.programId || formData.begenaId}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      programId: e.target.value,
-                      begenaId: e.target.value,
-                    })
-                  }
-                />
-              </Field>
+                <Field label="Full Name" htmlFor="studentFullName" required>
+                  <input
+                    id="studentFullName"
+                    placeholder="Full name"
+                    value={formData.fullName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, fullName: e.target.value })
+                    }
+                  />
+                </Field>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field
+                    label="University Student ID"
+                    htmlFor="studentUniversityId"
+                    hint="e.g. 001/08"
+                    required
+                  >
+                    <input
+                      id="studentUniversityId"
+                      placeholder="e.g. 001/08"
+                      value={formData.studentId}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          studentId: e.target.value,
+                          programId: formData.programId || e.target.value,
+                          begenaId: formData.begenaId || e.target.value,
+                        })
+                      }
+                    />
+                  </Field>
+
+                  <Field
+                    label="Program Registration ID"
+                    htmlFor="studentProgramId"
+                    hint="e.g. BG-001/08 (Synced)"
+                  >
+                    <input
+                      id="studentProgramId"
+                      placeholder="Registration code"
+                      value={formData.programId || formData.begenaId || ""}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          programId: e.target.value,
+                          begenaId: e.target.value,
+                        })
+                      }
+                    />
+                  </Field>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="Program" htmlFor="studentProgram" required>
+                    <CustomSelect
+                      id="studentProgram"
+                      value={formData.program}
+                      onChange={(val) =>
+                        setFormData({ ...formData, program: val })
+                      }
+                      options={programs.map((prog) => ({
+                        value: prog.name,
+                        label: `${prog.name} (${prog.code})`,
+                      }))}
+                    />
+                  </Field>
+
+                  <Field label="Batch / ዙር" htmlFor="studentBatch" hint="e.g. Batch 8" required>
+                    <input
+                      id="studentBatch"
+                      placeholder="Batch"
+                      value={formData.batch}
+                      onChange={(e) =>
+                        setFormData({ ...formData, batch: e.target.value })
+                      }
+                    />
+                  </Field>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="Section" htmlFor="studentSection" required>
+                    <CustomSelect
+                      id="studentSection"
+                      value={formData.section}
+                      onChange={(val) =>
+                        setFormData({ ...formData, section: val })
+                      }
+                      options={sections.map((sec) => ({
+                        value: sec.section,
+                        label: sec.section,
+                      }))}
+                    />
+                  </Field>
+
+                  <Field label="Department" htmlFor="studentDepartment" required>
+                    <input
+                      id="studentDepartment"
+                      placeholder="e.g. Computer Science"
+                      value={formData.department}
+                      onChange={(e) =>
+                        setFormData({ ...formData, department: e.target.value })
+                      }
+                    />
+                  </Field>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="Phone Number" htmlFor="studentPhone" required>
+                    <input
+                      id="studentPhone"
+                      placeholder="Phone number"
+                      value={formData.phoneNumber}
+                      onChange={(e) =>
+                        setFormData({ ...formData, phoneNumber: e.target.value })
+                      }
+                    />
+                  </Field>
+
+                  <Field label="Academic Status" htmlFor="studentStatus">
+                    <CustomSelect
+                      id="studentStatus"
+                      value={formData.academicStatus || "Active"}
+                      onChange={(val) =>
+                        setFormData({
+                          ...formData,
+                          academicStatus: val as AcademicStatus,
+                        })
+                      }
+                      options={academicStatuses.map((status) => ({
+                        value: status,
+                        label: status,
+                      }))}
+                    />
+                  </Field>
+                </div>
+              </ModalForm>
             </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Enrolled Program" htmlFor="studentProgram">
-                <CustomSelect
-                  id="studentProgram"
-                  value={formData.program}
-                  onChange={(val) =>
-                    setFormData({ ...formData, program: val, section: "" })
-                  }
-                  options={programs.map((p) => ({
-                    value: p.name,
-                    label: `${p.name} (${p.code})`,
-                  }))}
-                />
-              </Field>
-
-              <Field label="Batch / ዙር" htmlFor="studentBatch" hint="e.g. Batch 8" required>
-                <input
-                  id="studentBatch"
-                  placeholder="Batch 8"
-                  value={formData.batch}
-                  onChange={(e) =>
-                    setFormData({ ...formData, batch: e.target.value })
-                  }
-                />
-              </Field>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field
-                label="School Department"
-                htmlFor="studentDepartment"
-                hint="e.g. Software Engineering, Architecture"
-                required
-              >
-                <input
-                  id="studentDepartment"
-                  placeholder="e.g. Software Engineering"
-                  value={formData.department}
-                  onChange={(e) =>
-                    setFormData({ ...formData, department: e.target.value })
-                  }
-                />
-              </Field>
-
-              <Field label="Phone Number" htmlFor="studentPhone" required>
-                <input
-                  id="studentPhone"
-                  inputMode="tel"
-                  placeholder="0911223344"
-                  value={formData.phoneNumber}
-                  onChange={(e) =>
-                    setFormData({ ...formData, phoneNumber: e.target.value })
-                  }
-                />
-              </Field>
-            </div>
-
-            <Field label="Assigned Section" htmlFor="studentSection">
-              <CustomSelect
-                id="studentSection"
-                value={formData.section}
-                onChange={(val) => setFormData({ ...formData, section: val })}
-                placeholder="Choose section"
-                options={[
-                  { value: "", label: "Choose section" },
-                  ...getSectionsForProgram(formData.program).map((sec) => ({
-                    value: sec.section,
-                    label: sec.section,
-                  })),
-                ]}
-              />
-            </Field>
-          </ModalForm>
-          </div>
+          )
         }
       />
 
@@ -512,18 +530,32 @@ export default function StudentsPage() {
 
       <DataTable
         image={siteImages.adminCard3}
-        columns={[
-          { key: "fullName", label: "Full Name" },
-          { key: "programIdDisplay", label: "Program ID" },
-          { key: "studentIdDisplay", label: "University ID" },
-          { key: "program", label: "Program" },
-          { key: "batchDisplay", label: "Batch" },
-          { key: "department", label: "Department" },
-          { key: "section", label: "Section" },
-          { key: "phoneNumber", label: "Phone" },
-          { key: "academicStatusDisplay", label: "Status" },
-          { key: "actions", label: "" },
-        ]}
+        columns={
+          isAdminUser
+            ? [
+                { key: "fullName", label: "Full Name" },
+                { key: "programIdDisplay", label: "Program ID" },
+                { key: "studentIdDisplay", label: "University ID" },
+                { key: "program", label: "Program" },
+                { key: "batchDisplay", label: "Batch" },
+                { key: "department", label: "Department" },
+                { key: "section", label: "Section" },
+                { key: "phoneNumber", label: "Phone" },
+                { key: "academicStatusDisplay", label: "Status" },
+                { key: "actions", label: "" },
+              ]
+            : [
+                { key: "fullName", label: "Full Name" },
+                { key: "programIdDisplay", label: "Program ID" },
+                { key: "studentIdDisplay", label: "University ID" },
+                { key: "program", label: "Program" },
+                { key: "batchDisplay", label: "Batch" },
+                { key: "department", label: "Department" },
+                { key: "section", label: "Section" },
+                { key: "phoneNumber", label: "Phone" },
+                { key: "academicStatusDisplay", label: "Status" },
+              ]
+        }
         data={filteredStudents.map((s) => ({
           ...s,
           programIdDisplay: (
@@ -546,7 +578,7 @@ export default function StudentsPage() {
               {s.academicStatus || "Active"}
             </Badge>
           ),
-          actions: (
+          actions: isAdminUser ? (
             <RowActions
               key={s._id}
               onEdit={() => {
@@ -565,7 +597,7 @@ export default function StudentsPage() {
                 setDeleteModalOpen(true);
               }}
             />
-          ),
+          ) : null,
         }))}
       />
 

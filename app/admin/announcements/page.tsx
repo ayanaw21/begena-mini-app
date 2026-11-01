@@ -6,6 +6,8 @@ import ModalForm from "@/components/ModalForm";
 import ConfirmModal from "@/components/ConfirmModal";
 import EditModal from "@/components/EditModal";
 import RowActions from "@/components/RowActions";
+import { Badge } from "@/components/ui/badge";
+import { isAdmin } from "@/lib/auth";
 import { Field, PageHeader } from "@/components/ui/page";
 import CustomSelect from "@/components/ui/custom-select";
 import { siteImages, adminCardBackgrounds } from "@/lib/images";
@@ -21,6 +23,7 @@ interface Announcement {
 }
 
 export default function AnnouncementsPage() {
+  const [isAdminUser, setIsAdminUser] = useState(false);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [formData, setFormData] = useState<Announcement>({
     title: "",
@@ -113,6 +116,7 @@ export default function AnnouncementsPage() {
   };
 
   useEffect(() => {
+    setIsAdminUser(isAdmin());
     fetchAnnouncements();
   }, []);
 
@@ -135,7 +139,10 @@ export default function AnnouncementsPage() {
         title="የማስታወቂያ ክፍል (Announcements)"
         description="Notices broadcast to students on the public home page."
         action={
-          <ModalForm
+          !isAdminUser ? (
+            <Badge tone="info">የማየት ብቻ ፈቃድ (View Only)</Badge>
+          ) : (
+            <ModalForm
             title="Add Announcement"
             onSubmit={handleCreateAnnouncement}
             image={siteImages.adminAncient}
@@ -184,6 +191,7 @@ export default function AnnouncementsPage() {
               </Field>
             </div>
           </ModalForm>
+          )
         }
       />
 
@@ -219,7 +227,7 @@ export default function AnnouncementsPage() {
           subtitle: [a.date, a.time].filter(Boolean).join(" · ") || undefined,
           image: adminCardBackgrounds[idx % adminCardBackgrounds.length],
           fields: [{ label: "Content", value: a.body, wide: true }],
-          actions: (
+          actions: isAdminUser ? (
             <RowActions
               key={a._id}
               onEdit={() => {
@@ -231,7 +239,7 @@ export default function AnnouncementsPage() {
                 setDeleteModalOpen(true);
               }}
             />
-          ),
+          ) : undefined,
         }))}
       />
 

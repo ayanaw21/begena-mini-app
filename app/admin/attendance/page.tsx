@@ -11,6 +11,7 @@ import PhotoPanel from "@/components/ui/photo-panel";
 import { siteImages, adminCardBackgrounds } from "@/lib/images";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
+import { isAdmin } from "@/lib/auth";
 import toast from "react-hot-toast";
 
 type AttendanceStatus = "Present" | "Absent" | "Late" | "Permission";
@@ -76,6 +77,7 @@ const rateColor = (rate: number) =>
       : { bar: "bg-red-500", text: "text-red-400" };
 
 export default function AttendancePage() {
+  const [isAdminUser, setIsAdminUser] = useState(false);
   const [activeTab, setActiveTab] = useState<"daily" | "summary">("daily");
 
   // Daily marking state
@@ -169,6 +171,7 @@ export default function AttendancePage() {
   }, [selectedProgFilter, selectedSecFilter]);
 
   useEffect(() => {
+    setIsAdminUser(isAdmin());
     fetchInitialData();
   }, [fetchInitialData]);
 
@@ -577,27 +580,31 @@ export default function AttendancePage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex justify-end gap-1">
-                          {statusActions
-                            .filter(
-                              (action) => action.value !== st.academicStatus
-                            )
-                            .map((action) => (
-                              <Button
-                                key={action.value}
-                                size="sm"
-                                variant="outline"
-                                disabled={updatingStatusId === st.studentIdObj}
-                                title={action.title}
-                                onClick={() =>
-                                  handleUpdateStudentAcademicStatus(
-                                    st.studentIdObj,
-                                    action.value
-                                  )
-                                }
-                              >
-                                {action.label}
-                              </Button>
-                            ))}
+                          {isAdminUser ? (
+                            statusActions
+                              .filter(
+                                (action) => action.value !== st.academicStatus
+                              )
+                              .map((action) => (
+                                <Button
+                                  key={action.value}
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={updatingStatusId === st.studentIdObj}
+                                  title={action.title}
+                                  onClick={() =>
+                                    handleUpdateStudentAcademicStatus(
+                                      st.studentIdObj,
+                                      action.value
+                                    )
+                                  }
+                                >
+                                  {action.label}
+                                </Button>
+                              ))
+                          ) : (
+                            <span className="text-xs text-muted-foreground">—</span>
+                          )}
                         </div>
                       </td>
                     </tr>

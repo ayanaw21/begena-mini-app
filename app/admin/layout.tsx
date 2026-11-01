@@ -26,8 +26,10 @@ export default function AdminLayoutClient({
       toast.error("Please log in to continue");
       router.push("/admin/login");
     } else if (token) {
-      if (isTeacher() && pathname !== "/admin/login") {
-        router.replace("/teacher/dashboard");
+      const adminOnlyRoutes = ["/admin/staff", "/admin/payments"];
+      if (isTeacher() && adminOnlyRoutes.some((r) => pathname.startsWith(r))) {
+        toast.error("ይህንን ገጽ ለማየት የአድሚን ፈቃድ ያስፈልጋል (Admin access required)");
+        router.replace("/admin");
         return;
       }
       setIsAuthenticated(true);

@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getValidToken } from "@/lib/auth";
+import { getValidToken, isTeacher, getUserName } from "@/lib/auth";
+import { Badge } from "@/components/ui/badge";
 import PhotoPanel from "@/components/ui/photo-panel";
 import Figure from "@/components/ui/figure";
 import { siteImages } from "@/lib/images";
@@ -96,6 +97,8 @@ const sections = [
 export default function AdminHome() {
   const router = useRouter();
   const [isChecking, setIsChecking] = useState(true);
+  const [userName, setUserName] = useState("");
+  const [userIsTeacher, setUserIsTeacher] = useState(false);
 
   useEffect(() => {
     const token = getValidToken();
@@ -103,9 +106,25 @@ export default function AdminHome() {
       toast.error("Please log in to continue");
       router.push("/admin/login");
     } else {
+      setUserName(getUserName() || "Staff Member");
+      setUserIsTeacher(isTeacher());
       setIsChecking(false);
     }
   }, [router]);
+
+  const visibleSections = sections
+    .map((section) => ({
+      ...section,
+      links: section.links.filter((link) => {
+        if (userIsTeacher) {
+          if (link.href === "/admin/staff" || link.href === "/admin/payments") {
+            return false;
+          }
+        }
+        return true;
+      }),
+    }))
+    .filter((sec) => sec.links.length > 0);
 
   if (isChecking) {
     return (
@@ -127,18 +146,25 @@ export default function AdminHome() {
         scrim
       >
         <p className="text-primary text-xs font-semibold tracking-[0.18em] uppercase">
-        Admin Dashboard
+          {userIsTeacher ? "የመምህራን እና የአስተዳደር ክፍል · Portal" : "ዋና የአስተዳደር ክፍል · Admin Portal"}
         </p>
         <h1 className="mt-1.5 text-2xl font-bold sm:text-3xl text-foreground">
          
          
+          እንኳን ደህና መጡ፣ {userName}
         </h1>
+        <div className="mt-2 flex items-center gap-2">
+          <Badge tone={userIsTeacher ? "info" : "primary"}>
+            {userIsTeacher ? "መምህር (Instructor)" : "አስተዳዳሪ እና መምህር (Admin & Teacher)"}
+          </Badge>
+          <Badge tone="success">Active</Badge>
+        </div>
         <p className="text-white/80 max-w-2xl text-xs sm:text-sm mt-1">
           የስልጠና ፕሮግራሞችን፣ የተማሪዎች ምዝገባን፣ የምድብ እና የመምህራን ስምሪትን፣ የክፍያ እና የክትትል ሁኔታዎችን በአንድ ቦታ ይቆጣጠሩ።
         </p>
       </Figure>
 
-      {sections.map((section) => (
+      {visibleSections.map((section) => (
         <section key={section.heading} className="space-y-3">
           <h2 className="text-muted-foreground text-xs font-semibold tracking-[0.18em] uppercase">
             {section.heading}

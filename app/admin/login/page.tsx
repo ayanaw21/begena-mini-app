@@ -41,7 +41,7 @@ export default function AdminLogin() {
       const role = res.data.user?.role;
       if (role === "teacher") {
         toast.success(`እንኳን ደህና መጡ መምህር ${res.data.user.fullName || ""}`);
-        router.push("/teacher/dashboard");
+        router.push("/admin");
       } else {
         toast.success(`እንኳን ደህና መጡ አስተዳዳሪ ${res.data.user.fullName || ""}`);
         router.push("/admin");

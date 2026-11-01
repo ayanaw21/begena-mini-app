@@ -17,6 +17,7 @@ import {
 
 import { siteImages } from "@/lib/images";
 import { cn } from "@/lib/utils";
+import { isTeacher } from "@/lib/auth";
 
 interface AdminSidebarProps {
   isOpen: boolean;
@@ -55,6 +56,25 @@ export const adminMenu = [
 
 export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
+  const [isTeacherUser, setIsTeacherUser] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsTeacherUser(isTeacher());
+  }, []);
+
+  const menuToDisplay = adminMenu
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => {
+        if (isTeacherUser) {
+          if (item.href === "/admin/staff" || item.href === "/admin/payments") {
+            return false;
+          }
+        }
+        return true;
+      }),
+    }))
+    .filter((group) => group.items.length > 0);
 
   return (
     <>
@@ -96,7 +116,7 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
           </div>
 
           <nav className="flex-1 overflow-y-auto px-3 py-4">
-            {adminMenu.map((group, index) => (
+            {menuToDisplay.map((group, index) => (
               <div key={group.heading ?? index} className={index > 0 ? "mt-6" : ""}>
                 {group.heading && (
                   <p className="text-muted-foreground mb-2 px-3 text-[11px] font-semibold tracking-[0.14em] uppercase">

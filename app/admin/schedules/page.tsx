@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Field, PageHeader } from "@/components/ui/page";
 import CustomSelect from "@/components/ui/custom-select";
 import { siteImages } from "@/lib/images";
+import { isAdmin } from "@/lib/auth";
 import toast from "react-hot-toast";
 
 interface Schedule {
@@ -33,6 +34,7 @@ const daysOfWeek = [
 ];
 
 export default function SchedulesPage() {
+  const [isAdminUser, setIsAdminUser] = useState(false);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [sections, setSections] = useState<Section[]>([]);
   const [programs, setPrograms] = useState<Program[]>([]);
@@ -175,6 +177,7 @@ export default function SchedulesPage() {
   };
 
   useEffect(() => {
+    setIsAdminUser(isAdmin());
     fetchMetadata();
     fetchSchedules();
   }, [fetchMetadata, fetchSchedules]);
@@ -225,7 +228,10 @@ export default function SchedulesPage() {
         title="የትምህርት ክፍለ-ጊዜ (Class Schedules)"
         description="Weekly session times published to students per section."
         action={
-          <ModalForm
+          !isAdminUser ? (
+            <Badge tone="info">የማየት ብቻ ፈቃድ (View Only)</Badge>
+          ) : (
+            <ModalForm
             title="Add Class Schedule"
             triggerText="Add Schedule"
             onSubmit={handleCreateSchedule}
@@ -298,6 +304,7 @@ export default function SchedulesPage() {
               </Field>
             </div>
           </ModalForm>
+          )
         }
       />
 
@@ -372,7 +379,7 @@ export default function SchedulesPage() {
             { label: "Day", value: s.date || "—" },
             { label: "Time", value: s.time || "—" },
           ],
-          actions: (
+          actions: isAdminUser ? (
             <RowActions
               onEdit={() => {
                 setScheduleToEdit(s);
@@ -383,7 +390,7 @@ export default function SchedulesPage() {
                 setDeleteModalOpen(true);
               }}
             />
-          ),
+          ) : undefined,
         }))}
       />
 

@@ -13,9 +13,11 @@ import { Modal } from "@/components/ui/modal";
 import { Field, PageHeader } from "@/components/ui/page";
 import CustomSelect from "@/components/ui/custom-select";
 import { siteImages } from "@/lib/images";
+import { isAdmin } from "@/lib/auth";
 import toast from "react-hot-toast";
 
 export default function ProgramsPage() {
+  const [isAdminUser, setIsAdminUser] = useState(false);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [formData, setFormData] = useState<Program>({
     name: "",
@@ -162,6 +164,7 @@ export default function ProgramsPage() {
   };
 
   useEffect(() => {
+    setIsAdminUser(isAdmin());
     fetchPrograms();
   }, [fetchPrograms]);
 
@@ -172,69 +175,62 @@ export default function ProgramsPage() {
         title="የስልጠና ፕሮግራሞች (Programs)"
         description="Instrument programs, active batch cycles, and ID code prefixes."
         action={
-          <ModalForm
-            title="Create New Program"
-            triggerText="Add Program"
-            onSubmit={handleCreateProgram}
-            image={siteImages.adminCard1}
-          >
-            <Field label="Program Name" htmlFor="programName" required>
-              <input
-                id="programName"
-                placeholder="በገና, መሰንቆ, ክራር"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-              />
-            </Field>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field
-                label="Program Code"
-                htmlFor="programCode"
-                hint="Used as student ID prefix, e.g. BG, MS, KR."
-                required
-              >
+          !isAdminUser ? (
+            <Badge tone="info">የማየት ብቻ ፈቃድ (View Only)</Badge>
+          ) : (
+            <ModalForm
+              title="Add New Program"
+              triggerText="Add Program"
+              onSubmit={handleCreateProgram}
+              image={siteImages.adminCard1}
+            >
+              <Field label="Program Name" htmlFor="programName" required>
                 <input
-                  id="programCode"
-                  className="font-mono uppercase"
-                  placeholder="BG, MS, KR"
-                  value={formData.code}
+                  id="programName"
+                  placeholder="e.g. Masinko"
+                  value={formData.name}
                   onChange={(e) =>
-                    setFormData({ ...formData, code: e.target.value.toUpperCase() })
+                    setFormData({ ...formData, name: e.target.value })
                   }
                 />
               </Field>
 
-              <Field
-                label="Initial Batch / ዙር"
-                htmlFor="programBatch"
-                hint="e.g. Batch 8"
-                required
-              >
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Program Code" htmlFor="programCode" required>
+                  <input
+                    id="programCode"
+                    placeholder="e.g. MAS"
+                    value={formData.code}
+                    onChange={(e) =>
+                      setFormData({ ...formData, code: e.target.value })
+                    }
+                  />
+                </Field>
+
+                <Field label="Current Batch" htmlFor="currentBatch">
+                  <input
+                    id="currentBatch"
+                    placeholder="e.g. Batch 1"
+                    value={formData.currentBatch}
+                    onChange={(e) =>
+                      setFormData({ ...formData, currentBatch: e.target.value })
+                    }
+                  />
+                </Field>
+              </div>
+
+              <Field label="Description" htmlFor="programDescription">
                 <input
-                  id="programBatch"
-                  placeholder="Batch 8"
-                  value={formData.currentBatch}
+                  id="programDescription"
+                  placeholder="Short description"
+                  value={formData.description}
                   onChange={(e) =>
-                    setFormData({ ...formData, currentBatch: e.target.value })
+                    setFormData({ ...formData, description: e.target.value })
                   }
                 />
               </Field>
-            </div>
-
-            <Field label="Description" htmlFor="programDescription">
-              <input
-                id="programDescription"
-                placeholder="Short description"
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-              />
-            </Field>
-          </ModalForm>
+            </ModalForm>
+          )
         }
       />
 

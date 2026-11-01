@@ -32,7 +32,7 @@ const Navbar = () => {
       if (isTeacher()) {
         setIsTeacherLoggedIn(true);
         setIsAdminLoggedIn(false);
-        setAdminHref("/teacher/dashboard");
+        setAdminHref("/admin");
       } else {
         setIsTeacherLoggedIn(false);
         setIsAdminLoggedIn(true);
@@ -58,20 +58,7 @@ const Navbar = () => {
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
-          {isTeacherLoggedIn && (
-            <Link
-              href="/teacher/dashboard"
-              className={cn(
-                "rounded-md px-2.5 py-1.5 text-sm font-semibold transition-colors mr-1",
-                pathname === "/teacher/dashboard"
-                  ? "text-amber-300 bg-amber-400/20"
-                  : "text-amber-300 bg-amber-400/10 hover:bg-amber-400/20"
-              )}
-            >
-              መምህር Dashboard
-            </Link>
-          )}
-          {isAdminLoggedIn && (
+          {(isTeacherLoggedIn || isAdminLoggedIn) && (
             <Link
               href="/admin"
               className={cn(
@@ -81,7 +68,7 @@ const Navbar = () => {
                   : "text-primary bg-primary/10 hover:bg-primary/20"
               )}
             >
-              Admin Dashboard
+              {isAdminLoggedIn ? "Admin Dashboard" : "መምህር / Staff Portal"}
             </Link>
           )}
           {isStudentLoggedIn && (
@@ -131,27 +118,14 @@ const Navbar = () => {
                 Logout
               </Button>
             </>
-          ) : isTeacherLoggedIn ? (
+          ) : (isTeacherLoggedIn || isAdminLoggedIn) ? (
             <>
-              <Button asChild size="sm" className="bg-amber-400 text-slate-950 hover:bg-amber-300 font-semibold">
-                <Link href="/teacher/dashboard">መምህር Dashboard</Link>
-              </Button>
               <Button
-                variant="ghost"
+                asChild
                 size="sm"
-                onClick={() => {
-                  removeToken();
-                  window.location.href = "/admin/login";
-                }}
-                className="text-muted-foreground hover:text-foreground text-xs"
+                className={isTeacherLoggedIn ? "bg-amber-400 text-slate-950 hover:bg-amber-300 font-semibold" : ""}
               >
-                Logout
-              </Button>
-            </>
-          ) : isAdminLoggedIn ? (
-            <>
-              <Button asChild size="sm">
-                <Link href="/admin">Admin</Link>
+                <Link href="/admin">{isTeacherLoggedIn ? "Staff Dashboard" : "Admin"}</Link>
               </Button>
               <Button
                 variant="ghost"
@@ -181,20 +155,7 @@ const Navbar = () => {
       {/* On small screens the primary links move to a scrollable strip under the bar. */}
       <nav className="w-full max-w-full overflow-hidden border-t border-white/5 md:hidden">
         <PageContainer className="flex gap-1 overflow-x-auto py-1.5 scrollbar-none">
-          {isTeacherLoggedIn && (
-            <Link
-              href="/teacher/dashboard"
-              className={cn(
-                "rounded-md px-2.5 py-1 text-xs whitespace-nowrap transition-colors font-semibold",
-                pathname === "/teacher/dashboard"
-                  ? "text-amber-300 bg-amber-400/20"
-                  : "text-amber-300 bg-amber-400/10 hover:bg-amber-400/20"
-              )}
-            >
-              መምህር Dashboard
-            </Link>
-          )}
-          {isAdminLoggedIn && (
+          {(isTeacherLoggedIn || isAdminLoggedIn) && (
             <Link
               href="/admin"
               className={cn(
@@ -204,7 +165,7 @@ const Navbar = () => {
                   : "text-primary bg-primary/10 hover:bg-primary/20"
               )}
             >
-              Admin Dashboard
+              {isAdminLoggedIn ? "Admin Dashboard" : "መምህር Portal"}
             </Link>
           )}
           {isStudentLoggedIn && (

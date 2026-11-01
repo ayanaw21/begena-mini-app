@@ -12,9 +12,11 @@ import { Field, PageHeader } from "@/components/ui/page";
 import CustomSelect from "@/components/ui/custom-select";
 import CustomMultiSelect from "@/components/ui/custom-multi-select";
 import { siteImages } from "@/lib/images";
+import { isAdmin } from "@/lib/auth";
 import toast from "react-hot-toast";
 
 export default function SectionsPage() {
+  const [isAdminUser, setIsAdminUser] = useState(false);
   const [sections, setSections] = useState<Section[]>([]);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [staffList, setStaffList] = useState<Admin[]>([]);
@@ -210,6 +212,7 @@ export default function SectionsPage() {
   };
 
   useEffect(() => {
+    setIsAdminUser(isAdmin());
     fetchSections();
     fetchPrograms();
     fetchStaff();
@@ -234,7 +237,10 @@ export default function SectionsPage() {
         title="ምድቦች እና መምህራን (Sections & Teachers)"
         description="Class sections and the teachers assigned to each one."
         action={
-          <ModalForm
+          !isAdminUser ? (
+            <Badge tone="info">የማየት ብቻ ፈቃድ (View Only)</Badge>
+          ) : (
+            <ModalForm
             title="Create New Section"
             triggerText="Add Section"
             onSubmit={handleCreateSection}
@@ -324,6 +330,7 @@ export default function SectionsPage() {
               />
             </Field>
           </ModalForm>
+          )
         }
       />
 
@@ -404,7 +411,7 @@ export default function SectionsPage() {
                 wide: true,
               },
             ],
-            actions: (
+            actions: isAdminUser ? (
               <RowActions
                 onEdit={() => {
                   setSectionToEdit(s);
@@ -427,7 +434,7 @@ export default function SectionsPage() {
                   setDeleteModalOpen(true);
                 }}
               />
-            ),
+            ) : undefined,
           };
         })}
       />
