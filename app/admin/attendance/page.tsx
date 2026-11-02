@@ -264,6 +264,11 @@ export default function AttendancePage() {
     (s) => s.absentCount >= 3 || s.attendanceRate < 75
   ).length;
 
+  const totalPermissions = summaryList.reduce(
+    (acc, curr) => acc + (curr.permissionCount || 0),
+    0
+  );
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -422,12 +427,17 @@ export default function AttendancePage() {
       ) : (
         <div className="space-y-4">
           {/* Stats */}
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
               {
                 label: "Tracked students",
                 value: summaryList.length,
                 className: "",
+              },
+              {
+                label: "Permission days (የፈቃድ ቀናት)",
+                value: totalPermissions,
+                className: "text-sky-400",
               },
               {
                 label: "At risk (3+ absences)",
@@ -517,10 +527,13 @@ export default function AttendancePage() {
                     <th className="px-4 py-2.5 font-medium">Student ID</th>
                     <th className="px-4 py-2.5 font-medium">Full Name</th>
                     <th className="px-4 py-2.5 text-center font-medium">
-                      Attended
+                      Attended (የተገኙ)
                     </th>
                     <th className="px-4 py-2.5 text-center font-medium">
-                      Absences
+                      Permission (ፈቃድ)
+                    </th>
+                    <th className="px-4 py-2.5 text-center font-medium">
+                      Absences (ቀሪ)
                     </th>
                     <th className="px-4 py-2.5 font-medium">Rate</th>
                     <th className="px-4 py-2.5 font-medium">Status</th>
@@ -542,6 +555,15 @@ export default function AttendancePage() {
                           {" "}
                           / {st.totalSessions}
                         </span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        {st.permissionCount > 0 ? (
+                          <Badge tone="info" className="font-mono">
+                            {st.permissionCount} {st.permissionCount === 1 ? "day" : "days"}
+                          </Badge>
+                        ) : (
+                          <span className="text-muted-foreground text-xs">—</span>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-center">
                         {st.absentCount >= 3 ? (

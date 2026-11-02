@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import PhotoPanel from "@/components/ui/photo-panel";
 import CustomSelect from "@/components/ui/custom-select";
 import { siteImages } from "@/lib/images";
+import { cn } from "@/lib/utils";
 import {
   Field,
   PageBody,
@@ -262,7 +263,11 @@ export default function StudentDashboard() {
     (p) => (p as unknown as { year?: string }).year === selectedYear || selectedYear === "All"
   );
 
-  const totalPresent = attendance.filter((a) => a.status === "Present" || a.status === "Late").length;
+  const totalPresent = attendance.filter(
+    (a) => a.status === "Present" || a.status === "Late" || a.status === "Permission"
+  ).length;
+  const totalPermission = attendance.filter((a) => a.status === "Permission").length;
+  const totalAbsent = attendance.filter((a) => a.status === "Absent").length;
   const attendanceRate = attendance.length > 0 ? Math.round((totalPresent / attendance.length) * 100) : 100;
 
   if (loading) {
@@ -513,15 +518,29 @@ export default function StudentDashboard() {
           {activeTab === "attendance" && (
             <Panel>
               <PanelHeader
-                title="Attendance log"
+                title="Attendance log (የክትትል ማጠቃለያ)"
                 action={
-                  <div className="text-right">
-                    <p className="text-primary text-lg leading-none font-bold">
-                      {attendanceRate}%
-                    </p>
-                    <p className="text-muted-foreground mt-1 text-xs">
-                      {totalPresent} / {attendance.length}
-                    </p>
+                  <div className="flex items-center gap-4 text-right">
+                    <div>
+                      <span className="text-muted-foreground text-xs block">ፈቃድ (Permission)</span>
+                      <span className="text-sky-400 font-semibold text-sm">
+                        {totalPermission} {totalPermission === 1 ? "day" : "days"}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground text-xs block">ቀሪ (Absences)</span>
+                      <span className={cn("font-semibold text-sm", totalAbsent >= 3 ? "text-red-400" : "text-muted-foreground")}>
+                        {totalAbsent}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-primary text-lg leading-none font-bold">
+                        {attendanceRate}%
+                      </p>
+                      <p className="text-muted-foreground mt-1 text-xs">
+                        {totalPresent} / {attendance.length}
+                      </p>
+                    </div>
                   </div>
                 }
               />
