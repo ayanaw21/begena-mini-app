@@ -31,7 +31,9 @@ import {
 	AlertCircle,
 	Edit3,
 	Lock,
+	Copy,
 } from "lucide-react";
+import api from "@/lib/api";
 import { sendPayment, updatePendingPayment } from "@/lib/actions/payment";
 import { getValidStudentToken, getStudentData } from "@/lib/auth";
 import { Payment as PaymentRecord } from "@/types";
@@ -98,6 +100,50 @@ const Payment = () => {
 	const [editFile, setEditFile] = useState<File | null>(null);
 	const [editPreviewUrl, setEditPreviewUrl] = useState<string | null>(null);
 	const [isUpdating, setIsUpdating] = useState(false);
+
+	// Dynamic Bank Account Settings
+	const [bankSettings, setBankSettings] = useState({
+		bankName: "Commercial Bank of Ethiopia (CBE)",
+		accountName: "Ayanaw Mengesha and/or Motuma Kidanu",
+		accountNumber: "1000720480337",
+		instructions: "ወርሃዊ የተማሪ ክፍያ ወደ የሚከተለው የባንክ አካውንት ያስተላልፉ።",
+	});
+	const [accountCopied, setAccountCopied] = useState(false);
+
+	useEffect(() => {
+		api.get("/payments/settings")
+			.then((res) => {
+				if (res.data?.settings) {
+					setBankSettings({
+						bankName: res.data.settings.bankName || "Commercial Bank of Ethiopia (CBE)",
+						accountName: res.data.settings.accountName || "Ayanaw Mengesha and/or Motuma Kidanu",
+						accountNumber: res.data.settings.accountNumber || "1000720480337",
+						instructions: res.data.settings.instructions || "ወርሃዊ የተማሪ ክፍያ ወደ የሚከተለው የባንክ አካውንት ያስተላልፉ።",
+					});
+				}
+			})
+			.catch(() => {});
+	}, []);
+
+	const copyAccountNumber = async () => {
+		try {
+			if (navigator.clipboard && navigator.clipboard.writeText) {
+				await navigator.clipboard.writeText(bankSettings.accountNumber);
+			} else {
+				const textarea = document.createElement("textarea");
+				textarea.value = bankSettings.accountNumber;
+				document.body.appendChild(textarea);
+				textarea.select();
+				document.execCommand("copy");
+				document.body.removeChild(textarea);
+			}
+			setAccountCopied(true);
+			toast.success("የሂሳብ ቁጥር ተቀድቷል");
+			setTimeout(() => setAccountCopied(false), 2000);
+		} catch {
+			toast.error("ኮፒ ማድረግ አልተቻለም");
+		}
+	};
 
 	const months = [
 		{ value: "October", label: "ጥቅምት (October)" },
@@ -396,7 +442,7 @@ const Payment = () => {
 							</div>
 							<Button asChild size="sm" className="bg-primary text-primary-foreground font-semibold shrink-0 gap-1.5">
 								<Link href="/student/dashboard">
-									<span>ዳሽቦርድ ሂድ (Dashboard)</span>
+									<span>ወደ ዳሽቦርድ ሂድ</span>
 									<ArrowRight size={14} />
 								</Link>
 							</Button>
@@ -408,7 +454,7 @@ const Payment = () => {
 						description="ተማሪዎች የወርሃዊ ትምህርት ክፍያ ደረሰኝ በ ID ብቻ የሚያስገቡበት ገጽ።"
 					/>
 
-					{/* Bank details card with PhotoPanel */}
+					{/* Dynamic Bank details card with PhotoPanel */}
 					<PhotoPanel
 						src={siteImages.noticeCard}
 						className="border-primary/30 shadow-2xl backdrop-blur"
@@ -420,32 +466,42 @@ const Payment = () => {
 							</div>
 							<div>
 								<h2 className="text-primary text-sm font-semibold tracking-wider uppercase">
-									የክፍያ መመሪያ · Bank Transfer Details
+									የክፍያ መመሪያ
 								</h2>
 								<p className="text-muted-foreground text-xs mt-0.5">
-									ወርሃዊ የተማሪ ክፍያ ወደ የሚከተለው የባንክ አካውንት ያስተላልፉ።
+									{bankSettings.instructions || "ወርሃዊ የተማሪ ክፍያ ወደ የሚከተለው የባንክ አካውንት ያስተላልፉ።"}
 								</p>
 							</div>
 						</div>
 
 						<dl className="mt-5 grid gap-4 sm:grid-cols-3">
 							<div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-								<dt className="text-muted-foreground text-xs font-medium">ባንክ (Bank)</dt>
+								<dt className="text-muted-foreground text-xs font-medium">ባንክ</dt>
 								<dd className="mt-1 text-sm font-semibold text-foreground">
-									የኢትዮጵያ ንግድ ባንክ (CBE)
+									{bankSettings.bankName}
 								</dd>
 							</div>
 							<div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-								<dt className="text-muted-foreground text-xs font-medium">የአካውንት ስም (Account Name)</dt>
-								<dd className="mt-1 text-sm font-semibold text-foreground">
-									Ayanaw Mengesha and/or Motuma Kidanu
+								<dt className="text-muted-foreground text-xs font-medium">የአካውንት ስም</dt>
+								<dd className="mt-1 text-sm font-semibold text-foreground break-words">
+									{bankSettings.accountName}
 								</dd>
 							</div>
-							<div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 border border-primary/30 bg-primary/10">
-								<dt className="text-muted-foreground text-xs font-medium">የአካውንት ቁጥር (Account Number)</dt>
-								<dd className="text-primary mt-1 font-mono text-base font-bold tracking-wider">
-									1000720480337
-								</dd>
+							<div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 border border-primary/30 bg-primary/10 flex items-center justify-between gap-2">
+								<div className="min-w-0">
+									<dt className="text-muted-foreground text-xs font-medium">የሂሳብ ቁጥር</dt>
+									<dd className="text-primary mt-1 font-mono text-base font-bold tracking-wider truncate">
+										{bankSettings.accountNumber}
+									</dd>
+								</div>
+								<button
+									type="button"
+									onClick={copyAccountNumber}
+									title="ቁጥሩን ኮፒ አድርግ"
+									className="p-2 rounded-lg bg-primary/20 text-primary hover:bg-primary/30 transition shrink-0"
+								>
+									{accountCopied ? <Check size={16} className="text-emerald-400" /> : <Copy size={16} />}
+								</button>
 							</div>
 						</dl>
 					</PhotoPanel>

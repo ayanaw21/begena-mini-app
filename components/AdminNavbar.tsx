@@ -2,10 +2,9 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { usePathname, useRouter } from "next/navigation";
 import { ExternalLink, LogOut, Menu, X, KeyRound } from "lucide-react";
-import { getUserName, isAdmin, removeToken } from "@/lib/auth";
+import { getUserName, removeToken } from "@/lib/auth";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
 
@@ -23,7 +22,6 @@ export default function AdminNavbar({
   const router = useRouter();
   const pathname = usePathname();
   const [userName, setUserName] = useState("");
-  const [userIsAdmin, setUserIsAdmin] = useState(false);
 
   // Self password change modal state
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
@@ -34,7 +32,6 @@ export default function AdminNavbar({
 
   useEffect(() => {
     setUserName(getUserName() || "Staff Member");
-    setUserIsAdmin(isAdmin());
   }, []);
 
   const currentLabel =
@@ -101,11 +98,8 @@ export default function AdminNavbar({
 
         <div className="flex items-center gap-2">
           {userName && (
-            <div className="hidden md:flex items-center gap-2 mr-2">
+            <div className="hidden md:flex items-center mr-2">
               <span className="text-xs text-foreground font-medium">{userName}</span>
-              <Badge tone={userIsAdmin ? "primary" : "info"}>
-                {userIsAdmin ? "Admin & Teacher" : "Teacher"}
-              </Badge>
             </div>
           )}
 

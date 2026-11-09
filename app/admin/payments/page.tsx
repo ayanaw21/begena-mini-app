@@ -17,6 +17,7 @@ import {
   CheckCircle2,
   Clock,
   XCircle,
+  Building2,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { Payment, Student, Program, Section } from "@/types";
@@ -55,6 +56,16 @@ export default function PaymentsPage() {
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState<string | null>(null);
 
+  // Bank Account Settings state
+  const [bankModalOpen, setBankModalOpen] = useState(false);
+  const [bankForm, setBankForm] = useState({
+    bankName: "Commercial Bank of Ethiopia (CBE)",
+    accountName: "Ayanaw Mengesha and/or Motuma Kidanu",
+    accountNumber: "1000720480337",
+    instructions: "ወርሃዊ የተማሪ ክፍያ ወደ የሚከተለው የባንክ አካውንት ያስተላልፉ።",
+  });
+  const [isSavingBank, setIsSavingBank] = useState(false);
+
   const ethiopianMonths = useMemo(
     () => [
       { value: "October", label: "ጥቅምት (October)" },
@@ -74,17 +85,26 @@ export default function PaymentsPage() {
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
 
-      const [payRes, studRes, progRes, secRes] = await Promise.all([
+      const [payRes, studRes, progRes, secRes, settingsRes] = await Promise.all([
         api.get("/payments", { headers }).catch(() => ({ data: { payments: [] } })),
         api.get("/students", { headers }).catch(() => ({ data: { students: [] } })),
         api.get("/programs").catch(() => ({ data: { programs: [] } })),
         api.get("/sections").catch(() => ({ data: { sections: [] } })),
+        api.get("/payments/settings").catch(() => ({ data: { settings: null } })),
       ]);
 
       setPayments(payRes.data.payments || []);
       setStudents(studRes.data.students || []);
       setPrograms(progRes.data.programs || []);
       setSections(secRes.data.sections || []);
+      if (settingsRes.data?.settings) {
+        setBankForm({
+          bankName: settingsRes.data.settings.bankName || "",
+          accountName: settingsRes.data.settings.accountName || "",
+          accountNumber: settingsRes.data.settings.accountNumber || "",
+          instructions: settingsRes.data.settings.instructions || "",
+        });
+      }
     } catch (err) {
       console.error(err);
       toast.error("የክፍያ መረጃዎችን ማምጣት አልተቻለም");
@@ -296,13 +316,46 @@ export default function PaymentsPage() {
     }
   };
 
+  const handleSaveBankSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!bankForm.accountNumber || !bankForm.accountName) {
+      toast.error("እባክዎ የአካውንት ስም እና ቁጥር ያስገቡ");
+      return;
+    }
+    setIsSavingBank(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await api.put("/payments/settings", bankForm, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      toast.success(res.data?.message || "የባንክ አካውንት መረጃ በተሳካ ሁኔታ ተስተካክሏል");
+      setBankModalOpen(false);
+    } catch (err: unknown) {
+      const apiErr = err as { response?: { data?: { message?: string } } };
+      toast.error(apiErr.response?.data?.message || "የባንክ አካውንት ማስተካከል አልተቻለም");
+    } finally {
+      setIsSavingBank(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="የክፍያ ማስተዳደሪያ"
         description="የተማሪዎች ወርሃዊ ክፍያ ሁኔታና ዝርዝር መከታተያ"
         action={
-          <div className="bg-surface inline-flex rounded-lg border border-white/10 p-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setBankModalOpen(true)}
+              className="border-white/10 hover:border-primary/40 text-xs sm:text-sm flex items-center gap-1.5 cursor-pointer shadow-sm"
+            >
+              <Building2 size={14} className="text-primary" />
+              <span>የባንክ ሂሳብ</span>
+            </Button>
+            <div className="bg-surface inline-flex rounded-lg border border-white/10 p-1">
             {[
               {
                 id: "roster" as const,
@@ -324,6 +377,7 @@ export default function PaymentsPage() {
                 {tab.label}
               </button>
             ))}
+            </div>
           </div>
         }
       />
@@ -792,6 +846,95 @@ export default function PaymentsPage() {
             </dl>
           </div>
         )}
+      </Modal>
+
+      {/* Dynamic Bank Account Settings Modal */}
+      <Modal
+        isOpen={bankModalOpen}
+        onClose={() => setBankModalOpen(false)}
+        title="የተማሪ ክፍያ መቀበያ ባንክ ሂሳብ"
+        className="max-w-lg"
+      >
+        <form onSubmit={handleSaveBankSettings} className="space-y-4">
+          <p className="text-xs text-muted-foreground">
+            ተማሪዎች የወርሃዊ ክፍያ ደረሰኝ ሲያስገቡ የሚያዩት ይፋዊ የባንክ አካውንት መረጃ። አዲስ ወቅት ሲመጣ እዚህ መቀየር ይችላሉ።
+          </p>
+
+          <div>
+            <label className="text-xs font-medium text-foreground block mb-1">
+              የባንኩ ስም (Bank Name) *
+            </label>
+            <input
+              type="text"
+              required
+              value={bankForm.bankName}
+              onChange={(e) => setBankForm({ ...bankForm, bankName: e.target.value })}
+              placeholder="e.g. Commercial Bank of Ethiopia (CBE)"
+              className="w-full h-10 px-3 rounded-lg bg-background border border-input text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-foreground block mb-1">
+              የአካውንት ባለቤት ስም (Account Holder Name) *
+            </label>
+            <input
+              type="text"
+              required
+              value={bankForm.accountName}
+              onChange={(e) => setBankForm({ ...bankForm, accountName: e.target.value })}
+              placeholder="e.g. Ayanaw Mengesha and/or Motuma Kidanu"
+              className="w-full h-10 px-3 rounded-lg bg-background border border-input text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-foreground block mb-1">
+              የአካውንት ቁጥር (Account Number) *
+            </label>
+            <input
+              type="text"
+              required
+              value={bankForm.accountNumber}
+              onChange={(e) => setBankForm({ ...bankForm, accountNumber: e.target.value })}
+              placeholder="e.g. 1000720480337"
+              className="w-full h-10 px-3 rounded-lg bg-background border border-input text-foreground font-mono text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-foreground block mb-1">
+              መመሪያ ወይም ማስታወሻ (Instructions)
+            </label>
+            <textarea
+              rows={2}
+              value={bankForm.instructions}
+              onChange={(e) => setBankForm({ ...bankForm, instructions: e.target.value })}
+              placeholder="ወርሃዊ የተማሪ ክፍያ ወደ የሚከተለው የባንክ አካውንት ያስተላልፉ።"
+              className="w-full p-2.5 rounded-lg bg-background border border-input text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-white/10">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setBankModalOpen(false)}
+              disabled={isSavingBank}
+            >
+              ሰርዝ
+            </Button>
+            <Button
+              type="submit"
+              size="sm"
+              disabled={isSavingBank}
+              className="bg-primary text-primary-foreground font-semibold"
+            >
+              {isSavingBank ? "በማስቀመጥ ላይ..." : "አስቀምጥ"}
+            </Button>
+          </div>
+        </form>
       </Modal>
     </div>
   );

@@ -14,8 +14,9 @@ import { Field, PageHeader } from "@/components/ui/page";
 import CustomSelect from "@/components/ui/custom-select";
 import { siteImages } from "@/lib/images";
 import { isAdmin } from "@/lib/auth";
+import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
-import { Upload, Download, FileSpreadsheet } from "lucide-react";
+import { Upload, Download, FileSpreadsheet, Archive, UserCheck, Users } from "lucide-react";
 
 type AcademicStatus = "Active" | "Graduated" | "Suspended" | "Warning";
 
@@ -166,6 +167,8 @@ export default function StudentsPage() {
   const [filterProgram, setFilterProgram] = useState("");
   const [filterBatch, setFilterBatch] = useState("");
   const [filterSection, setFilterSection] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [studentViewMode, setStudentViewMode] = useState<"active" | "archived" | "all">("active");
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
@@ -499,6 +502,16 @@ export default function StudentsPage() {
     }
   };
 
+  const activeCount = useMemo(
+    () => students.filter((s) => s.academicStatus === "Active" || !s.academicStatus).length,
+    [students]
+  );
+
+  const archivedCount = useMemo(
+    () => students.filter((s) => s.academicStatus === "Graduated").length,
+    [students]
+  );
+
   const filteredStudents = useMemo(() => {
     return students.filter((s) => {
       const uIdStr = s.studentId || "";
@@ -516,15 +529,45 @@ export default function StudentsPage() {
       const matchesBatch = filterBatch ? s.batch === filterBatch : true;
       const matchesSection = filterSection ? s.section === filterSection : true;
 
-      return matchesSearch && matchesProgram && matchesBatch && matchesSection;
+      const matchesViewMode =
+        studentViewMode === "active"
+          ? s.academicStatus === "Active" || !s.academicStatus
+          : studentViewMode === "archived"
+          ? s.academicStatus === "Graduated"
+          : true;
+
+      const matchesStatus = filterStatus ? s.academicStatus === filterStatus : true;
+
+      return (
+        matchesSearch &&
+        matchesProgram &&
+        matchesBatch &&
+        matchesSection &&
+        matchesViewMode &&
+        matchesStatus
+      );
     });
-  }, [students, searchQuery, filterProgram, filterBatch, filterSection]);
+  }, [
+    students,
+    searchQuery,
+    filterProgram,
+    filterBatch,
+    filterSection,
+    studentViewMode,
+    filterStatus,
+  ]);
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="የተማሪዎች ማህደር"
-        description={`${filteredStudents.length} ተማሪዎች ተዘርዝረዋል`}
+        description={`${filteredStudents.length} ተማሪዎች ተዘርዝረዋል ${
+          studentViewMode === "archived"
+            ? "· የቀድሞ ማህደር (Archived)"
+            : studentViewMode === "active"
+            ? "· አሁን ያሉ ተማሪዎች (Active)"
+            : "· ሁሉም ተማሪዎች"
+        }`}
         action={
           !isAdminUser ? (
             <Badge tone="info">የማየት ብቻ ፈቃድ</Badge>
@@ -705,12 +748,57 @@ export default function StudentsPage() {
         }
       />
 
+      {/* View Mode Toggle: Active Students vs Archive / Graduated vs All */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="bg-surface inline-flex rounded-lg border border-white/10 p-1">
+          <button
+            type="button"
+            onClick={() => setStudentViewMode("active")}
+            className={cn(
+              "cursor-pointer rounded-md px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5",
+              studentViewMode === "active"
+                ? "bg-primary text-primary-foreground font-semibold"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <UserCheck size={14} />
+            <span>አሁን ያሉ ({activeCount})</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setStudentViewMode("archived")}
+            className={cn(
+              "cursor-pointer rounded-md px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5",
+              studentViewMode === "archived"
+                ? "bg-primary text-primary-foreground font-semibold"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Archive size={14} />
+            <span>የቀድሞ ማህደር ({archivedCount})</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setStudentViewMode("all")}
+            className={cn(
+              "cursor-pointer rounded-md px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5",
+              studentViewMode === "all"
+                ? "bg-primary text-primary-foreground font-semibold"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Users size={14} />
+            <span>ሁሉም ({students.length})</span>
+          </button>
+        </div>
+      </div>
+
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
         <input
           type="search"
-          placeholder="Search by name, ID or phone..."
-          className="min-w-60 flex-1"
+          placeholder="በስም፣ በ ID ወይም በስልክ ፈልግ..."
+          className="min-w-60 flex-1 text-sm"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
@@ -719,7 +807,7 @@ export default function StudentsPage() {
           value={filterProgram}
           onChange={(val) => setFilterProgram(val)}
           options={[
-            { value: "", label: "All programs" },
+            { value: "", label: "ሁሉም ፕሮግራሞች" },
             ...programs.map((p) => ({
               value: p.name,
               label: `${p.name} (${p.code})`,
@@ -731,7 +819,7 @@ export default function StudentsPage() {
           value={filterBatch}
           onChange={(val) => setFilterBatch(val)}
           options={[
-            { value: "", label: "All batches" },
+            { value: "", label: "ሁሉም ባቾች" },
             ...uniqueBatches.map((batch) => ({
               value: batch,
               label: batch,
@@ -743,13 +831,27 @@ export default function StudentsPage() {
           value={filterSection}
           onChange={(val) => setFilterSection(val)}
           options={[
-            { value: "", label: "All sections" },
+            { value: "", label: "ሁሉም ሴክሽኖች" },
             ...uniqueSections.map((sec) => ({
               value: sec,
               label: sec,
             })),
           ]}
         />
+        {studentViewMode === "all" && (
+          <CustomSelect
+            className="w-auto min-w-[140px]"
+            value={filterStatus}
+            onChange={(val) => setFilterStatus(val)}
+            options={[
+              { value: "", label: "ሁሉም ሁኔታዎች" },
+              { value: "Active", label: "Active" },
+              { value: "Graduated", label: "Graduated" },
+              { value: "Suspended", label: "Suspended" },
+              { value: "Warning", label: "Warning" },
+            ]}
+          />
+        )}
       </div>
 
       <DataTable
