@@ -25,29 +25,29 @@ interface AdminSidebarProps {
 export const adminMenu = [
   {
     heading: null,
-    items: [{ href: "/admin", label: "ዳሽቦርድ (Dashboard)", icon: LayoutDashboard }],
+    items: [{ href: "/admin", label: "Dashboard", icon: LayoutDashboard }],
   },
   {
-    heading: "የትምህርት ክፍል",
+    heading: "Academics",
     items: [
-      { href: "/admin/programs", label: "ፕሮግራሞች", icon: BookOpen },
-      { href: "/admin/sections", label: "ክፍሎች (Sections)", icon: Layers },
-      { href: "/admin/schedules", label: "የትምህርት ሰሌዳ", icon: CalendarDays },
+      { href: "/admin/programs", label: "Programs", icon: BookOpen },
+      { href: "/admin/sections", label: "Sections", icon: Layers },
+      { href: "/admin/schedules", label: "Class Schedules", icon: CalendarDays },
     ],
   },
   {
-    heading: "ተማሪዎችና መምህራን",
+    heading: "People",
     items: [
-      { href: "/admin/students", label: "የተማሪዎች ማህደር", icon: Users },
-      { href: "/admin/staff", label: "መምህራንና ሠራተኞች", icon: UserCog },
-      { href: "/admin/attendance", label: "የአቴንዳንስ ክትትል", icon: ClipboardCheck },
+      { href: "/admin/students", label: "Students", icon: Users },
+      { href: "/admin/staff", label: "Staff & Teachers", icon: UserCog },
+      { href: "/admin/attendance", label: "Attendance", icon: ClipboardCheck },
     ],
   },
   {
-    heading: "አስተዳደር",
+    heading: "Operations",
     items: [
-      { href: "/admin/payments", label: "የክፍያ ማስተዳደሪያ", icon: CreditCard },
-      { href: "/admin/announcements", label: "ማስታወቂያዎች", icon: Megaphone },
+      { href: "/admin/payments", label: "Payments", icon: CreditCard },
+      { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
     ],
   },
 ];
@@ -97,10 +97,10 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
               </span>
               <div className="flex flex-col">
                 <span className="text-foreground text-sm font-semibold tracking-wide">
-                  የበገና ንዑስ ክፍል
+                  Begena Sub-dept
                 </span>
                 <span className="text-muted-foreground text-[11px]">
-                  {isTeacherUser ? "የመምህራን ፖርታል" : "የአስተዳደር ክፍል"}
+                  {isTeacherUser ? "Teacher Portal" : "Admin Portal"}
                 </span>
               </div>
             </Link>
