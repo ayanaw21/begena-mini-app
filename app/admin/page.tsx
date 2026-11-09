@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getValidToken, isTeacher, getUserName } from "@/lib/auth";
-import { Badge } from "@/components/ui/badge";
 import PhotoPanel from "@/components/ui/photo-panel";
 import Figure from "@/components/ui/figure";
 import { siteImages } from "@/lib/images";
@@ -152,12 +151,6 @@ export default function AdminHome() {
         <h1 className="mt-1.5 text-2xl font-bold sm:text-3xl text-foreground">
           Welcome back, {userName}
         </h1>
-        <div className="mt-2 flex items-center gap-2">
-          <Badge tone={userIsTeacher ? "info" : "primary"}>
-            {userIsTeacher ? "Teacher" : "Admin & Teacher"}
-          </Badge>
-          <Badge tone="success">Active</Badge>
-        </div>
         <p className="text-white/80 max-w-2xl text-xs sm:text-sm mt-1">
           Manage training programs, student registries, teacher assignments, payments, and attendance all in one place.
         </p>
