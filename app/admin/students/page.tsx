@@ -15,6 +15,7 @@ import CustomSelect from "@/components/ui/custom-select";
 import { siteImages } from "@/lib/images";
 import { isAdmin } from "@/lib/auth";
 import toast from "react-hot-toast";
+import { Upload, Download, FileSpreadsheet } from "lucide-react";
 
 type AcademicStatus = "Active" | "Graduated" | "Suspended" | "Warning";
 
@@ -33,6 +34,114 @@ const statusTone = (status?: string) =>
       : status === "Graduated"
         ? "info"
         : "success";
+
+interface ParsedStudentRow {
+  studentId: string;
+  fullName: string;
+  gender?: string;
+  department?: string;
+  batch?: string;
+  phoneNumber?: string;
+  section?: string;
+  program?: string;
+  error?: string;
+}
+
+function parseStudentCSV(
+  text: string,
+  defaultProgram: string,
+  defaultBatch: string,
+  defaultSection: string
+): ParsedStudentRow[] {
+  const lines = text
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0);
+
+  if (lines.length < 2) return [];
+
+  // Determine delimiter: tab, semicolon, or comma
+  const firstLine = lines[0];
+  let delimiter = ",";
+  if (firstLine.includes("\t")) delimiter = "\t";
+  else if (firstLine.includes(";") && !firstLine.includes(",")) delimiter = ";";
+
+  const parseLine = (line: string): string[] => {
+    const result: string[] = [];
+    let current = "";
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === delimiter && !inQuotes) {
+        result.push(current.trim());
+        current = "";
+      } else {
+        current += char;
+      }
+    }
+    result.push(current.trim());
+    return result;
+  };
+
+  const headers = parseLine(lines[0]).map((h) =>
+    h.toLowerCase().replace(/['"]/g, "").trim()
+  );
+
+  const findIndex = (aliases: string[]) =>
+    headers.findIndex((h) => aliases.some((a) => h === a || h.includes(a)));
+
+  const idIdx = findIndex(["studentid", "student_id", "idno", "id no", "id", "መለያ", "no"]);
+  const nameIdx = findIndex(["fullname", "full name", "name", "ስም"]);
+  const genderIdx = findIndex(["gender", "sex", "ፆታ"]);
+  const deptIdx = findIndex(["department", "dept", "ክፍል"]);
+  const batchIdx = findIndex(["batch", "year", "ዓመት"]);
+  const phoneIdx = findIndex(["phonenumber", "phone number", "phone", "phoneno", "phone no", "ስልክ", "ቴሌፎን"]);
+  const sectionIdx = findIndex(["section", "ሴክሽን"]);
+
+  const rows: ParsedStudentRow[] = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const cols = parseLine(lines[i]);
+    if (cols.length === 0 || cols.every((c) => !c)) continue;
+
+    const studentId = idIdx >= 0 && cols[idIdx] ? cols[idIdx].replace(/['"]/g, "").trim() : "";
+    const fullName = nameIdx >= 0 && cols[nameIdx] ? cols[nameIdx].replace(/['"]/g, "").trim() : "";
+    const gender = genderIdx >= 0 && cols[genderIdx] ? cols[genderIdx].replace(/['"]/g, "").trim().toUpperCase() : "";
+    const department = deptIdx >= 0 && cols[deptIdx] ? cols[deptIdx].replace(/['"]/g, "").trim() : "";
+    const batch = batchIdx >= 0 && cols[batchIdx] ? cols[batchIdx].replace(/['"]/g, "").trim() : defaultBatch;
+    const phoneNumber = phoneIdx >= 0 && cols[phoneIdx] ? cols[phoneIdx].replace(/['"]/g, "").trim() : "";
+    const rowSection = sectionIdx >= 0 && cols[sectionIdx] ? cols[sectionIdx].replace(/['"]/g, "").trim() : "";
+
+    const assignedSection = defaultSection || rowSection || "Unassigned";
+
+    if (!studentId && !fullName) {
+      continue;
+    }
+
+    let error: string | undefined;
+    if (!studentId) {
+      error = "Missing Student ID";
+    } else if (!fullName) {
+      error = "Missing Full Name";
+    }
+
+    rows.push({
+      studentId,
+      fullName,
+      gender,
+      department: department || "General",
+      batch: batch || defaultBatch,
+      phoneNumber: phoneNumber || "0900000000",
+      section: assignedSection,
+      program: defaultProgram,
+      error,
+    });
+  }
+
+  return rows;
+}
 
 export default function StudentsPage() {
   const [isAdminUser, setIsAdminUser] = useState(false);
@@ -69,6 +178,15 @@ export default function StudentsPage() {
   const [gradSelectedIds, setGradSelectedIds] = useState<string[]>([]);
   const [gradNonGradStatus, setGradNonGradStatus] = useState<"Suspended" | "Warning">("Suspended");
   const [gradSubmitting, setGradSubmitting] = useState(false);
+
+  // CSV Bulk Import State
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [importProgram, setImportProgram] = useState("Advance በገና");
+  const [importSection, setImportSection] = useState("");
+  const [importBatch, setImportBatch] = useState("Batch 3");
+  const [importFileText, setImportFileText] = useState("");
+  const [parsedStudents, setParsedStudents] = useState<ParsedStudentRow[]>([]);
+  const [isImporting, setIsImporting] = useState(false);
 
   const fetchMetadata = useCallback(async () => {
     try {
@@ -288,6 +406,99 @@ export default function StudentsPage() {
     }
   };
 
+  const importAvailableSections = useMemo(() => {
+    return getSectionsForProgram(importProgram);
+  }, [getSectionsForProgram, importProgram]);
+
+  useEffect(() => {
+    if (importProgram && programs.length > 0) {
+      const match = programs.find((pr) => pr.name === importProgram);
+      if (match?.currentBatch) {
+        setImportBatch(match.currentBatch);
+      }
+    }
+  }, [importProgram, programs]);
+
+  useEffect(() => {
+    if (importFileText) {
+      const parsed = parseStudentCSV(
+        importFileText,
+        importProgram,
+        importBatch,
+        importSection
+      );
+      setParsedStudents(parsed);
+    } else {
+      setParsedStudents([]);
+    }
+  }, [importFileText, importProgram, importBatch, importSection]);
+
+  const handleDownloadTemplate = () => {
+    const csvContent =
+      "Id No,Name,Gender,Department,Batch,Phone No\n" +
+      "01/03,Abinguss Solomon,M,ARCH,4,0904159910\n" +
+      "02/03,Addisalem Mengestu,F,SWE,4,0967395496\n" +
+      "03/03,Bezawit Sisay,F,BIO,3,0941118018\n";
+
+    const blob = new Blob(["\uFEFF" + csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "student_import_template.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleBulkImport = async () => {
+    if (parsedStudents.length === 0) {
+      toast.error("ፋይል አልተመረጠም ወይም ተማሪ አልተገኘም (No students to import)");
+      return;
+    }
+    const hasFatal = parsedStudents.some((s) => s.error);
+    if (hasFatal) {
+      toast.error(
+        "እባክዎ በስህተት የታዩትን ተማሪዎች መረጃ ያስተካክሉ (Please fix rows with errors)"
+      );
+      return;
+    }
+
+    setIsImporting(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await api.post(
+        "/students/bulk",
+        {
+          students: parsedStudents,
+          program: importProgram,
+          batch: importBatch,
+          section: importSection,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      toast.success(res.data.message || "ተማሪዎች በተሳካ ሁኔታ ተመዝግበዋል!");
+      setImportModalOpen(false);
+      setImportFileText("");
+      setParsedStudents([]);
+      fetchStudents();
+    } catch (err: unknown) {
+      if (err instanceof Error && "response" in err) {
+        const apiErr = err as { response?: { data?: { message?: string } } };
+        toast.error(
+          apiErr.response?.data?.message || "ተማሪዎችን ማስገባት አልተቻለም"
+        );
+      } else {
+        toast.error("ተማሪዎችን ማስገባት አልተቻለም");
+      }
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   const filteredStudents = useMemo(() => {
     return students.filter((s) => {
       const uIdStr = s.studentId || "";
@@ -331,6 +542,20 @@ export default function StudentsPage() {
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 text-xs sm:text-sm font-medium transition cursor-pointer shadow-sm"
               >
                 🎓 Graduate Batch
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (programs.length > 0 && !programs.some((p) => p.name === importProgram)) {
+                    setImportProgram(programs[0].name);
+                  }
+                  setImportModalOpen(true);
+                }}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 text-xs sm:text-sm font-medium transition cursor-pointer shadow-sm"
+              >
+                <Upload size={15} />
+                <span>ፋይል አስገባ (Import CSV)</span>
               </button>
 
               <ModalForm
@@ -894,6 +1119,224 @@ export default function StudentsPage() {
                   </label>
                 );
               })}
+            </div>
+          )}
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={importModalOpen}
+        onClose={() => {
+          if (!isImporting) {
+            setImportModalOpen(false);
+            setImportFileText("");
+            setParsedStudents([]);
+          }
+        }}
+        title="📥 የተማሪዎችን መረጃ በፋይል አስገባ (Bulk Import Students)"
+        description="Select the Program and Section first, then upload your CSV/TXT file. Students will automatically receive these assignments."
+        className="max-w-3xl"
+        footer={
+          <div className="flex w-full items-center justify-between gap-3">
+            <div className="text-xs text-muted-foreground">
+              {parsedStudents.length > 0 ? (
+                <span className="text-emerald-400 font-medium">
+                  {parsedStudents.length} ተማሪዎች ተለይተዋል (Ready to import)
+                </span>
+              ) : (
+                <span>እባክዎ ፋይል ይምረጡ</span>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setImportModalOpen(false);
+                  setImportFileText("");
+                  setParsedStudents([]);
+                }}
+                disabled={isImporting}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="default"
+                onClick={handleBulkImport}
+                disabled={
+                  isImporting ||
+                  parsedStudents.length === 0 ||
+                  parsedStudents.some((s) => s.error)
+                }
+              >
+                {isImporting
+                  ? "በማስገባት ላይ..."
+                  : `አስገባ (Import ${parsedStudents.length} Students)`}
+              </Button>
+            </div>
+          </div>
+        }
+      >
+        <div className="space-y-4 pt-2">
+          {/* Step 1: Pre-selection of Program, Section, and Batch */}
+          <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3.5 space-y-3">
+            <div className="text-xs font-semibold text-primary uppercase tracking-wider">
+              1. ፕሮግራም እና ክፍል ይምረጡ (Select Program & Section)
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <Field label="ፕሮግራም (Program)" htmlFor="importProgSelect" required>
+                <CustomSelect
+                  id="importProgSelect"
+                  value={importProgram}
+                  onChange={(val) => {
+                    setImportProgram(val);
+                    const matchingProg = programs.find((p) => p.name === val);
+                    if (matchingProg?.currentBatch) {
+                      setImportBatch(matchingProg.currentBatch);
+                    }
+                  }}
+                  options={programs.map((p) => ({
+                    value: p.name,
+                    label: `${p.name} (${p.code})`,
+                  }))}
+                />
+              </Field>
+
+              <Field
+                label="ክፍል (Section)"
+                htmlFor="importSecSelect"
+                hint="ይህንን ከመረጡ በፋይሉ መጻፍ አያስፈልግም"
+              >
+                <CustomSelect
+                  id="importSecSelect"
+                  value={importSection}
+                  onChange={(val) => setImportSection(val)}
+                  options={[
+                    { value: "", label: "ከፋይሉ ራስ-ሰር ፈልግ (From CSV)" },
+                    ...importAvailableSections.map((s) => ({
+                      value: s.section,
+                      label: s.section,
+                    })),
+                  ]}
+                />
+              </Field>
+
+              <Field label="ዙር (Batch)" htmlFor="importBatchInput" required>
+                <input
+                  id="importBatchInput"
+                  value={importBatch}
+                  onChange={(e) => setImportBatch(e.target.value)}
+                  placeholder="e.g. Batch 3"
+                />
+              </Field>
+            </div>
+          </div>
+
+          {/* Step 2: File Upload Area */}
+          <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3.5 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="text-xs font-semibold text-primary uppercase tracking-wider">
+                2. CSV ወይም TXT ፋይል ይምረጡ (Upload File)
+              </div>
+              <button
+                type="button"
+                onClick={handleDownloadTemplate}
+                className="inline-flex items-center gap-1 text-xs text-amber-300 hover:underline cursor-pointer"
+              >
+                <Download size={13} />
+                <span>ምሳሌ CSV አውርድ (Sample Template)</span>
+              </button>
+            </div>
+
+            <div className="relative border-2 border-dashed border-white/15 hover:border-primary/50 transition-colors rounded-xl p-5 text-center cursor-pointer bg-black/20">
+              <input
+                type="file"
+                accept=".csv,.txt,.tsv"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                      const text = event.target?.result as string;
+                      setImportFileText(text || "");
+                    };
+                    reader.readAsText(file, "UTF-8");
+                  }
+                }}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+              <div className="flex flex-col items-center justify-center gap-2">
+                <FileSpreadsheet className="text-primary h-8 w-8" />
+                <p className="text-sm font-medium text-foreground">
+                  ፋይሉን እዚህ ይጎትቱ ወይም ለመምረጥ ጠቅ ያድርጉ
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  ደረጃውን የጠበቀ CSV (.csv) ወይም Tab-separated (.txt) ይደግፋል
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Step 3: Preview of Parsed Students */}
+          {parsedStudents.length > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-semibold text-muted-foreground uppercase tracking-wider">
+                  ቅድመ-ዕይታ (Preview - {parsedStudents.length} Students):
+                </span>
+                <span className="text-muted-foreground">
+                  ክፍል፦ <strong className="text-primary">{importSection || "From CSV"}</strong> | ፕሮግራም፦ <strong className="text-primary">{importProgram}</strong>
+                </span>
+              </div>
+
+              <div className="max-h-60 overflow-y-auto border border-white/10 rounded-lg">
+                <table className="w-full text-xs text-left">
+                  <thead className="bg-white/5 sticky top-0 border-b border-white/10 text-muted-foreground">
+                    <tr>
+                      <th className="p-2 w-10 text-center">#</th>
+                      <th className="p-2">መለያ (ID)</th>
+                      <th className="p-2">ሙሉ ስም (Full Name)</th>
+                      <th className="p-2">ፆታ</th>
+                      <th className="p-2">Department</th>
+                      <th className="p-2">ዙር (Batch)</th>
+                      <th className="p-2">ስልክ</th>
+                      <th className="p-2">ክፍል (Section)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {parsedStudents.map((st, idx) => (
+                      <tr
+                        key={idx}
+                        className={
+                          st.error ? "bg-red-500/10" : "hover:bg-white/[0.02]"
+                        }
+                      >
+                        <td className="p-2 text-center text-muted-foreground">
+                          {idx + 1}
+                        </td>
+                        <td className="p-2 font-mono font-medium text-primary">
+                          {st.studentId || (
+                            <span className="text-red-400">Missing</span>
+                          )}
+                        </td>
+                        <td className="p-2 font-medium">
+                          {st.fullName || (
+                            <span className="text-red-400">Missing</span>
+                          )}
+                        </td>
+                        <td className="p-2">{st.gender || "-"}</td>
+                        <td className="p-2">{st.department}</td>
+                        <td className="p-2">{st.batch}</td>
+                        <td className="p-2 font-mono">{st.phoneNumber}</td>
+                        <td className="p-2">
+                          <span className="px-1.5 py-0.5 rounded bg-white/10 font-medium">
+                            {st.section}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>
