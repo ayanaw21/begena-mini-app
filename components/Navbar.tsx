@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import { Button } from "./ui/button";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -48,13 +49,25 @@ const Navbar = () => {
   return (
     <header className="bg-background/85 sticky top-0 z-50 border-b border-white/5 backdrop-blur">
       <PageContainer className="flex h-14 items-center justify-between gap-4">
-        <Link href="/" className="flex items-baseline gap-2">
-          <span className="text-primary text-lg font-bold tracking-wide">
-            በገና
-          </span>
-          <span className="text-muted-foreground hidden text-xs sm:inline">
-            ንዑስ ክፍል
-          </span>
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <div className="relative h-9 w-6 shrink-0 flex items-center justify-center">
+            <Image
+              src="/logo.jpg"
+              alt="የበገና አርማ"
+              width={28}
+              height={44}
+              className="h-full w-auto object-contain transition-transform duration-200 group-hover:scale-105"
+              priority
+            />
+          </div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-primary text-lg font-bold tracking-wide">
+              በገና
+            </span>
+            <span className="text-muted-foreground hidden text-xs sm:inline">
+              ንዑስ ክፍል
+            </span>
+          </div>
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">

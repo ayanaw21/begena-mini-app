@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import React from "react";
 import {
@@ -92,9 +93,16 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
         <div className="flex flex-1 flex-col min-h-0">
           <div className="flex h-16 shrink-0 items-center justify-between border-b border-white/10 px-5">
             <Link href="/admin" className="flex items-center gap-2.5">
-              <span className="flex size-8 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 text-primary font-bold text-sm">
-                በ
-              </span>
+              <div className="relative flex h-10 w-7 items-center justify-center shrink-0">
+                <Image
+                  src="/logo.jpg"
+                  alt="Begena Logo"
+                  width={28}
+                  height={44}
+                  className="h-full w-auto object-contain"
+                  priority
+                />
+              </div>
               <div className="flex flex-col">
                 <span className="text-foreground text-sm font-semibold tracking-wide">
                   Begena Sub-dept

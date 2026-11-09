@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import PhotoPanel from "@/components/ui/photo-panel";
@@ -60,9 +61,21 @@ export default function AdminLogin() {
       <div className="w-full max-w-sm">
         <Link
           href="/"
-          className="text-primary mb-8 block text-center text-lg font-bold tracking-wide"
+          className="mb-6 flex flex-col items-center justify-center gap-1.5 group"
         >
-          በገና
+          <div className="relative h-12 w-8 shrink-0 flex items-center justify-center">
+            <Image
+              src="/logo.jpg"
+              alt="የበገና አርማ"
+              width={32}
+              height={50}
+              className="h-full w-auto object-contain transition-transform duration-200 group-hover:scale-105"
+              priority
+            />
+          </div>
+          <span className="text-primary text-xl font-bold tracking-wide">
+            በገና
+          </span>
         </Link>
 
         <PhotoPanel src={siteImages.authPanel} sizes="(max-width: 640px) 100vw, 420px" priority>
