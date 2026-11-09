@@ -171,16 +171,15 @@ export default function ProgramsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="አስተዳዳሪ ፖርታል · Admin Portal"
-        title="የስልጠና ፕሮግራሞች (Programs)"
-        description="Instrument programs, active batch cycles, and ID code prefixes."
+        title="የስልጠና ፕሮግራሞች"
+        description="የመሳሪያ ስልጠና ፕሮግራሞች እና የዙር አስተዳደር"
         action={
           !isAdminUser ? (
-            <Badge tone="info">የማየት ብቻ ፈቃድ (View Only)</Badge>
+            <Badge tone="info">የማየት ብቻ ፈቃድ</Badge>
           ) : (
             <ModalForm
-              title="Add New Program"
-              triggerText="Add Program"
+              title="አዲስ ፕሮግራም መዝግብ"
+              triggerText="አዲስ ፕሮግራም"
               onSubmit={handleCreateProgram}
               image={siteImages.adminCard1}
             >

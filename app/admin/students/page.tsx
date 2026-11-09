@@ -523,12 +523,11 @@ export default function StudentsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="አስተዳዳሪ ፖርታል · Admin Portal"
-        title="የተማሪዎች ዝርዝር (Students Registry)"
-        description={`${filteredStudents.length} of ${students.length} students shown.`}
+        title="የተማሪዎች ማህደር"
+        description={`${filteredStudents.length} ተማሪዎች ተዘርዝረዋል`}
         action={
           !isAdminUser ? (
-            <Badge tone="info">የማየት ብቻ ፈቃድ (View Only)</Badge>
+            <Badge tone="info">የማየት ብቻ ፈቃድ</Badge>
           ) : (
             <div className="flex flex-wrap items-center gap-2">
               <button
@@ -539,9 +538,9 @@ export default function StudentsPage() {
                   }
                   setGradModalOpen(true);
                 }}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 text-xs sm:text-sm font-medium transition cursor-pointer shadow-sm"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 text-xs sm:text-sm font-medium transition cursor-pointer shadow-sm"
               >
-                🎓 Graduate Batch
+                <span>የምረቃ ማስተዳደሪያ</span>
               </button>
 
               <button
@@ -552,15 +551,15 @@ export default function StudentsPage() {
                   }
                   setImportModalOpen(true);
                 }}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 text-xs sm:text-sm font-medium transition cursor-pointer shadow-sm"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 text-xs sm:text-sm font-medium transition cursor-pointer shadow-sm"
               >
-                <Upload size={15} />
+                <Upload size={14} />
                 <span>ፋይል አስገባ (Import CSV)</span>
               </button>
 
               <ModalForm
-                title="Add Student"
-                triggerText="Add Student"
+                title="አዲስ ተማሪ መዝግብ"
+                triggerText="አዲስ ተማሪ"
                 onSubmit={handleCreateStudent}
                 image={siteImages.adminPhoto1}
               >

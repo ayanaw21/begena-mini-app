@@ -135,15 +135,14 @@ export default function AnnouncementsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="አስተዳዳሪ ፖርታል · Admin Portal"
-        title="የማስታወቂያ ክፍል (Announcements)"
-        description="Notices broadcast to students on the public home page."
+        title="ማስታወቂያዎች"
+        description="ለተማሪዎች የሚተላለፉ መልዕክቶችና ማሳወቂያዎች"
         action={
           !isAdminUser ? (
-            <Badge tone="info">የማየት ብቻ ፈቃድ (View Only)</Badge>
+            <Badge tone="info">የማየት ብቻ ፈቃድ</Badge>
           ) : (
             <ModalForm
-            title="Add Announcement"
+            title="አዲስ ማስታወቂያ መዝግብ"
             onSubmit={handleCreateAnnouncement}
             image={siteImages.adminAncient}
           >

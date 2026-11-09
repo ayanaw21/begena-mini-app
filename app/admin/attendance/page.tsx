@@ -272,22 +272,21 @@ export default function AttendancePage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="አስተዳዳሪ ፖርታል · Admin Portal"
-        title="የክትትል እና የውሳኔ ማዕከል (Attendance & Decisions)"
-        description="Track daily class attendance and monitor students at risk of warnings or suspension."
+        title="የአቴንዳንስ ክትትል"
+        description="የዕለት ክትትል መመዝገቢያ እና የተማሪዎች አጠቃላይ ሁኔታ"
         action={
-          <div className="bg-surface inline-flex rounded-lg border border-white/5 p-1">
+          <div className="bg-surface inline-flex rounded-lg border border-white/10 p-1">
             {[
-              { id: "daily" as const, label: "📋 Daily Sheet" },
-              { id: "summary" as const, label: "📊 Overall Status" },
+              { id: "daily" as const, label: "የዕለት ክትትል" },
+              { id: "summary" as const, label: "አጠቃላይ ሁኔታ" },
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  "cursor-pointer rounded-md px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors",
+                  "cursor-pointer rounded-md px-3.5 py-1.5 text-xs sm:text-sm font-medium whitespace-nowrap transition-colors",
                   activeTab === tab.id
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-primary text-primary-foreground font-semibold"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -300,11 +299,7 @@ export default function AttendancePage() {
 
       {activeTab === "daily" ? (
         <div className="space-y-4">
-          <PhotoPanel
-            src={siteImages.adminCard4}
-            className="relative z-20 border-white/10"
-            contentClassName="flex flex-wrap items-end gap-4 p-4 overflow-visible"
-          >
+          <div className="relative z-20 rounded-xl border border-white/10 bg-surface p-4 flex flex-wrap items-end gap-4 shadow-sm">
             <Field
               label="Section"
               htmlFor="attendanceSection"
@@ -340,36 +335,32 @@ export default function AttendancePage() {
                 disabled={savingDaily || studentRecords.length === 0}
                 className="ml-auto"
               >
-                {savingDaily ? "Saving..." : "Save Attendance"}
+                {savingDaily ? "በማስቀመጥ ላይ..." : "አቴንዳንስ መዝግብ"}
               </Button>
             )}
-          </PhotoPanel>
+          </div>
 
           {!selectedSection ? (
             <Panel>
               <EmptyState
-                title="No section selected"
-                description="Choose a section above to load its attendance sheet."
+                title="ክፍል አልተመረጠም"
+                description="የዕለት ክትትል ዝርዝር ለማየት እባክዎ ከላይ ክፍል ይምረጡ።"
               />
             </Panel>
           ) : loadingDaily ? (
             <div className="text-muted-foreground flex items-center justify-center gap-3 py-12 text-sm">
               <Loader2 size={18} className="text-primary animate-spin" />
-              Loading student roster...
+              የተማሪዎችን ዝርዝር በማምጣት ላይ...
             </div>
           ) : studentRecords.length === 0 ? (
             <Panel>
               <EmptyState
-                title="No students enrolled"
-                description={`Section "${selectedSection}" has no students yet.`}
+                title="በዚህ ክፍል የተመዘገበ ተማሪ የለም"
+                description={`በክፍል "${selectedSection}" ውስጥ ምንም ተማሪ አልተገኘም።`}
               />
             </Panel>
           ) : (
-            <PhotoPanel
-              src={siteImages.adminCard1}
-              className="border-white/10"
-              contentClassName="p-0 overflow-x-auto"
-            >
+            <div className="bg-surface overflow-hidden rounded-xl border border-white/10 shadow-sm overflow-x-auto">
               <div className="text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 border-b border-white/5 px-4 py-2.5 text-xs">
                 {attendanceOptions.map((option) => (
                   <span key={option.value} className="flex items-center gap-1.5">
@@ -421,7 +412,7 @@ export default function AttendancePage() {
                   ))}
                 </tbody>
               </table>
-            </PhotoPanel>
+            </div>
           )}
         </div>
       ) : (
@@ -458,20 +449,18 @@ export default function AttendancePage() {
                 }%`,
                 className: "text-emerald-400",
               },
-            ].map((stat, idx) => (
-              <PhotoPanel
+            ].map((stat) => (
+              <div
                 key={stat.label}
-                src={adminCardBackgrounds[idx % adminCardBackgrounds.length]}
-                className="border-white/10"
-                contentClassName="p-4"
+                className="rounded-xl border border-white/10 bg-surface p-4 shadow-sm"
               >
-                <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
+                <p className="text-muted-foreground text-xs font-medium">
                   {stat.label}
                 </p>
                 <p className={cn("mt-1.5 text-2xl font-bold", stat.className)}>
                   {stat.value}
                 </p>
-              </PhotoPanel>
+              </div>
             ))}
           </div>
 
@@ -506,21 +495,17 @@ export default function AttendancePage() {
           {loadingSummary ? (
             <div className="text-muted-foreground flex items-center justify-center gap-3 py-12 text-sm">
               <Loader2 size={18} className="text-primary animate-spin" />
-              Calculating attendance statistics...
+              በማስላት ላይ...
             </div>
           ) : summaryList.length === 0 ? (
             <Panel>
               <EmptyState
-                title="No statistics yet"
-                description="No attendance records match the selected filters."
+                title="ምንም መረጃ የለም"
+                description="ከተመረጡት ማጣሪያዎች ጋር የሚዛመድ የአቴንዳንስ መረጃ አልተገኘም።"
               />
             </Panel>
           ) : (
-            <PhotoPanel
-              src={siteImages.adminAncient}
-              className="border-white/10"
-              contentClassName="p-0 overflow-x-auto"
-            >
+            <div className="bg-surface overflow-hidden rounded-xl border border-white/10 shadow-sm overflow-x-auto">
               <table className="w-full min-w-[760px] text-left text-sm">
                 <thead>
                   <tr className="text-muted-foreground border-b border-white/5 text-xs tracking-wider uppercase">
@@ -633,7 +618,7 @@ export default function AttendancePage() {
                   ))}
                 </tbody>
               </table>
-            </PhotoPanel>
+            </div>
           )}
         </div>
       )}

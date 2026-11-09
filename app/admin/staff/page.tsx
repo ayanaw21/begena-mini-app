@@ -157,13 +157,12 @@ export default function StaffPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="አስተዳዳሪ ፖርታል · Admin Portal"
-        title="አስተማሪዎች እና አባላት (Staff & Instructors)"
-        description="Admins and teachers who can sign in to the panel."
+        title="መምህራን እና ሠራተኞች"
+        description="የአስተዳዳሪዎችና የመምህራን ዝርዝር"
         action={
           <ModalForm
-            title="Create New Staff Member"
-            triggerText="Add Staff"
+            title="አዲስ መምህር / ሠራተኛ መዝግብ"
+            triggerText="አዲስ መምህር / ሠራተኛ"
             onSubmit={handleCreateStaff}
             image={siteImages.adminTeacher}
           >

@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import Image from "next/image";
 import React from "react";
 import {
   BookOpen,
@@ -15,7 +14,6 @@ import {
   Users,
 } from "lucide-react";
 
-import { siteImages } from "@/lib/images";
 import { cn } from "@/lib/utils";
 import { isTeacher } from "@/lib/auth";
 
@@ -27,29 +25,29 @@ interface AdminSidebarProps {
 export const adminMenu = [
   {
     heading: null,
-    items: [{ href: "/admin", label: "Dashboard", icon: LayoutDashboard }],
+    items: [{ href: "/admin", label: "ዳሽቦርድ (Dashboard)", icon: LayoutDashboard }],
   },
   {
-    heading: "Academics",
+    heading: "የትምህርት ክፍል",
     items: [
-      { href: "/admin/programs", label: "Programs", icon: BookOpen },
-      { href: "/admin/sections", label: "Sections", icon: Layers },
-      { href: "/admin/schedules", label: "Class Schedules", icon: CalendarDays },
+      { href: "/admin/programs", label: "ፕሮግራሞች", icon: BookOpen },
+      { href: "/admin/sections", label: "ክፍሎች (Sections)", icon: Layers },
+      { href: "/admin/schedules", label: "የትምህርት ሰሌዳ", icon: CalendarDays },
     ],
   },
   {
-    heading: "People",
+    heading: "ተማሪዎችና መምህራን",
     items: [
-      { href: "/admin/students", label: "Students", icon: Users },
-      { href: "/admin/staff", label: "Staff & Teachers", icon: UserCog },
-      { href: "/admin/attendance", label: "Attendance", icon: ClipboardCheck },
+      { href: "/admin/students", label: "የተማሪዎች ማህደር", icon: Users },
+      { href: "/admin/staff", label: "መምህራንና ሠራተኞች", icon: UserCog },
+      { href: "/admin/attendance", label: "የአቴንዳንስ ክትትል", icon: ClipboardCheck },
     ],
   },
   {
-    heading: "Operations",
+    heading: "አስተዳደር",
     items: [
-      { href: "/admin/payments", label: "Payments", icon: CreditCard },
-      { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
+      { href: "/admin/payments", label: "የክፍያ ማስተዳደሪያ", icon: CreditCard },
+      { href: "/admin/announcements", label: "ማስታወቂያዎች", icon: Megaphone },
     ],
   },
 ];
@@ -87,43 +85,36 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
 
       <aside
         className={cn(
-          "bg-surface relative fixed inset-y-0 left-0 z-40 flex w-64 flex-col overflow-hidden border-r border-white/10 transition-transform duration-200 ease-out lg:static lg:translate-x-0",
+          "bg-surface fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-white/10 transition-transform duration-200 ease-out lg:static lg:translate-x-0 shadow-lg",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        {/* Background photo panel layer */}
-        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-          <Image
-            src={siteImages.authPanel}
-            alt=""
-            aria-hidden
-            fill
-            priority
-            sizes="256px"
-            className="object-cover opacity-25"
-          />
-          <div className="from-surface/90 via-surface/95 to-surface absolute inset-0 bg-gradient-to-b backdrop-blur-xs" />
-        </div>
-
-        <div className="relative z-10 flex flex-1 flex-col min-h-0">
-          <div className="flex h-16 shrink-0 items-center border-b border-white/10 px-5">
-            <Link href="/" className="flex items-baseline gap-2">
-              <span className="text-primary text-lg font-bold tracking-wide">
-                በገና
+        <div className="flex flex-1 flex-col min-h-0">
+          <div className="flex h-16 shrink-0 items-center justify-between border-b border-white/10 px-5">
+            <Link href="/admin" className="flex items-center gap-2.5">
+              <span className="flex size-8 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 text-primary font-bold text-sm">
+                በ
               </span>
-              <span className="text-muted-foreground text-xs">Admin</span>
+              <div className="flex flex-col">
+                <span className="text-foreground text-sm font-semibold tracking-wide">
+                  የበገና ንዑስ ክፍል
+                </span>
+                <span className="text-muted-foreground text-[11px]">
+                  {isTeacherUser ? "የመምህራን ፖርታል" : "የአስተዳደር ክፍል"}
+                </span>
+              </div>
             </Link>
           </div>
 
           <nav className="flex-1 overflow-y-auto px-3 py-4">
             {menuToDisplay.map((group, index) => (
-              <div key={group.heading ?? index} className={index > 0 ? "mt-6" : ""}>
+              <div key={group.heading ?? index} className={index > 0 ? "mt-5" : ""}>
                 {group.heading && (
-                  <p className="text-muted-foreground mb-2 px-3 text-[11px] font-semibold tracking-[0.14em] uppercase">
+                  <p className="text-muted-foreground mb-2 px-3 text-[11px] font-semibold tracking-wider uppercase text-white/40">
                     {group.heading}
                   </p>
                 )}
-                <ul className="space-y-0.5">
+                <ul className="space-y-1">
                   {group.items.map((item) => {
                     const isActive = pathname === item.href;
                     const Icon = item.icon;
@@ -134,14 +125,14 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                           onClick={onClose}
                           aria-current={isActive ? "page" : undefined}
                           className={cn(
-                            "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+                            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-150",
                             isActive
-                              ? "bg-primary/15 text-primary font-medium border border-primary/20"
+                              ? "bg-primary text-primary-foreground font-semibold shadow-sm"
                               : "text-muted-foreground hover:text-foreground hover:bg-white/5"
                           )}
                         >
                           <Icon size={16} className="shrink-0" />
-                          {item.label}
+                          <span>{item.label}</span>
                         </Link>
                       </li>
                     );

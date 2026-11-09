@@ -299,17 +299,16 @@ export default function PaymentsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="አስተዳዳሪ ፖርታል · Admin Portal"
-        title="የክፍያ ሁኔታና የተማሪዎች ዝርዝር (Student Payments)"
-        description="Monitor student payment statuses by month, view unpaid or paid students, and quickly copy lists."
+        title="የክፍያ ማስተዳደሪያ"
+        description="የተማሪዎች ወርሃዊ ክፍያ ሁኔታና ዝርዝር መከታተያ"
         action={
-          <div className="bg-surface inline-flex rounded-lg border border-white/5 p-1">
+          <div className="bg-surface inline-flex rounded-lg border border-white/10 p-1">
             {[
               {
                 id: "roster" as const,
-                label: `📋 የተማሪዎች ዝርዝር (${filteredStudents.length})`,
+                label: `የተማሪዎች ዝርዝር (${filteredStudents.length})`,
               },
-              { id: "matrix" as const, label: "📊 ወርሃዊ ማትሪክስ" },
+              { id: "matrix" as const, label: "ወርሃዊ ማትሪክስ" },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -318,7 +317,7 @@ export default function PaymentsPage() {
                 className={cn(
                   "cursor-pointer rounded-md px-3.5 py-1.5 text-xs sm:text-sm font-medium whitespace-nowrap transition-colors",
                   activeTab === tab.id
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-primary text-primary-foreground font-semibold"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -338,34 +337,32 @@ export default function PaymentsPage() {
             className: "text-foreground",
           },
           {
-            label: "🔴 ያልከፈሉ (Unpaid)",
+            label: "ያልከፈሉ",
             value: stats.unpaid,
             className: "text-red-400",
           },
           {
-            label: "✅ የከፈሉ (Paid)",
+            label: "የከፈሉ",
             value: stats.paid,
             className: "text-emerald-400",
           },
           {
-            label: "🟡 በመጠባበቅ ላይ (Pending)",
+            label: "በመጠባበቅ ላይ",
             value: stats.pending,
             className: "text-amber-400",
           },
-        ].map((stat, idx) => (
-          <PhotoPanel
+        ].map((stat) => (
+          <div
             key={stat.label}
-            src={adminCardBackgrounds[idx % adminCardBackgrounds.length]}
-            className="border-white/10"
-            contentClassName="p-4"
+            className="rounded-xl border border-white/10 bg-surface p-4 shadow-sm"
           >
-            <p className="text-muted-foreground text-xs font-medium tracking-wider">
+            <p className="text-muted-foreground text-xs font-medium">
               {stat.label}
             </p>
             <p className={cn("mt-1.5 text-2xl font-bold", stat.className)}>
               {stat.value}
             </p>
-          </PhotoPanel>
+          </div>
         ))}
       </div>
 
@@ -375,8 +372,8 @@ export default function PaymentsPage() {
         <div className="relative flex-1 min-w-[200px]">
           <input
             type="search"
-            placeholder="Search by name or ID..."
-            className="w-full pl-9"
+            placeholder="በስም ወይም በመለያ ፈልግ..."
+            className="w-full pl-9 text-sm"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -397,15 +394,15 @@ export default function PaymentsPage() {
 
         {/* Status Dropdown */}
         {activeTab === "roster" && (
-          <div className="w-auto min-w-[170px]">
+          <div className="w-auto min-w-[160px]">
             <CustomSelect
               value={filterStatus}
               onChange={(val) => setFilterStatus(val)}
               options={[
-                { value: "", label: "ሁሉንም ተማሪዎች (All)" },
-                { value: "Unpaid", label: "🔴 ያልከፈሉ ብቻ (Unpaid)" },
-                { value: "Paid", label: "✅ የከፈሉ ብቻ (Paid)" },
-                { value: "Pending", label: "🟡 በመጠባበቅ ላይ (Pending)" },
+                { value: "", label: "ሁሉም ተማሪዎች" },
+                { value: "Unpaid", label: "ያልከፈሉ ብቻ" },
+                { value: "Paid", label: "የከፈሉ ብቻ" },
+                { value: "Pending", label: "በመጠባበቅ ላይ" },
               ]}
             />
           </div>
@@ -417,7 +414,7 @@ export default function PaymentsPage() {
             value={filterSection}
             onChange={(val) => setFilterSection(val)}
             options={[
-              { value: "", label: "All sections" },
+              { value: "", label: "ሁሉም ክፍሎች" },
               ...uniqueSections.map((sec) => ({
                 value: sec,
                 label: sec,
@@ -432,7 +429,7 @@ export default function PaymentsPage() {
             value={filterProgram}
             onChange={(val) => setFilterProgram(val)}
             options={[
-              { value: "", label: "All programs" },
+              { value: "", label: "ሁሉም ፕሮግራሞች" },
               ...programs.map((p) => ({
                 value: p.name,
                 label: p.name,
@@ -446,11 +443,11 @@ export default function PaymentsPage() {
           <Button
             onClick={handleCopyList}
             className="flex items-center gap-1.5 whitespace-nowrap ml-auto"
-            title="Copy current list with IDs and names"
+            title="የተማሪዎችን ዝርዝር ኮፒ ያድርጉ"
           >
             {copied ? <Check size={15} /> : <Copy size={15} />}
             <span>
-              {copied ? "ተቀድቷል! (Copied)" : `Copy List (${filteredStudents.length})`}
+              {copied ? "ተቀድቷል!" : `ዝርዝሩን ኮፒ አድርግ (${filteredStudents.length})`}
             </span>
           </Button>
         )}
@@ -462,16 +459,16 @@ export default function PaymentsPage() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[700px] text-left text-sm">
               <thead>
-                <tr className="text-muted-foreground border-b border-white/10 bg-white/[0.02] text-xs tracking-wider uppercase">
+                <tr className="text-muted-foreground border-b border-white/10 bg-white/[0.02] text-xs font-semibold tracking-wider uppercase">
                   <th className="px-4 py-3 w-12 text-center">#</th>
-                  <th className="px-4 py-3 font-medium">Student ID</th>
-                  <th className="px-4 py-3 font-medium">Full Name</th>
-                  <th className="px-4 py-3 font-medium">Section</th>
-                  <th className="px-4 py-3 font-medium">Phone Number</th>
+                  <th className="px-4 py-3 font-medium">መለያ (ID)</th>
+                  <th className="px-4 py-3 font-medium">ሙሉ ስም</th>
+                  <th className="px-4 py-3 font-medium">ክፍል</th>
+                  <th className="px-4 py-3 font-medium">ስልክ</th>
                   <th className="px-4 py-3 font-medium text-center">
-                    Status ({selectedMonth})
+                    የ{selectedMonth} ሁኔታ
                   </th>
-                  <th className="px-4 py-3 text-right">Action</th>
+                  <th className="px-4 py-3 text-right">ተግባር</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">

@@ -233,16 +233,15 @@ export default function SectionsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="አስተዳዳሪ ፖርታል · Admin Portal"
-        title="ምድቦች እና መምህራን (Sections & Teachers)"
-        description="Class sections and the teachers assigned to each one."
+        title="ክፍሎችና ምድቦች"
+        description="የተማሪዎች ክፍሎችና የተመደቡ መምህራን"
         action={
           !isAdminUser ? (
-            <Badge tone="info">የማየት ብቻ ፈቃድ (View Only)</Badge>
+            <Badge tone="info">የማየት ብቻ ፈቃድ</Badge>
           ) : (
             <ModalForm
-            title="Create New Section"
-            triggerText="Add Section"
+            title="አዲስ ክፍል መዝግብ"
+            triggerText="አዲስ ክፍል"
             onSubmit={handleCreateSection}
             image={siteImages.adminTeacher}
           >

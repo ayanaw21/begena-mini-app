@@ -3,9 +3,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getValidToken, isTeacher, getUserName } from "@/lib/auth";
 import { Badge } from "@/components/ui/badge";
-import PhotoPanel from "@/components/ui/photo-panel";
-import Figure from "@/components/ui/figure";
-import { siteImages } from "@/lib/images";
 import {
   BookOpen,
   CalendarDays,
@@ -16,79 +13,72 @@ import {
   Megaphone,
   UserCog,
   Users,
+  ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 
 const sections = [
   {
-    heading: "Academics",
+    heading: "የትምህርት ክፍል (Academics)",
     links: [
       {
         href: "/admin/programs",
         icon: BookOpen,
-        title: "Programs",
-        description: "Begena, Masinko, Kirar and other instruments.",
-        image: siteImages.adminCard1,
+        title: "የስልጠና ፕሮግራሞች",
+        description: "የበገና፣ መሰንቆና ሌሎች መሣሪያዎች ፕሮግራሞች አስተዳደር",
       },
       {
         href: "/admin/sections",
         icon: Layers,
-        title: "Sections & Teachers",
-        description: "Main and assistant teacher assignments.",
-        image: siteImages.adminTeacher,
+        title: "ክፍሎች እና ምድቦች",
+        description: "የተማሪዎች ክፍፍልና የመምህራን ስምሪት",
       },
       {
         href: "/admin/schedules",
         icon: CalendarDays,
-        title: "Class Schedules",
-        description: "Flexible weekly timetables per section.",
-        image: siteImages.adminCard2,
+        title: "የትምህርት ክፍለ-ጊዜ",
+        description: "የሳምንቱ የትምህርት ቀናትና ሰዓታት ሰሌዳ",
       },
     ],
   },
   {
-    heading: "People",
+    heading: "ተማሪዎችና መምህራን (People)",
     links: [
       {
         href: "/admin/students",
         icon: Users,
-        title: "Students",
-        description: "In-person registration and student ID records.",
-        image: siteImages.adminPhoto1,
+        title: "የተማሪዎች ማህደር",
+        description: "የተማሪዎች ምዝገባ፣ መታወቂያ እና የትምህርት ደረጃ",
       },
       {
         href: "/admin/staff",
         icon: UserCog,
-        title: "Staff & Instructors",
-        description: "Admins, main and assistant staff.",
-        image: siteImages.adminPhoto2,
+        title: "መምህራን እና ሠራተኞች",
+        description: "ዋና እና ረዳት መምህራን፣ አስተዳዳሪዎች ዝርዝር",
       },
       {
         href: "/admin/attendance",
         icon: ClipboardCheck,
-        title: "Attendance",
-        description: "Track present, absent and at-risk students.",
-        image: siteImages.adminPhoto3,
+        title: "የአቴንዳንስ ክትትል",
+        description: "የዕለት ክትትል መመዝገቢያና የፈቃድ/ቀሪ ሁኔታ",
       },
     ],
   },
   {
-    heading: "Operations",
+    heading: "ክፍያና ማስታወቂያ (Operations)",
     links: [
       {
         href: "/admin/payments",
         icon: CreditCard,
-        title: "Payments",
-        description: "Verify receipt slips, approve or reject.",
-        image: siteImages.adminCard5,
+        title: "የክፍያ ማስተዳደሪያ",
+        description: "ወርሃዊ ክፍያዎችን መከታተያ እና ዝርዝር መያዣ",
       },
       {
         href: "/admin/announcements",
         icon: Megaphone,
-        title: "Announcements",
-        description: "Broadcast notices to students.",
-        image: siteImages.adminAncient,
+        title: "ማስታወቂያዎች",
+        description: "ለተማሪዎች የሚተላለፉ መልዕክቶች እና ማሳወቂያዎች",
       },
     ],
   },
@@ -130,43 +120,37 @@ export default function AdminHome() {
     return (
       <div className="text-muted-foreground flex min-h-[50vh] items-center justify-center gap-3 text-sm">
         <Loader2 size={18} className="text-primary animate-spin" />
-        Checking authentication...
+        በማጣራት ላይ...
       </div>
     );
   }
 
   return (
     <div className="space-y-8">
-      <Figure
-        src={siteImages.zmarieHero}
-        alt="Control Panel"
-        ratio="auto"
-        className="w-full max-w-full h-[200px] sm:h-[240px]"
-        priority
-        scrim
-      >
-        <p className="text-primary text-xs font-semibold tracking-[0.18em] uppercase">
-          {userIsTeacher ? "የመምህራን እና የአስተዳደር ክፍል · Portal" : "ዋና የአስተዳደር ክፍል · Admin Portal"}
-        </p>
-        <h1 className="mt-1.5 text-2xl font-bold sm:text-3xl text-foreground">
-         
-         
-          እንኳን ደህና መጡ፣ {userName}
-        </h1>
-        <div className="mt-2 flex items-center gap-2">
-          <Badge tone={userIsTeacher ? "info" : "primary"}>
-            {userIsTeacher ? "መምህር (Instructor)" : "አስተዳዳሪ እና መምህር (Admin & Teacher)"}
-          </Badge>
-          <Badge tone="success">Active</Badge>
+      {/* Clean Modern Welcome Header */}
+      <div className="rounded-2xl border border-white/10 bg-surface p-6 sm:p-8 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2.5">
+              <span className="size-2.5 rounded-full bg-emerald-400 animate-pulse" />
+              <Badge tone={userIsTeacher ? "info" : "primary"}>
+                {userIsTeacher ? "መምህር" : "አስተዳዳሪና መምህር"}
+              </Badge>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+              እንኳን ደህና መጡ፣ {userName}
+            </h1>
+            <p className="text-muted-foreground text-sm max-w-2xl">
+              የስልጠና ፕሮግራሞችን፣ የተማሪዎች ምዝገባን፣ የምድብ እና የመምህራን ስምሪትን፣ የክፍያ እና የክትትል ሁኔታዎችን በአንድ ቦታ ይቆጣጠሩ።
+            </p>
+          </div>
         </div>
-        <p className="text-white/80 max-w-2xl text-xs sm:text-sm mt-1">
-          የስልጠና ፕሮግራሞችን፣ የተማሪዎች ምዝገባን፣ የምድብ እና የመምህራን ስምሪትን፣ የክፍያ እና የክትትል ሁኔታዎችን በአንድ ቦታ ይቆጣጠሩ።
-        </p>
-      </Figure>
+      </div>
 
+      {/* Clean Category Grids */}
       {visibleSections.map((section) => (
-        <section key={section.heading} className="space-y-3">
-          <h2 className="text-muted-foreground text-xs font-semibold tracking-[0.18em] uppercase">
+        <section key={section.heading} className="space-y-3.5">
+          <h2 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase px-1">
             {section.heading}
           </h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -174,25 +158,23 @@ export default function AdminHome() {
               const Icon = link.icon;
               return (
                 <Link key={link.href} href={link.href} className="group">
-                  <PhotoPanel
-                    src={link.image}
-                    className="hover:border-primary/40 h-full border-white/10 transition-all duration-200 group-hover:shadow-lg"
-                    contentClassName="p-5 flex flex-col h-full"
-                  >
-                    <span className="bg-primary/20 border border-primary/30 text-primary flex size-10 items-center justify-center rounded-lg shadow-sm">
-                      <Icon size={19} />
-                    </span>
-                    <h3 className="group-hover:text-primary mt-3.5 text-base font-semibold transition-colors">
+                  <div className="rounded-xl border border-white/10 bg-surface p-5 hover:border-primary/40 hover:bg-white/[0.02] transition-all duration-150 flex flex-col h-full shadow-sm">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="size-10 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center">
+                        <Icon size={19} />
+                      </span>
+                      <span className="text-muted-foreground group-hover:text-primary transition-colors text-xs flex items-center gap-1 font-medium">
+                        ይመልከቱ
+                        <ArrowRight size={13} className="transition-transform group-hover:translate-x-0.5" />
+                      </span>
+                    </div>
+                    <h3 className="text-base font-semibold group-hover:text-primary transition-colors text-foreground">
                       {link.title}
                     </h3>
-                    <p className="text-muted-foreground mt-1.5 flex-1 text-sm leading-relaxed">
+                    <p className="text-muted-foreground mt-1.5 flex-1 text-xs sm:text-sm leading-relaxed">
                       {link.description}
                     </p>
-                    <div className="text-muted-foreground group-hover:text-primary mt-4 flex items-center text-xs font-medium transition-colors">
-                      <span>Open management</span>
-                      <span className="ml-1 transition-transform group-hover:translate-x-1">→</span>
-                    </div>
-                  </PhotoPanel>
+                  </div>
                 </Link>
               );
             })}
