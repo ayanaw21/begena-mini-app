@@ -62,16 +62,15 @@ const Home = () => {
               scrim
             >
               <p className="text-primary text-xs font-semibold tracking-[0.18em] uppercase">
-                የ አ/አ/ሳ/ቴ/ዪ ግቢ ጉባኤ
+                አ/አ/ሳ/ቴ/ዩ ግቢ ጉባኤ
               </p>
-              <h1 className="mt-1.5 text-3xl font-bold sm:text-4xl">
-                የበገና ንዑስ ክፍል
+              <h1 className="mt-1.5 text-2xl sm:text-4xl font-bold tracking-tight text-foreground">
+                በገና ንዑስ ክፍል
               </h1>
             </Figure>
 
             <p className="text-muted-foreground max-w-prose text-sm leading-relaxed sm:text-base">
-              እንኳን ወደ በገና ቦት በሰላም መጡ። የትምህርት ክፍለ-ጊዜዎን፣ ወርሃዊ ክፍያዎን እና የክትትል
-              ሁኔታዎን በአንድ ቦታ ይከታተሉ።
+              የስልጠና ክፍለ-ጊዜዎን፣ ወርሃዊ ክፍያዎን እና የክትትል ሁኔታዎን በአንድ ቦታ ይከታተሉ።
             </p>
           </section>
 

@@ -61,42 +61,16 @@ const Navbar = () => {
             />
           </div>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-primary text-lg font-bold tracking-wide">
-              በገና
+            <span className="text-primary text-base sm:text-lg font-bold tracking-wide">
+              አ/አ/ሳ/ቴ/ዩ
             </span>
-            <span className="text-muted-foreground hidden text-xs sm:inline">
-              ንዑስ ክፍል
+            <span className="text-foreground text-xs sm:text-sm font-semibold">
+              በገና ንዑስ ክፍል
             </span>
           </div>
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
-          {(isTeacherLoggedIn || isAdminLoggedIn) && (
-            <Link
-              href="/admin"
-              className={cn(
-                "rounded-md px-2.5 py-1.5 text-sm font-semibold transition-colors mr-1",
-                pathname.startsWith("/admin")
-                  ? "text-primary bg-primary/20"
-                  : "text-primary bg-primary/10 hover:bg-primary/20"
-              )}
-            >
-              {isAdminLoggedIn ? "Admin Dashboard" : "መምህር / Staff Portal"}
-            </Link>
-          )}
-          {isStudentLoggedIn && (
-            <Link
-              href="/student/dashboard"
-              className={cn(
-                "rounded-md px-2.5 py-1.5 text-sm font-semibold transition-colors mr-1",
-                pathname === "/student/dashboard"
-                  ? "text-primary bg-primary/20"
-                  : "text-primary bg-primary/10 hover:bg-primary/20"
-              )}
-            >
-              Dashboard
-            </Link>
-          )}
           {links.map((link) => (
             <Link
               key={link.href}
@@ -104,7 +78,7 @@ const Navbar = () => {
               className={cn(
                 "rounded-md px-2.5 py-1.5 text-sm transition-colors",
                 pathname === link.href
-                  ? "text-primary bg-primary/10"
+                  ? "text-primary bg-primary/10 font-semibold"
                   : "text-muted-foreground hover:text-foreground hover:bg-white/5"
               )}
             >
@@ -117,7 +91,7 @@ const Navbar = () => {
           {isStudentLoggedIn ? (
             <>
               <Button asChild size="sm" className="bg-primary text-primary-foreground font-semibold">
-                <Link href="/student/dashboard">Dashboard</Link>
+                <Link href="/student/dashboard">Portal</Link>
               </Button>
               <Button
                 variant="ghost"
@@ -136,9 +110,16 @@ const Navbar = () => {
               <Button
                 asChild
                 size="sm"
-                className={isTeacherLoggedIn ? "bg-amber-400 text-slate-950 hover:bg-amber-300 font-semibold" : ""}
+                className={cn(
+                  "font-semibold text-xs sm:text-sm shadow-sm",
+                  isTeacherLoggedIn
+                    ? "bg-amber-400 text-slate-950 hover:bg-amber-300"
+                    : "bg-primary text-primary-foreground hover:bg-primary/90"
+                )}
               >
-                <Link href="/admin">{isTeacherLoggedIn ? "Staff Dashboard" : "Admin"}</Link>
+                <Link href="/admin">
+                  {isTeacherLoggedIn ? "Staff Portal" : "Admin Portal"}
+                </Link>
               </Button>
               <Button
                 variant="ghost"
@@ -154,10 +135,10 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <Button asChild variant="ghost" size="sm">
+              <Button asChild variant="ghost" size="sm" className="text-xs sm:text-sm">
                 <Link href="/student/login">🎓 ተማሪ</Link>
               </Button>
-              <Button asChild size="sm">
+              <Button asChild size="sm" className="text-xs sm:text-sm">
                 <Link href={adminHref}>Admin</Link>
               </Button>
             </>
@@ -166,43 +147,17 @@ const Navbar = () => {
       </PageContainer>
 
       {/* On small screens the primary links move to a scrollable strip under the bar. */}
-      <nav className="w-full max-w-full overflow-hidden border-t border-white/5 md:hidden">
-        <PageContainer className="flex gap-1 overflow-x-auto py-1.5 scrollbar-none">
-          {(isTeacherLoggedIn || isAdminLoggedIn) && (
-            <Link
-              href="/admin"
-              className={cn(
-                "rounded-md px-2.5 py-1 text-xs whitespace-nowrap transition-colors font-semibold",
-                pathname.startsWith("/admin")
-                  ? "text-primary bg-primary/20"
-                  : "text-primary bg-primary/10 hover:bg-primary/20"
-              )}
-            >
-              {isAdminLoggedIn ? "Admin Dashboard" : "መምህር Portal"}
-            </Link>
-          )}
-          {isStudentLoggedIn && (
-            <Link
-              href="/student/dashboard"
-              className={cn(
-                "rounded-md px-2.5 py-1 text-xs whitespace-nowrap transition-colors font-semibold",
-                pathname === "/student/dashboard"
-                  ? "text-primary bg-primary/20"
-                  : "text-primary bg-primary/10 hover:bg-primary/20"
-              )}
-            >
-              Dashboard
-            </Link>
-          )}
+      <nav className="w-full max-w-full overflow-hidden border-t border-white/5 md:hidden bg-background/95">
+        <PageContainer className="flex items-center gap-1.5 overflow-x-auto py-2 scrollbar-none">
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               className={cn(
-                "rounded-md px-2.5 py-1 text-xs whitespace-nowrap transition-colors",
+                "rounded-full px-3 py-1 text-xs whitespace-nowrap transition-colors font-medium border",
                 pathname === link.href
-                  ? "text-primary bg-primary/10"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "border-primary/40 bg-primary/15 text-primary font-semibold"
+                  : "border-white/5 text-muted-foreground hover:text-foreground bg-white/[0.02]"
               )}
             >
               {link.label}

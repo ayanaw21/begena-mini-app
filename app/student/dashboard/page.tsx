@@ -20,7 +20,7 @@ import {
   PanelBody,
   PanelHeader,
 } from "@/components/ui/page";
-import { Loader2, LogOut, Edit3, Upload, X, ExternalLink, Lock, CheckCircle } from "lucide-react";
+import { Loader2, LogOut, Edit3, Upload, X, ExternalLink, Lock, CheckCircle, Calendar, CalendarDays, CheckCircle2, AlertCircle, FileText, UserCheck, Clock } from "lucide-react";
 import { updatePendingPayment } from "@/lib/actions/payment";
 import toast from "react-hot-toast";
 
@@ -516,66 +516,184 @@ export default function StudentDashboard() {
 
           {/* Attendance */}
           {activeTab === "attendance" && (
-            <Panel>
-              <PanelHeader
-                title="Attendance log (የክትትል ማጠቃለያ)"
-                action={
-                  <div className="flex items-center gap-4 text-right">
-                    <div>
-                      <span className="text-muted-foreground text-xs block">ፈቃድ (Permission)</span>
-                      <span className="text-sky-400 font-semibold text-sm">
-                        {totalPermission} {totalPermission === 1 ? "day" : "days"}
-                      </span>
+            <div className="space-y-6">
+              {/* Visual Health & Rate Card */}
+              <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.04] to-transparent p-5 sm:p-6 shadow-md">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
+                  <div className="flex items-center gap-3">
+                    <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 border border-primary/20 text-primary">
+                      <UserCheck size={24} />
                     </div>
                     <div>
-                      <span className="text-muted-foreground text-xs block">ቀሪ (Absences)</span>
-                      <span className={cn("font-semibold text-sm", totalAbsent >= 3 ? "text-red-400" : "text-muted-foreground")}>
-                        {totalAbsent}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="text-primary text-lg leading-none font-bold">
-                        {attendanceRate}%
-                      </p>
-                      <p className="text-muted-foreground mt-1 text-xs">
-                        {totalPresent} / {attendance.length}
+                      <h2 className="text-base sm:text-lg font-bold text-foreground">
+                        የክትትል ማጠቃለያ (Attendance Summary)
+                      </h2>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Section {student?.section || "—"} · Batch {student?.batch || "—"}
                       </p>
                     </div>
                   </div>
-                }
-              />
-              {attendance.length === 0 ? (
-                <EmptyState
-                  title="No sessions recorded"
-                  description="Attendance will appear here once classes are logged."
+
+                  <div className="flex items-center gap-3 bg-background/50 px-4 py-2.5 rounded-xl border border-white/5 self-start sm:self-auto">
+                    <div className="text-left sm:text-right">
+                      <div className="text-2xl sm:text-3xl font-black text-primary leading-none">
+                        {attendanceRate}%
+                      </div>
+                      <span className="text-[11px] font-medium text-muted-foreground">
+                        {attendanceRate >= 85
+                          ? "ጥሩ ሁኔታ (Excellent)"
+                          : attendanceRate >= 70
+                            ? "መካከለኛ ሁኔታ (Fair)"
+                            : "ማስጠንቀቂያ (At Risk)"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="mt-4 space-y-1.5">
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Overall Attendance Rate</span>
+                    <span className="font-semibold text-foreground">{totalPresent} of {attendance.length} sessions attended</span>
+                  </div>
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+                    <div
+                      className={cn(
+                        "h-full rounded-full transition-all duration-500",
+                        attendanceRate >= 85
+                          ? "bg-emerald-500"
+                          : attendanceRate >= 70
+                            ? "bg-amber-500"
+                            : "bg-red-500"
+                      )}
+                      style={{ width: `${attendanceRate}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* 4 Clean Metric Cards */}
+                <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3.5">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400">
+                      <CheckCircle2 size={14} />
+                      <span>የተገኙበት (Present)</span>
+                    </div>
+                    <p className="mt-1.5 text-xl sm:text-2xl font-bold text-foreground">
+                      {totalPresent - totalPermission}
+                    </p>
+                    <span className="text-[11px] text-muted-foreground">ክፍለ-ጊዜዎች</span>
+                  </div>
+
+                  <div className="rounded-xl border border-sky-500/20 bg-sky-500/10 p-3.5">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-sky-400">
+                      <FileText size={14} />
+                      <span>በፈቃድ (Permission)</span>
+                    </div>
+                    <p className="mt-1.5 text-xl sm:text-2xl font-bold text-foreground">
+                      {totalPermission}
+                    </p>
+                    <span className="text-[11px] text-muted-foreground">ፈቃድ የተሰጠበት</span>
+                  </div>
+
+                  <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-3.5">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-red-400">
+                      <AlertCircle size={14} />
+                      <span>ቀሪ (Absences)</span>
+                    </div>
+                    <p className="mt-1.5 text-xl sm:text-2xl font-bold text-foreground">
+                      {totalAbsent}
+                    </p>
+                    <span className="text-[11px] text-muted-foreground">ያልተገኙበት ቀናት</span>
+                  </div>
+
+                  <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3.5">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+                      <Calendar size={14} />
+                      <span>ጠቅላላ (Total Sessions)</span>
+                    </div>
+                    <p className="mt-1.5 text-xl sm:text-2xl font-bold text-foreground">
+                      {attendance.length}
+                    </p>
+                    <span className="text-[11px] text-muted-foreground">የተመዘገቡ ቀናት</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Sessions Timeline Cards */}
+              <Panel>
+                <PanelHeader
+                  title="Recorded Sessions (የክፍለ-ጊዜዎች ዝርዝር)"
+                  description="A chronological record of every class session marked for your section."
                 />
-              ) : (
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-muted-foreground text-xs tracking-wider uppercase">
-                      <th className="px-5 py-2 text-left font-medium">Date</th>
-                      <th className="px-5 py-2 text-left font-medium">Day</th>
-                      <th className="px-5 py-2 text-right font-medium">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5">
-                    {attendance.map((a) => (
-                      <tr key={a._id} className="hover:bg-white/[0.03]">
-                        <td className="px-5 py-2.5 font-medium">
-                          {new Date(a.date).toLocaleDateString()}
-                        </td>
-                        <td className="text-muted-foreground px-5 py-2.5">
-                          {a.day}
-                        </td>
-                        <td className="px-5 py-2.5 text-right">
-                          <Badge tone={attendanceTone(a.status)}>{a.status}</Badge>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </Panel>
+                {attendance.length === 0 ? (
+                  <EmptyState
+                    title="No sessions recorded yet"
+                    description="Your attendance records will appear here as soon as your instructor marks them."
+                  />
+                ) : (
+                  <div className="divide-y divide-white/5">
+                    {[...attendance]
+                      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                      .map((record) => {
+                        const dateObj = new Date(record.date);
+                        const formattedDate = dateObj.toLocaleDateString("en-US", {
+                          weekday: "short",
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        });
+                        const isPresent = record.status === "Present";
+                        const isPerm = record.status === "Permission";
+                        const isLate = record.status === "Late";
+
+                        return (
+                          <div
+                            key={record._id}
+                            className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-3.5 hover:bg-white/[0.02] transition-colors"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={cn(
+                                  "flex size-9 shrink-0 items-center justify-center rounded-lg border text-base",
+                                  isPresent
+                                    ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                                    : isPerm
+                                      ? "bg-sky-500/10 border-sky-500/20 text-sky-400"
+                                      : isLate
+                                        ? "bg-amber-500/10 border-amber-500/20 text-amber-400"
+                                        : "bg-red-500/10 border-red-500/20 text-red-400"
+                                )}
+                              >
+                                {isPresent ? "✅" : isPerm ? "📄" : isLate ? "⏱️" : "❌"}
+                              </div>
+                              <div>
+                                <p className="text-sm font-semibold text-foreground">
+                                  {formattedDate}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {record.day || dateObj.toLocaleDateString("en-US", { weekday: "long" })} · Class Session
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="self-end sm:self-auto">
+                              <Badge tone={attendanceTone(record.status)} className="font-semibold text-xs">
+                                {record.status === "Present"
+                                  ? "ተገኝቷል (Present)"
+                                  : record.status === "Permission"
+                                    ? "በፈቃድ (Permission)"
+                                    : record.status === "Late"
+                                      ? "አርፍዷል (Late)"
+                                      : "አልተገኘም (Absent)"}
+                              </Badge>
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                )}
+              </Panel>
+            </div>
           )}
 
           {/* Profile Editing */}

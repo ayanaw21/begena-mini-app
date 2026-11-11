@@ -103,6 +103,46 @@ const Schedule = () => {
 		});
 	}, [programFilteredSchedules, selectedSection, getSectionName]);
 
+	interface GroupedSectionSchedule {
+		section: string;
+		program?: string;
+		type?: string;
+		sessions: { day: string; time: string; room?: string }[];
+	}
+
+	const groupedSchedules = useMemo(() => {
+		const map = new Map<string, GroupedSectionSchedule>();
+
+		filteredSchedules.forEach((schedule) => {
+			const secName = getSectionName(schedule.section);
+			const existing = map.get(secName) || {
+				section: secName,
+				program: schedule.program,
+				type: schedule.type,
+				sessions: [],
+			};
+
+			if (schedule.sessions && schedule.sessions.length > 0) {
+				schedule.sessions.forEach((sess) => {
+					existing.sessions.push({
+						day: sess.day,
+						time: `${sess.startTime} - ${sess.endTime}`,
+						room: sess.room,
+					});
+				});
+			} else if (schedule.date || schedule.time) {
+				existing.sessions.push({
+					day: schedule.date || "Class Day",
+					time: schedule.time || "TBA",
+				});
+			}
+
+			map.set(secName, existing);
+		});
+
+		return Array.from(map.values());
+	}, [filteredSchedules, getSectionName]);
+
 	const selectProgram = (program: string) => {
 		setSelectedProgram(program);
 		setSelectedSection("All");
@@ -122,7 +162,7 @@ const Schedule = () => {
 						scrim
 					>
 						<p className="text-primary text-xs font-semibold tracking-[0.18em] uppercase">
-							የበገና ንዑስ ክፍል
+							አ/አ/ሳ/ቴ/ዩ በገና ንዑስ ክፍል
 						</p>
 						<h1 className="mt-1.5 text-2xl font-bold sm:text-3xl">
 							የትምህርት ሰዓት
@@ -202,48 +242,37 @@ const Schedule = () => {
 									.join(" · ")
 							}
 						/>
-						{filteredSchedules.length > 0 ? (
+						{groupedSchedules.length > 0 ? (
 							<ul className="divide-y divide-white/5">
-								{filteredSchedules.map((schedule) => (
+								{groupedSchedules.map((item) => (
 									<li
-										key={schedule._id}
-										className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 px-5 py-4"
+										key={item.section}
+										className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-4 hover:bg-white/[0.02] transition-colors"
 									>
-										<span className="font-medium">
-											{getSectionName(schedule.section)}
-										</span>
-										<div className="text-muted-foreground flex flex-col gap-1 text-sm sm:flex-row sm:gap-5">
-											{schedule.sessions && schedule.sessions.length > 0 ? (
-												schedule.sessions.map((session, idx) => (
-													<span key={idx} className="flex gap-4">
-														<span>
-															<span className="text-xs tracking-wider uppercase">ቀን</span>{" "}
-															<span className="text-foreground">{session.day}</span>
-														</span>
-														<span>
-															<span className="text-xs tracking-wider uppercase">ሰዓት</span>{" "}
-															<span className="text-foreground">
-																{session.startTime} - {session.endTime}
-															</span>
-														</span>
-													</span>
-												))
-											) : (
-												<span className="flex gap-5">
-													{schedule.date && (
-														<span>
-															<span className="text-xs tracking-wider uppercase">ቀን</span>{" "}
-															<span className="text-foreground">{schedule.date}</span>
-														</span>
-													)}
-													{schedule.time && (
-														<span>
-															<span className="text-xs tracking-wider uppercase">ሰዓት</span>{" "}
-															<span className="text-foreground">{schedule.time}</span>
-														</span>
-													)}
+										<div className="flex flex-wrap items-center gap-2">
+											<span className="font-semibold text-base text-foreground">
+												{item.section}
+											</span>
+											{item.program && (
+												<span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+													{item.program}
 												</span>
 											)}
+										</div>
+
+										<div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+											{item.sessions.map((sess, idx) => (
+												<div
+													key={idx}
+													className="flex items-center gap-2 rounded-lg bg-white/5 border border-white/10 px-3 py-1.5 text-xs"
+												>
+													<span className="text-primary font-semibold">📅 {sess.day}</span>
+													<span className="text-muted-foreground font-mono">⏰ {sess.time}</span>
+													{sess.room && (
+														<span className="text-white/40">({sess.room})</span>
+													)}
+												</div>
+											))}
 										</div>
 									</li>
 								))}
