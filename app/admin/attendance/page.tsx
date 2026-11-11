@@ -17,6 +17,7 @@ import toast from "react-hot-toast";
 type AttendanceStatus = "Present" | "Absent" | "Late" | "Permission";
 
 interface StudentRecordState {
+  studentDbId: string;
   studentId: string;
   fullName: string;
   status: AttendanceStatus;
@@ -83,6 +84,7 @@ export default function AttendancePage() {
   // Daily marking state
   const [sections, setSections] = useState<Section[]>([]);
   const [programs, setPrograms] = useState<Program[]>([]);
+  const [selectedDailyProgram, setSelectedDailyProgram] = useState("");
   const [selectedSection, setSelectedSection] = useState("");
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
@@ -97,6 +99,10 @@ export default function AttendancePage() {
   const [summaryList, setSummaryList] = useState<AttendanceSummaryItem[]>([]);
   const [loadingSummary, setLoadingSummary] = useState(false);
   const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
+
+  const availableDailySections = selectedDailyProgram
+    ? sections.filter((s) => s.program === selectedDailyProgram)
+    : sections;
 
   const fetchInitialData = useCallback(async () => {
     try {
@@ -123,8 +129,17 @@ export default function AttendancePage() {
       });
       const allStudents: Student[] = studentsRes.data.students || [];
       const sectionStudents = allStudents.filter(
-        (s) => s.section === selectedSection
+        (s) =>
+          s.section === selectedSection &&
+          (!selectedDailyProgram || s.program === selectedDailyProgram)
       );
+
+      // Sort students naturally by student ID (e.g. 001/08, 002/08, 010/08)
+      sectionStudents.sort((a, b) => {
+        const idA = (a.studentId || a.begenaId || "").trim();
+        const idB = (b.studentId || b.begenaId || "").trim();
+        return idA.localeCompare(idB, undefined, { numeric: true, sensitivity: "base" });
+      });
 
       const attRes = await api.get(
         `/attendance?section=${selectedSection}&date=${selectedDate}`,
@@ -138,7 +153,8 @@ export default function AttendancePage() {
             (typeof a.student === "object" ? a.student?._id : a.student) === s._id
         );
         return {
-          studentId: s._id || "",
+          studentDbId: s._id || "",
+          studentId: s.studentId || s.begenaId || "—",
           fullName: s.fullName,
           status: found ? found.status : "Present",
         };
@@ -151,7 +167,7 @@ export default function AttendancePage() {
     } finally {
       setLoadingDaily(false);
     }
-  }, [selectedSection, selectedDate]);
+  }, [selectedSection, selectedDate, selectedDailyProgram]);
 
   const fetchAttendanceSummary = useCallback(async () => {
     setLoadingSummary(true);
@@ -161,7 +177,13 @@ export default function AttendancePage() {
         `/attendance/summary?program=${selectedProgFilter}&section=${selectedSecFilter}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setSummaryList(res.data.summary || []);
+      const rawSummary: AttendanceSummaryItem[] = res.data.summary || [];
+      rawSummary.sort((a, b) => {
+        const idA = (a.studentId || "").trim();
+        const idB = (b.studentId || "").trim();
+        return idA.localeCompare(idB, undefined, { numeric: true, sensitivity: "base" });
+      });
+      setSummaryList(rawSummary);
     } catch (err) {
       console.error(err);
       toast.error("Failed to load attendance summary analytics");
@@ -187,9 +209,9 @@ export default function AttendancePage() {
     }
   }, [activeTab, selectedProgFilter, selectedSecFilter, fetchAttendanceSummary]);
 
-  const handleStatusChange = (studentId: string, status: AttendanceStatus) => {
+  const handleStatusChange = (studentDbId: string, status: AttendanceStatus) => {
     setStudentRecords((prev) =>
-      prev.map((r) => (r.studentId === studentId ? { ...r, status } : r))
+      prev.map((r) => (r.studentDbId === studentDbId ? { ...r, status } : r))
     );
   };
 
@@ -217,12 +239,13 @@ export default function AttendancePage() {
       await api.post(
         "/attendance",
         {
+          program: selectedDailyProgram || undefined,
           section: selectedSection,
           date: selectedDate,
           day: dayName,
           academicYear: "2026",
           records: studentRecords.map((r) => ({
-            studentId: r.studentId,
+            studentId: r.studentDbId,
             status: r.status,
           })),
         },
@@ -301,6 +324,34 @@ export default function AttendancePage() {
         <div className="space-y-4">
           <div className="relative z-20 rounded-xl border border-white/10 bg-surface p-4 flex flex-wrap items-end gap-4 shadow-sm">
             <Field
+              label="Program"
+              htmlFor="attendanceDailyProgram"
+              className="relative z-30 min-w-44 flex-1"
+            >
+              <CustomSelect
+                id="attendanceDailyProgram"
+                value={selectedDailyProgram}
+                onChange={(val) => {
+                  setSelectedDailyProgram(val);
+                  if (val) {
+                    const match = sections.find(
+                      (s) => s.section === selectedSection && s.program === val
+                    );
+                    if (!match) setSelectedSection("");
+                  }
+                }}
+                placeholder="All programs"
+                options={[
+                  { value: "", label: "All programs" },
+                  ...programs.map((prog) => ({
+                    value: prog.name,
+                    label: `${prog.name} (${prog.code})`,
+                  })),
+                ]}
+              />
+            </Field>
+
+            <Field
               label="Section"
               htmlFor="attendanceSection"
               className="relative z-30 min-w-52 flex-1"
@@ -312,9 +363,11 @@ export default function AttendancePage() {
                 placeholder="Choose section"
                 options={[
                   { value: "", label: "Choose section" },
-                  ...sections.map((sec) => ({
+                  ...availableDailySections.map((sec) => ({
                     value: sec.section,
-                    label: `${sec.section} (${sec.mainTeacherName || sec.assignedTeacher || "TBA"})`,
+                    label: selectedDailyProgram
+                      ? `${sec.section} (${sec.mainTeacherName || sec.assignedTeacher || "TBA"})`
+                      : `${sec.section}${sec.program ? ` · ${sec.program}` : ""} (${sec.mainTeacherName || sec.assignedTeacher || "TBA"})`,
                   })),
                 ]}
               />
@@ -350,13 +403,13 @@ export default function AttendancePage() {
           ) : loadingDaily ? (
             <div className="text-muted-foreground flex items-center justify-center gap-3 py-12 text-sm">
               <Loader2 size={18} className="text-primary animate-spin" />
-              የተማሪዎችን ዝርዝር በማምጣት ላይ...
+              Loading student roster...
             </div>
           ) : studentRecords.length === 0 ? (
             <Panel>
               <EmptyState
-                title="በዚህ ክፍል የተመዘገበ ተማሪ የለም"
-                description={`በክፍል "${selectedSection}" ውስጥ ምንም ተማሪ አልተገኘም።`}
+                title="No Students in this Section"
+                description={`No students were found in section "${selectedSection}"${selectedDailyProgram ? ` for ${selectedDailyProgram}` : ""}.`}
               />
             </Panel>
           ) : (
@@ -369,19 +422,23 @@ export default function AttendancePage() {
                   </span>
                 ))}
               </div>
-              <table className="w-full min-w-[320px] text-left text-sm">
+              <table className="w-full min-w-[360px] text-left text-sm">
                 <thead>
                   <tr className="text-muted-foreground border-b border-white/5 text-xs tracking-wider uppercase">
                     <th className="w-10 px-3 py-2.5 font-medium">#</th>
-                    <th className="px-3 py-2.5 font-medium">Student</th>
+                    <th className="px-3 py-2.5 font-medium">Student ID</th>
+                    <th className="px-3 py-2.5 font-medium">Student Name</th>
                     <th className="px-3 py-2.5 text-right font-medium">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
                   {studentRecords.map((r, idx) => (
-                    <tr key={r.studentId} className="hover:bg-white/[0.03]">
+                    <tr key={r.studentDbId} className="hover:bg-white/[0.03]">
                       <td className="text-muted-foreground px-3 py-2">
                         {idx + 1}
+                      </td>
+                      <td className="px-3 py-2 font-mono text-xs font-semibold text-primary">
+                        {r.studentId || "—"}
                       </td>
                       <td className="px-3 py-2 font-medium">{r.fullName}</td>
                       <td className="px-3 py-2">
@@ -394,7 +451,7 @@ export default function AttendancePage() {
                               aria-label={option.label}
                               aria-pressed={r.status === option.value}
                               onClick={() =>
-                                handleStatusChange(r.studentId, option.value)
+                                handleStatusChange(r.studentDbId, option.value)
                               }
                               className={cn(
                                 "flex size-9 cursor-pointer items-center justify-center rounded-md border text-base transition-all",
@@ -495,13 +552,13 @@ export default function AttendancePage() {
           {loadingSummary ? (
             <div className="text-muted-foreground flex items-center justify-center gap-3 py-12 text-sm">
               <Loader2 size={18} className="text-primary animate-spin" />
-              በማስላት ላይ...
+              Calculating attendance analytics...
             </div>
           ) : summaryList.length === 0 ? (
             <Panel>
               <EmptyState
-                title="ምንም መረጃ የለም"
-                description="ከተመረጡት ማጣሪያዎች ጋር የሚዛመድ የአቴንዳንስ መረጃ አልተገኘም።"
+                title="No Attendance Data"
+                description="No attendance records match the selected filters."
               />
             </Panel>
           ) : (
@@ -512,13 +569,13 @@ export default function AttendancePage() {
                     <th className="px-4 py-2.5 font-medium">Student ID</th>
                     <th className="px-4 py-2.5 font-medium">Full Name</th>
                     <th className="px-4 py-2.5 text-center font-medium">
-                      Attended (የተገኙ)
+                      Attended
                     </th>
                     <th className="px-4 py-2.5 text-center font-medium">
-                      Permission (ፈቃድ)
+                      Permission
                     </th>
                     <th className="px-4 py-2.5 text-center font-medium">
-                      Absences (ቀሪ)
+                      Absences
                     </th>
                     <th className="px-4 py-2.5 font-medium">Rate</th>
                     <th className="px-4 py-2.5 font-medium">Status</th>
