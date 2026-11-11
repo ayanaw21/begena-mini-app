@@ -272,13 +272,13 @@ export default function AttendancePage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="የአቴንዳንስ ክትትል"
-        description="የዕለት ክትትል መመዝገቢያ እና የተማሪዎች አጠቃላይ ሁኔታ"
+        title="Attendance Tracking"
+        description="Daily attendance records, permissions, and status overviews."
         action={
           <div className="bg-surface inline-flex rounded-lg border border-white/10 p-1">
             {[
-              { id: "daily" as const, label: "የዕለት ክትትል" },
-              { id: "summary" as const, label: "አጠቃላይ ሁኔታ" },
+              { id: "daily" as const, label: "Daily Sheet" },
+              { id: "summary" as const, label: "Summary Overview" },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -335,7 +335,7 @@ export default function AttendancePage() {
                 disabled={savingDaily || studentRecords.length === 0}
                 className="ml-auto"
               >
-                {savingDaily ? "በማስቀመጥ ላይ..." : "አቴንዳንስ መዝግብ"}
+                {savingDaily ? "Saving..." : "Save Attendance"}
               </Button>
             )}
           </div>
@@ -343,8 +343,8 @@ export default function AttendancePage() {
           {!selectedSection ? (
             <Panel>
               <EmptyState
-                title="ክፍል አልተመረጠም"
-                description="የዕለት ክትትል ዝርዝር ለማየት እባክዎ ከላይ ክፍል ይምረጡ።"
+                title="No Section Selected"
+                description="Please select a class section above to view and take daily attendance."
               />
             </Panel>
           ) : loadingDaily ? (
@@ -426,7 +426,7 @@ export default function AttendancePage() {
                 className: "",
               },
               {
-                label: "Permission days (የፈቃድ ቀናት)",
+                label: "Permission days",
                 value: totalPermissions,
                 className: "text-sky-400",
               },

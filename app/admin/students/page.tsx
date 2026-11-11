@@ -560,17 +560,17 @@ export default function StudentsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="የተማሪዎች ማህደር"
-        description={`${filteredStudents.length} ተማሪዎች ተዘርዝረዋል ${
+        title="Students"
+        description={`${filteredStudents.length} students listed ${
           studentViewMode === "archived"
-            ? "· የቀድሞ ማህደር (Archived)"
+            ? "· Archived Records"
             : studentViewMode === "active"
-            ? "· አሁን ያሉ ተማሪዎች (Active)"
-            : "· ሁሉም ተማሪዎች"
+            ? "· Active Season"
+            : "· All Students"
         }`}
         action={
           !isAdminUser ? (
-            <Badge tone="info">የማየት ብቻ ፈቃድ</Badge>
+            <Badge tone="info">View Only</Badge>
           ) : (
             <div className="flex flex-wrap items-center gap-2">
               <button
@@ -583,7 +583,7 @@ export default function StudentsPage() {
                 }}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 text-xs sm:text-sm font-medium transition cursor-pointer shadow-sm"
               >
-                <span>የምረቃ ማስተዳደሪያ</span>
+                <span>Graduation</span>
               </button>
 
               <button
@@ -597,12 +597,12 @@ export default function StudentsPage() {
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 text-xs sm:text-sm font-medium transition cursor-pointer shadow-sm"
               >
                 <Upload size={14} />
-                <span>ፋይል አስገባ (Import CSV)</span>
+                <span>Import CSV</span>
               </button>
 
               <ModalForm
-                title="አዲስ ተማሪ መዝግብ"
-                triggerText="አዲስ ተማሪ"
+                title="Add New Student"
+                triggerText="Add Student"
                 onSubmit={handleCreateStudent}
                 image={siteImages.adminPhoto1}
               >
@@ -674,7 +674,7 @@ export default function StudentsPage() {
                     />
                   </Field>
 
-                  <Field label="Batch / ዙር" htmlFor="studentBatch" hint="e.g. Batch 8" required>
+                  <Field label="Batch" htmlFor="studentBatch" hint="e.g. Batch 8" required>
                     <input
                       id="studentBatch"
                       placeholder="Batch"
@@ -762,7 +762,7 @@ export default function StudentsPage() {
             )}
           >
             <UserCheck size={14} />
-            <span>አሁን ያሉ ({activeCount})</span>
+            <span>Active ({activeCount})</span>
           </button>
           <button
             type="button"
@@ -775,7 +775,7 @@ export default function StudentsPage() {
             )}
           >
             <Archive size={14} />
-            <span>የቀድሞ ማህደር ({archivedCount})</span>
+            <span>Archived ({archivedCount})</span>
           </button>
           <button
             type="button"
@@ -788,7 +788,7 @@ export default function StudentsPage() {
             )}
           >
             <Users size={14} />
-            <span>ሁሉም ({students.length})</span>
+            <span>All ({students.length})</span>
           </button>
         </div>
       </div>
@@ -797,7 +797,7 @@ export default function StudentsPage() {
       <div className="flex flex-wrap gap-3">
         <input
           type="search"
-          placeholder="በስም፣ በ ID ወይም በስልክ ፈልግ..."
+          placeholder="Search by name, ID or phone..."
           className="min-w-60 flex-1 text-sm"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -807,7 +807,7 @@ export default function StudentsPage() {
           value={filterProgram}
           onChange={(val) => setFilterProgram(val)}
           options={[
-            { value: "", label: "ሁሉም ፕሮግራሞች" },
+            { value: "", label: "All programs" },
             ...programs.map((p) => ({
               value: p.name,
               label: `${p.name} (${p.code})`,
@@ -819,7 +819,7 @@ export default function StudentsPage() {
           value={filterBatch}
           onChange={(val) => setFilterBatch(val)}
           options={[
-            { value: "", label: "ሁሉም ባቾች" },
+            { value: "", label: "All batches" },
             ...uniqueBatches.map((batch) => ({
               value: batch,
               label: batch,
@@ -831,7 +831,7 @@ export default function StudentsPage() {
           value={filterSection}
           onChange={(val) => setFilterSection(val)}
           options={[
-            { value: "", label: "ሁሉም ሴክሽኖች" },
+            { value: "", label: "All sections" },
             ...uniqueSections.map((sec) => ({
               value: sec,
               label: sec,
@@ -844,7 +844,7 @@ export default function StudentsPage() {
             value={filterStatus}
             onChange={(val) => setFilterStatus(val)}
             options={[
-              { value: "", label: "ሁሉም ሁኔታዎች" },
+              { value: "", label: "All statuses" },
               { value: "Active", label: "Active" },
               { value: "Graduated", label: "Graduated" },
               { value: "Suspended", label: "Suspended" },
@@ -1083,8 +1083,8 @@ export default function StudentsPage() {
       <Modal
         isOpen={gradModalOpen}
         onClose={() => setGradModalOpen(false)}
-        title="🎓 Set Batch Graduation (የምረቃ ማስተዳደሪያ)"
-        description="Select who graduated and update remaining active students for this program & batch."
+        title="Batch Graduation Management"
+        description="Select graduated students and update remaining active records for this program & batch."
         className="max-w-2xl"
         footer={
           <div className="flex w-full items-center justify-between gap-3">
@@ -1124,7 +1124,7 @@ export default function StudentsPage() {
               />
             </Field>
 
-            <Field label="Batch / ዙር" htmlFor="gradBatchSelect">
+            <Field label="Batch" htmlFor="gradBatchSelect">
               <CustomSelect
                 id="gradBatchSelect"
                 value={gradBatch}
@@ -1234,18 +1234,18 @@ export default function StudentsPage() {
             setParsedStudents([]);
           }
         }}
-        title="📥 የተማሪዎችን መረጃ በፋይል አስገባ (Bulk Import Students)"
-        description="Select the Program and Section first, then upload your CSV/TXT file. Students will automatically receive these assignments."
+        title="Bulk Import Students from CSV"
+        description="Select the program and section first, then upload your CSV/TXT file. Students will automatically receive these assignments."
         className="max-w-3xl"
         footer={
           <div className="flex w-full items-center justify-between gap-3">
             <div className="text-xs text-muted-foreground">
               {parsedStudents.length > 0 ? (
                 <span className="text-emerald-400 font-medium">
-                  {parsedStudents.length} ተማሪዎች ተለይተዋል (Ready to import)
+                  {parsedStudents.length} students detected (Ready to import)
                 </span>
               ) : (
-                <span>እባክዎ ፋይል ይምረጡ</span>
+                <span>Please select a file</span>
               )}
             </div>
             <div className="flex gap-2">
@@ -1270,8 +1270,8 @@ export default function StudentsPage() {
                 }
               >
                 {isImporting
-                  ? "በማስገባት ላይ..."
-                  : `አስገባ (Import ${parsedStudents.length} Students)`}
+                  ? "Importing..."
+                  : `Import (${parsedStudents.length} Students)`}
               </Button>
             </div>
           </div>
@@ -1281,10 +1281,10 @@ export default function StudentsPage() {
           {/* Step 1: Pre-selection of Program, Section, and Batch */}
           <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3.5 space-y-3">
             <div className="text-xs font-semibold text-primary uppercase tracking-wider">
-              1. ፕሮግራም እና ክፍል ይምረጡ (Select Program & Section)
+              1. Select Program & Section
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
-              <Field label="ፕሮግራም (Program)" htmlFor="importProgSelect" required>
+              <Field label="Program" htmlFor="importProgSelect" required>
                 <CustomSelect
                   id="importProgSelect"
                   value={importProgram}
@@ -1303,16 +1303,16 @@ export default function StudentsPage() {
               </Field>
 
               <Field
-                label="ክፍል (Section)"
+                label="Section"
                 htmlFor="importSecSelect"
-                hint="ይህንን ከመረጡ በፋይሉ መጻፍ አያስፈልግም"
+                hint="Optional if specified in CSV"
               >
                 <CustomSelect
                   id="importSecSelect"
                   value={importSection}
                   onChange={(val) => setImportSection(val)}
                   options={[
-                    { value: "", label: "ከፋይሉ ራስ-ሰር ፈልግ (From CSV)" },
+                    { value: "", label: "Detect from CSV" },
                     ...importAvailableSections.map((s) => ({
                       value: s.section,
                       label: s.section,
@@ -1321,7 +1321,7 @@ export default function StudentsPage() {
                 />
               </Field>
 
-              <Field label="ዙር (Batch)" htmlFor="importBatchInput" required>
+              <Field label="Batch" htmlFor="importBatchInput" required>
                 <input
                   id="importBatchInput"
                   value={importBatch}
@@ -1336,7 +1336,7 @@ export default function StudentsPage() {
           <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3.5 space-y-3">
             <div className="flex items-center justify-between">
               <div className="text-xs font-semibold text-primary uppercase tracking-wider">
-                2. CSV ወይም TXT ፋይል ይምረጡ (Upload File)
+                2. Upload File (CSV or TXT)
               </div>
               <button
                 type="button"
@@ -1344,7 +1344,7 @@ export default function StudentsPage() {
                 className="inline-flex items-center gap-1 text-xs text-amber-300 hover:underline cursor-pointer"
               >
                 <Download size={13} />
-                <span>ምሳሌ CSV አውርድ (Sample Template)</span>
+                <span>Download Sample Template</span>
               </button>
             </div>
 
@@ -1368,10 +1368,10 @@ export default function StudentsPage() {
               <div className="flex flex-col items-center justify-center gap-2">
                 <FileSpreadsheet className="text-primary h-8 w-8" />
                 <p className="text-sm font-medium text-foreground">
-                  ፋይሉን እዚህ ይጎትቱ ወይም ለመምረጥ ጠቅ ያድርጉ
+                  Drag and drop your file here, or click to browse
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  ደረጃውን የጠበቀ CSV (.csv) ወይም Tab-separated (.txt) ይደግፋል
+                  Supports standard CSV (.csv) or Tab-separated (.txt)
                 </p>
               </div>
             </div>
@@ -1382,10 +1382,10 @@ export default function StudentsPage() {
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-semibold text-muted-foreground uppercase tracking-wider">
-                  ቅድመ-ዕይታ (Preview - {parsedStudents.length} Students):
+                  Parsed Preview ({parsedStudents.length} Students):
                 </span>
                 <span className="text-muted-foreground">
-                  ክፍል፦ <strong className="text-primary">{importSection || "From CSV"}</strong> | ፕሮግራም፦ <strong className="text-primary">{importProgram}</strong>
+                  Section: <strong className="text-primary">{importSection || "From CSV"}</strong> | Program: <strong className="text-primary">{importProgram}</strong>
                 </span>
               </div>
 
@@ -1394,13 +1394,13 @@ export default function StudentsPage() {
                   <thead className="bg-white/5 sticky top-0 border-b border-white/10 text-muted-foreground">
                     <tr>
                       <th className="p-2 w-10 text-center">#</th>
-                      <th className="p-2">መለያ (ID)</th>
-                      <th className="p-2">ሙሉ ስም (Full Name)</th>
-                      <th className="p-2">ፆታ</th>
+                      <th className="p-2">Student ID</th>
+                      <th className="p-2">Full Name</th>
+                      <th className="p-2">Gender</th>
                       <th className="p-2">Department</th>
-                      <th className="p-2">ዙር (Batch)</th>
-                      <th className="p-2">ስልክ</th>
-                      <th className="p-2">ክፍል (Section)</th>
+                      <th className="p-2">Batch</th>
+                      <th className="p-2">Phone</th>
+                      <th className="p-2">Section</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">

@@ -171,15 +171,15 @@ export default function ProgramsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="የስልጠና ፕሮግራሞች"
-        description="የመሳሪያ ስልጠና ፕሮግራሞች እና የዙር አስተዳደር"
+        title="Training Programs"
+        description="Manage instrument training programs and batch sessions."
         action={
           !isAdminUser ? (
-            <Badge tone="info">የማየት ብቻ ፈቃድ</Badge>
+            <Badge tone="info">View Only</Badge>
           ) : (
             <ModalForm
-              title="አዲስ ፕሮግራም መዝግብ"
-              triggerText="አዲስ ፕሮግራም"
+              title="Add New Program"
+              triggerText="Add Program"
               onSubmit={handleCreateProgram}
               image={siteImages.adminCard1}
             >

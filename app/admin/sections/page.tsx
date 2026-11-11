@@ -233,15 +233,15 @@ export default function SectionsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="ክፍሎችና ምድቦች"
-        description="የተማሪዎች ክፍሎችና የተመደቡ መምህራን"
+        title="Class Sections"
+        description="Class sections, student batches, and teacher assignments."
         action={
           !isAdminUser ? (
-            <Badge tone="info">የማየት ብቻ ፈቃድ</Badge>
+            <Badge tone="info">View Only</Badge>
           ) : (
             <ModalForm
-            title="አዲስ ክፍል መዝግብ"
-            triggerText="አዲስ ክፍል"
+            title="Add New Section"
+            triggerText="Add Section"
             onSubmit={handleCreateSection}
             image={siteImages.adminTeacher}
           >
@@ -372,7 +372,7 @@ export default function SectionsPage() {
             ),
             fields: [
               {
-                label: "Main teachers / ዋና መምህራን",
+                label: "Main Teachers",
                 value:
                   mainTeachers.length > 0 ? (
                     <div className="flex flex-wrap gap-1 mt-0.5">
@@ -391,7 +391,7 @@ export default function SectionsPage() {
                 wide: true,
               },
               {
-                label: "Assistant teachers / ረዳት መምህራን",
+                label: "Assistant Teachers",
                 value:
                   assistantTeachers.length > 0 ? (
                     <div className="flex flex-wrap gap-1 mt-0.5">

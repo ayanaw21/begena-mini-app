@@ -341,8 +341,8 @@ export default function PaymentsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="የክፍያ ማስተዳደሪያ"
-        description="የተማሪዎች ወርሃዊ ክፍያ ሁኔታና ዝርዝር መከታተያ"
+        title="Payments"
+        description="Monthly student tuition payments and verification roster."
         action={
           <div className="flex flex-wrap items-center gap-2">
             <Button
@@ -353,15 +353,15 @@ export default function PaymentsPage() {
               className="border-white/10 hover:border-primary/40 text-xs sm:text-sm flex items-center gap-1.5 cursor-pointer shadow-sm"
             >
               <Building2 size={14} className="text-primary" />
-              <span>የባንክ ሂሳብ</span>
+              <span>Bank Account</span>
             </Button>
             <div className="bg-surface inline-flex rounded-lg border border-white/10 p-1">
             {[
               {
                 id: "roster" as const,
-                label: `የተማሪዎች ዝርዝር (${filteredStudents.length})`,
+                label: `Student Roster (${filteredStudents.length})`,
               },
-              { id: "matrix" as const, label: "ወርሃዊ ማትሪክስ" },
+              { id: "matrix" as const, label: "Monthly Matrix" },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -386,22 +386,22 @@ export default function PaymentsPage() {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
           {
-            label: `ጠቅላላ ተማሪዎች (${selectedMonth})`,
+            label: `Total Students (${selectedMonth})`,
             value: stats.total,
             className: "text-foreground",
           },
           {
-            label: "ያልከፈሉ",
+            label: "Unpaid",
             value: stats.unpaid,
             className: "text-red-400",
           },
           {
-            label: "የከፈሉ",
+            label: "Paid",
             value: stats.paid,
             className: "text-emerald-400",
           },
           {
-            label: "በመጠባበቅ ላይ",
+            label: "Pending Approval",
             value: stats.pending,
             className: "text-amber-400",
           },
@@ -426,7 +426,7 @@ export default function PaymentsPage() {
         <div className="relative flex-1 min-w-[200px]">
           <input
             type="search"
-            placeholder="በስም ወይም በመለያ ፈልግ..."
+            placeholder="Search by name or student ID..."
             className="w-full pl-9 text-sm"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -852,17 +852,17 @@ export default function PaymentsPage() {
       <Modal
         isOpen={bankModalOpen}
         onClose={() => setBankModalOpen(false)}
-        title="የተማሪ ክፍያ መቀበያ ባንክ ሂሳብ"
+        title="Tuition Bank Account Settings"
         className="max-w-lg"
       >
         <form onSubmit={handleSaveBankSettings} className="space-y-4">
           <p className="text-xs text-muted-foreground">
-            ተማሪዎች የወርሃዊ ክፍያ ደረሰኝ ሲያስገቡ የሚያዩት ይፋዊ የባንክ አካውንት መረጃ። አዲስ ወቅት ሲመጣ እዚህ መቀየር ይችላሉ።
+            Official bank account details displayed to students when submitting monthly tuition payment receipts.
           </p>
 
           <div>
             <label className="text-xs font-medium text-foreground block mb-1">
-              የባንኩ ስም (Bank Name) *
+              Bank Name *
             </label>
             <input
               type="text"
@@ -876,7 +876,7 @@ export default function PaymentsPage() {
 
           <div>
             <label className="text-xs font-medium text-foreground block mb-1">
-              የአካውንት ባለቤት ስም (Account Holder Name) *
+              Account Holder Name *
             </label>
             <input
               type="text"
@@ -890,7 +890,7 @@ export default function PaymentsPage() {
 
           <div>
             <label className="text-xs font-medium text-foreground block mb-1">
-              የአካውንት ቁጥር (Account Number) *
+              Account Number *
             </label>
             <input
               type="text"
@@ -904,13 +904,13 @@ export default function PaymentsPage() {
 
           <div>
             <label className="text-xs font-medium text-foreground block mb-1">
-              መመሪያ ወይም ማስታወሻ (Instructions)
+              Instructions / Notes
             </label>
             <textarea
               rows={2}
               value={bankForm.instructions}
               onChange={(e) => setBankForm({ ...bankForm, instructions: e.target.value })}
-              placeholder="ወርሃዊ የተማሪ ክፍያ ወደ የሚከተለው የባንክ አካውንት ያስተላልፉ።"
+              placeholder="Transfer monthly student tuition to the following bank account."
               className="w-full p-2.5 rounded-lg bg-background border border-input text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-none"
             />
           </div>
@@ -923,7 +923,7 @@ export default function PaymentsPage() {
               onClick={() => setBankModalOpen(false)}
               disabled={isSavingBank}
             >
-              ሰርዝ
+              Cancel
             </Button>
             <Button
               type="submit"
@@ -931,7 +931,7 @@ export default function PaymentsPage() {
               disabled={isSavingBank}
               className="bg-primary text-primary-foreground font-semibold"
             >
-              {isSavingBank ? "በማስቀመጥ ላይ..." : "አስቀምጥ"}
+              {isSavingBank ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         </form>

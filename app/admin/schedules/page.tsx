@@ -224,15 +224,15 @@ export default function SchedulesPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="የትምህርት ክፍለ-ጊዜ"
-        description="የየክፍሉ ሳምንታዊ የትምህርት ቀናትና ሰዓታት ሰሌዳ"
+        title="Class Schedules"
+        description="Weekly class timetables and session hours per section."
         action={
           !isAdminUser ? (
-            <Badge tone="info">የማየት ብቻ ፈቃድ</Badge>
+            <Badge tone="info">View Only</Badge>
           ) : (
             <ModalForm
-            title="አዲስ ክፍለ-ጊዜ መዝግብ"
-            triggerText="አዲስ ክፍለ-ጊዜ"
+            title="Add New Schedule"
+            triggerText="Add Schedule"
             onSubmit={handleCreateSchedule}
             image={siteImages.adminCard2}
           >

@@ -103,9 +103,9 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                   priority
                 />
               </div>
-              <div className="flex flex-col">
-                <span className="text-foreground text-sm font-semibold tracking-wide">
-                  Begena Sub-dept
+              <div className="flex flex-col min-w-0">
+                <span className="text-foreground text-xs font-semibold tracking-wide truncate" title="አ/አ/ሳ/ቴ/ዩ በገና ንዑስ ክፍል">
+                  አ/አ/ሳ/ቴ/ዩ በገና ንዑስ ክፍል
                 </span>
                 <span className="text-muted-foreground text-[11px]">
                   {isTeacherUser ? "Teacher Portal" : "Admin Portal"}

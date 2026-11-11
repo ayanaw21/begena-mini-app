@@ -135,14 +135,15 @@ export default function AnnouncementsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="ማስታወቂያዎች"
-        description="ለተማሪዎች የሚተላለፉ መልዕክቶችና ማሳወቂያዎች"
+        title="Announcements"
+        description="Broadcast notices and informational updates to students."
         action={
           !isAdminUser ? (
-            <Badge tone="info">የማየት ብቻ ፈቃድ</Badge>
+            <Badge tone="info">View Only</Badge>
           ) : (
             <ModalForm
-            title="አዲስ ማስታወቂያ መዝግብ"
+            title="Create New Announcement"
+            triggerText="New Announcement"
             onSubmit={handleCreateAnnouncement}
             image={siteImages.adminAncient}
           >

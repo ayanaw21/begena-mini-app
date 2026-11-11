@@ -108,7 +108,7 @@ export default function AdminNavbar({
             size="sm"
             onClick={() => setPasswordModalOpen(true)}
             className="text-xs border-white/10 hover:border-primary/40 flex items-center gap-1.5"
-            title="የይለፍ ቃል መቀየሪያ"
+            title="Change Password"
           >
             <KeyRound size={13} className="text-amber-400" />
             <span className="hidden sm:inline">Password</span>
@@ -141,7 +141,7 @@ export default function AdminNavbar({
             <div className="flex items-center justify-between pb-3 border-b border-white/10">
               <div className="flex items-center gap-2 text-primary font-semibold">
                 <KeyRound size={18} className="text-amber-400" />
-                <h3 className="text-foreground">የይለፍ ቃል ማደሻ (Change Password)</h3>
+                <h3 className="text-foreground">Change Password</h3>
               </div>
               <button
                 onClick={() => setPasswordModalOpen(false)}
@@ -152,17 +152,17 @@ export default function AdminNavbar({
             </div>
 
             <p className="text-xs text-muted-foreground">
-              የእርስዎን መለያ ({userName}) ደህንነት ለመጠበቅ የይለፍ ቃልዎን እዚህ ማደስ ይችላሉ።
+              Update your account password ({userName}) to keep your access secure.
             </p>
 
             <form onSubmit={handleUpdatePassword} className="space-y-4">
               <div>
                 <label className="text-xs font-medium text-foreground block mb-1.5">
-                  የአሁኑ የይለፍ ቃል (Current Password)
+                  Current Password
                 </label>
                 <input
                   type="password"
-                  placeholder="የአሁኑን የይለፍ ቃል ያስገቡ"
+                  placeholder="Enter current password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   className="w-full h-10 px-3 rounded-lg bg-background border border-input text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary"
@@ -171,12 +171,12 @@ export default function AdminNavbar({
 
               <div>
                 <label className="text-xs font-medium text-foreground block mb-1.5">
-                  አዲስ የይለፍ ቃል (New Password) *
+                  New Password *
                 </label>
                 <input
                   type="password"
                   required
-                  placeholder="ቢያንስ 4 ፊደላት ወይም ቁጥሮች"
+                  placeholder="At least 4 characters"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   className="w-full h-10 px-3 rounded-lg bg-background border border-input text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary"
@@ -185,12 +185,12 @@ export default function AdminNavbar({
 
               <div>
                 <label className="text-xs font-medium text-foreground block mb-1.5">
-                  አዲሱን የይለፍ ቃል ያረጋግጡ (Confirm New Password) *
+                  Confirm New Password *
                 </label>
                 <input
                   type="password"
                   required
-                  placeholder="አዲሱን የይለፍ ቃል ደግመው ያስገቡ"
+                  placeholder="Re-enter new password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="w-full h-10 px-3 rounded-lg bg-background border border-input text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary"
@@ -205,7 +205,7 @@ export default function AdminNavbar({
                   onClick={() => setPasswordModalOpen(false)}
                   disabled={changingPassword}
                 >
-                  ሰርዝ (Cancel)
+                  Cancel
                 </Button>
                 <Button
                   type="submit"
@@ -213,7 +213,7 @@ export default function AdminNavbar({
                   disabled={changingPassword || !newPassword}
                   className="bg-primary text-primary-foreground font-semibold"
                 >
-                  {changingPassword ? "በመቀየር ላይ..." : "የይለፍ ቃል ቀይር"}
+                  {changingPassword ? "Updating..." : "Update Password"}
                 </Button>
               </div>
             </form>

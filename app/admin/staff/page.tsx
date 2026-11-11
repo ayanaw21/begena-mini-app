@@ -311,8 +311,8 @@ export default function StaffPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="መምህራን እና ሠራተኞች"
-        description="የአስተዳዳሪዎችና የመምህራን ዝርዝር"
+        title="Staff & Teachers"
+        description="Administrators, instructors, and assistant teachers."
         action={
           <div className="flex flex-wrap items-center gap-2">
             <button
@@ -326,12 +326,12 @@ export default function StaffPage() {
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 text-xs sm:text-sm font-medium transition cursor-pointer shadow-sm"
             >
               <Upload size={14} />
-              <span>ፋይል አስገባ (Import CSV)</span>
+              <span>Import CSV</span>
             </button>
 
             <ModalForm
-              title="አዲስ መምህር / ሠራተኛ መዝግብ"
-              triggerText="አዲስ መምህር / ሠራተኛ"
+              title="Add New Staff Member"
+              triggerText="Add Staff"
               onSubmit={handleCreateStaff}
               image={siteImages.adminTeacher}
             >
@@ -626,17 +626,17 @@ export default function StaffPage() {
       <Modal
         isOpen={importModalOpen}
         onClose={() => setImportModalOpen(false)}
-        title="መምህራንን በ CSV ፋይል ማስገቢያ"
+        title="Import Staff & Teachers from CSV"
         className="max-w-2xl"
       >
         <div className="space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
             <div>
               <p className="text-sm font-medium text-foreground">
-                የመምህራን ዝርዝር የያዘ CSV ፋይል ይምረጡ
+                Select a CSV file containing staff and teacher records
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                የመምህሩ ሙሉ ስም፣ ስልክ ቁጥር እና ክፍል (Full Name, Phone Number, Department)
+                Columns: Full Name, Phone Number, Department, Role
               </p>
             </div>
             <Button
@@ -647,12 +647,12 @@ export default function StaffPage() {
               className="border-white/10 hover:border-primary/40 text-xs shrink-0 gap-1.5"
             >
               <Download size={13} className="text-primary" />
-              <span>የናሙና CSV አውርድ</span>
+              <span>Download Template</span>
             </Button>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="የሚመደቡበት ፕሮግራም" htmlFor="importStaffProgram" required>
+            <Field label="Assigned Program" htmlFor="importStaffProgram" required>
               <CustomSelect
                 id="importStaffProgram"
                 value={importProgram}
@@ -661,14 +661,14 @@ export default function StaffPage() {
               />
             </Field>
 
-            <Field label="የተጠቃሚ ድርሻ" htmlFor="importStaffRole" required>
+            <Field label="Default Role" htmlFor="importStaffRole" required>
               <CustomSelect
                 id="importStaffRole"
                 value={importRole}
                 onChange={(val) => setImportRole(val)}
                 options={[
-                  { value: "teacher", label: "Teacher / Instructor (መምህር)" },
-                  { value: "admin", label: "Admin & Instructor (አስተዳዳሪ)" },
+                  { value: "teacher", label: "Teacher / Instructor" },
+                  { value: "admin", label: "Admin & Instructor" },
                 ]}
               />
             </Field>
@@ -702,10 +702,10 @@ export default function StaffPage() {
                 <FileSpreadsheet size={22} />
               </div>
               <span className="text-sm font-semibold text-foreground">
-                {importFileName ? importFileName : "CSV ፋይል እዚህ ይምረጡ ወይም ይጎትቱ"}
+                {importFileName ? importFileName : "Choose or drag a CSV file here"}
               </span>
               <span className="text-xs text-muted-foreground">
-                .csv ወይም .txt ፋይል ብቻ
+                .csv or .txt files only
               </span>
             </label>
           </div>
@@ -714,9 +714,9 @@ export default function StaffPage() {
           {parsedStaff.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs font-medium text-muted-foreground px-1">
-                <span>ቅድመ-ዕይታ</span>
+                <span>Parsed Preview</span>
                 <span className="text-emerald-400 font-semibold">
-                  {parsedStaff.length} መምህራን ተለይተዋል
+                  {parsedStaff.length} staff members found
                 </span>
               </div>
               <div className="max-h-48 overflow-y-auto rounded-lg border border-white/10 bg-background/50 divide-y divide-white/5">
@@ -753,7 +753,7 @@ export default function StaffPage() {
               }}
               disabled={isImporting}
             >
-              ሰርዝ
+              Cancel
             </Button>
             <Button
               type="button"
@@ -763,8 +763,8 @@ export default function StaffPage() {
               className="bg-primary text-primary-foreground font-semibold"
             >
               {isImporting
-                ? "በማስገባት ላይ..."
-                : `መምህራንን አስገባ (${parsedStaff.length})`}
+                ? "Importing..."
+                : `Import Staff (${parsedStaff.length})`}
             </Button>
           </div>
         </div>
