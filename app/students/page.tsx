@@ -3,6 +3,7 @@ import Footer from "@/components/footer";
 import Navbar from "@/components/Navbar";
 import NoStudentsFound from "@/components/NoStudentsFound";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import Figure from "@/components/ui/figure";
 import { siteImages } from "@/lib/images";
@@ -14,7 +15,7 @@ import {
 } from "@/components/ui/page";
 import useStudentStore from "@/stores/studentStore";
 import api from "@/lib/api";
-import { Section } from "@/types";
+import { Section, Student } from "@/types";
 import { ChevronDown, Loader2, Users } from "lucide-react";
 import Link from "next/link";
 import CustomSelect from "@/components/ui/custom-select";
@@ -27,12 +28,19 @@ const LoadingState = () => (
 	</div>
 );
 
+interface SectionCardGroup {
+	program: string;
+	section: string;
+	key: string;
+	students: Student[];
+}
+
 const StudentsPage = () => {
 	const { students, loading, fetchStudents } = useStudentStore();
 	const [selectedProgram, setSelectedProgram] = useState("All");
 	const [selectedSection, setSelectedSection] = useState("All");
 	const [sectionsMap, setSectionsMap] = useState<Record<string, string>>({});
-	const [expandedSection, setExpandedSection] = useState<string | null>(null);
+	const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
 
 	useEffect(() => {
 		fetchStudents();
@@ -64,7 +72,7 @@ const StudentsPage = () => {
 		[sectionsMap]
 	);
 
-	// Extract unique programs
+	// Extract unique programs in students
 	const uniquePrograms = useMemo(() => {
 		return [
 			...new Set(
@@ -75,58 +83,82 @@ const StudentsPage = () => {
 		];
 	}, [students]);
 
-	// Filter students by program
-	const programStudents = useMemo(() => {
-		if (selectedProgram === "All") return students;
-		return students.filter((s) => s.program === selectedProgram);
-	}, [students, selectedProgram]);
-
-	// Extract sections available for selected program
+	// Available sections strictly cascading from selected program
 	const availableSections = useMemo(() => {
-		return [
-			...new Set(
-				programStudents
-					.map((s) => getSectionName(s.section))
-					.filter((sec) => sec.trim().length > 0)
-			),
-		];
-	}, [programStudents, getSectionName]);
+		const targetStudents =
+			selectedProgram === "All"
+				? students
+				: students.filter((s) => s.program === selectedProgram);
 
-	// Final filtered students list
-	const filteredStudents = useMemo(() => {
-		return programStudents.filter((student) => {
-			if (selectedSection === "All") return true;
-			const secName = getSectionName(student.section);
-			return secName === selectedSection || student.section === selectedSection;
+		const secSet = new Set<string>();
+		targetStudents.forEach((s) => {
+			const name = getSectionName(s.section);
+			if (name && name.trim().length > 0) {
+				secSet.add(name);
+			}
 		});
-	}, [programStudents, selectedSection, getSectionName]);
 
-	// Unique sections in the filtered dataset
-	const displaySections = useMemo(() => {
-		return [
-			...new Set(
-				filteredStudents.map((s) => getSectionName(s.section))
-			),
-		];
-	}, [filteredStudents, getSectionName]);
+		return Array.from(secSet).sort((a, b) => a.localeCompare(b));
+	}, [students, selectedProgram, getSectionName]);
+
+	// Group students by Program + Section so identical section names (Sec-A) NEVER merge across programs!
+	const displayGroups = useMemo<SectionCardGroup[]>(() => {
+		const filtered = students.filter((s) => {
+			if (selectedProgram !== "All" && s.program !== selectedProgram) return false;
+			if (selectedSection !== "All") {
+				const sName = getSectionName(s.section);
+				if (sName !== selectedSection && s.section !== selectedSection) return false;
+			}
+			return true;
+		});
+
+		const groupsMap = new Map<string, SectionCardGroup>();
+
+		filtered.forEach((st) => {
+			const prog = st.program || "General";
+			const secName = getSectionName(st.section);
+			const key = `${prog}__${secName}`;
+
+			if (!groupsMap.has(key)) {
+				groupsMap.set(key, {
+					program: prog,
+					section: secName,
+					key,
+					students: [],
+				});
+			}
+			groupsMap.get(key)!.students.push(st);
+		});
+
+		// Sort students inside each group naturally by studentId
+		groupsMap.forEach((grp) => {
+			grp.students.sort((a, b) => {
+				const idA = a.studentId || a.begenaId || "";
+				const idB = b.studentId || b.begenaId || "";
+				return idA.localeCompare(idB, undefined, { numeric: true, sensitivity: "base" });
+			});
+		});
+
+		// Sort groups: first by program name, then by section name
+		return Array.from(groupsMap.values()).sort((a, b) => {
+			if (a.program !== b.program) return a.program.localeCompare(b.program);
+			return a.section.localeCompare(b.section);
+		});
+	}, [students, selectedProgram, selectedSection, getSectionName]);
 
 	const handleProgramChange = (prog: string) => {
 		setSelectedProgram(prog);
 		setSelectedSection("All");
-		setExpandedSection(null);
+		setExpandedGroup(null);
 	};
 
 	const handleSectionChange = (sec: string) => {
 		setSelectedSection(sec);
-		if (sec !== "All") {
-			setExpandedSection(sec);
-		} else {
-			setExpandedSection(null);
-		}
+		setExpandedGroup(null);
 	};
 
-	const toggleSection = (section: string) => {
-		setExpandedSection((prev) => (prev === section ? null : section));
+	const toggleGroup = (groupKey: string) => {
+		setExpandedGroup((prev) => (prev === groupKey ? null : groupKey));
 	};
 
 	const hasStudents = students.length > 0;
@@ -162,9 +194,9 @@ const StudentsPage = () => {
 						}
 					/>
 
-					{/* Two Dropdowns Filter Row */}
+					{/* Two Dropdowns Filter Row with cascading section */}
 					{hasStudents && (
-						<div className="bg-surface grid gap-4 rounded-xl border border-white/5 p-4 sm:grid-cols-2">
+						<div className="bg-surface grid gap-4 rounded-xl border border-white/5 p-4 sm:grid-cols-2 shadow-sm">
 							<div className="space-y-1.5">
 								<label
 									htmlFor="programSelect"
@@ -207,7 +239,7 @@ const StudentsPage = () => {
 
 					{!loading && !hasStudents && <NoStudentsFound />}
 
-					{!loading && hasStudents && displaySections.length === 0 && (
+					{!loading && hasStudents && displayGroups.length === 0 && (
 						<EmptyState
 							icon={<Users size={24} />}
 							title="ለተመረጠው ማጣሪያ ምንም ተማሪ አልተገኘም"
@@ -216,34 +248,32 @@ const StudentsPage = () => {
 						/>
 					)}
 
-					{!loading && hasStudents && displaySections.length > 0 && (
+					{!loading && hasStudents && displayGroups.length > 0 && (
 						<div className="space-y-4">
-							{displaySections.map((section) => {
+							{displayGroups.map((group) => {
 								const isExpanded =
-									expandedSection === section ||
-									selectedSection === section ||
-									displaySections.length === 1;
-
-								const sectionStudents = filteredStudents.filter(
-									(student) => getSectionName(student.section) === section
-								);
+									expandedGroup === group.key ||
+									displayGroups.length === 1;
 
 								return (
-									<Panel key={section} className="overflow-hidden">
+									<Panel key={group.key} className="overflow-hidden">
 										<button
 											type="button"
-											onClick={() => toggleSection(section)}
+											onClick={() => toggleGroup(group.key)}
 											aria-expanded={isExpanded}
 											className="hover:bg-white/[0.03] flex w-full cursor-pointer items-center justify-between gap-3 px-5 py-4 text-left transition-colors"
 										>
-											<span className="flex items-baseline gap-3">
-												<span className="font-semibold text-foreground">
-													{section}
+											<div className="flex items-center gap-3 flex-wrap">
+												<Badge tone="primary" className="text-xs font-semibold px-2.5 py-0.5">
+													{group.program}
+												</Badge>
+												<span className="font-semibold text-foreground text-base">
+													{group.section}
 												</span>
-												<span className="text-muted-foreground text-xs">
-													{sectionStudents.length} ተማሪ
+												<span className="text-muted-foreground text-xs font-medium">
+													{group.students.length} ተማሪ
 												</span>
-											</span>
+											</div>
 											<ChevronDown
 												size={18}
 												className={`text-muted-foreground shrink-0 transition-transform duration-200 ${
@@ -254,36 +284,48 @@ const StudentsPage = () => {
 
 										{isExpanded && (
 											<div className="border-t border-white/5">
-												{sectionStudents.length > 0 ? (
+												{group.students.length > 0 ? (
 													<div className="overflow-x-auto">
 														<table className="w-full text-sm">
 															<thead>
 																<tr className="text-muted-foreground text-xs tracking-wider uppercase border-b border-white/5 bg-white/[0.01]">
-																	<th className="px-5 py-2.5 text-left font-medium">
-																		Program ID
+																	<th className="px-5 py-2.5 text-left font-medium w-12">
+																		#
 																	</th>
 																	<th className="px-5 py-2.5 text-left font-medium">
-																		Full Name
+																		የተማሪ መለያ (ID)
+																	</th>
+																	<th className="px-5 py-2.5 text-left font-medium">
+																		ሙሉ ስም
 																	</th>
 																	<th className="px-5 py-2.5 text-left font-medium hidden sm:table-cell">
-																		Program
+																		ክፍል / Department
+																	</th>
+																	<th className="px-5 py-2.5 text-left font-medium hidden md:table-cell">
+																		ስልክ ቁጥር
 																	</th>
 																</tr>
 															</thead>
 															<tbody className="divide-y divide-white/5">
-																{sectionStudents.map((student) => (
+																{group.students.map((student, idx) => (
 																	<tr
-																		key={student._id}
+																		key={student._id || idx}
 																		className="hover:bg-white/[0.03] transition-colors"
 																	>
-																		<td className="text-muted-foreground px-5 py-3 font-mono text-xs">
-																			{student.programId || student.begenaId || student.studentId}
+																		<td className="text-muted-foreground px-5 py-3 font-mono text-xs w-12">
+																			{idx + 1}
+																		</td>
+																		<td className="text-primary px-5 py-3 font-mono text-xs font-semibold">
+																			{student.studentId || student.programId || student.begenaId}
 																		</td>
 																		<td className="px-5 py-3 font-medium text-foreground">
 																			{student.fullName}
 																		</td>
 																		<td className="text-muted-foreground px-5 py-3 text-xs hidden sm:table-cell">
-																			{student.program || "—"}
+																			{student.department || "General"}
+																		</td>
+																		<td className="text-muted-foreground px-5 py-3 font-mono text-xs hidden md:table-cell">
+																			{student.phoneNumber || "—"}
 																		</td>
 																	</tr>
 																))}
@@ -313,4 +355,3 @@ const StudentsPage = () => {
 };
 
 export default StudentsPage;
-

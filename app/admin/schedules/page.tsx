@@ -205,7 +205,14 @@ export default function SchedulesPage() {
   );
 
   const uniqueTypes = Array.from(new Set(schedules.map((s) => s.type || "basic")));
-  const uniqueSections = Array.from(new Set(sections.map((s) => s.section)));
+  const uniqueSections = useMemo(() => {
+    const fromSecs = filterProgram
+      ? sections.filter(
+          (s) => s.program?.toLowerCase() === filterProgram.toLowerCase()
+        )
+      : sections;
+    return Array.from(new Set(fromSecs.map((s) => s.section))).sort();
+  }, [sections, filterProgram]);
 
   const filteredSchedules = useMemo(() => {
     return schedules.filter((s) => {
@@ -319,7 +326,10 @@ export default function SchedulesPage() {
         <CustomSelect
           className="w-auto min-w-[170px]"
           value={filterProgram}
-          onChange={(val) => setFilterProgram(val)}
+          onChange={(val) => {
+            setFilterProgram(val);
+            setFilterSection("");
+          }}
           options={[
             { value: "", label: "All programs" },
             ...programs.map((p) => ({

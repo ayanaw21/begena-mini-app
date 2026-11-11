@@ -104,6 +104,7 @@ const Schedule = () => {
 	}, [programFilteredSchedules, selectedSection, getSectionName]);
 
 	interface GroupedSectionSchedule {
+		key: string;
 		section: string;
 		program?: string;
 		type?: string;
@@ -115,7 +116,10 @@ const Schedule = () => {
 
 		filteredSchedules.forEach((schedule) => {
 			const secName = getSectionName(schedule.section);
-			const existing = map.get(secName) || {
+			const progName = schedule.program || "General";
+			const groupKey = `${progName}__${secName}`;
+			const existing = map.get(groupKey) || {
+				key: groupKey,
 				section: secName,
 				program: schedule.program,
 				type: schedule.type,
@@ -137,10 +141,15 @@ const Schedule = () => {
 				});
 			}
 
-			map.set(secName, existing);
+			map.set(groupKey, existing);
 		});
 
-		return Array.from(map.values());
+		return Array.from(map.values()).sort((a, b) => {
+			if (a.program && b.program && a.program !== b.program) {
+				return a.program.localeCompare(b.program);
+			}
+			return a.section.localeCompare(b.section);
+		});
 	}, [filteredSchedules, getSectionName]);
 
 	const selectProgram = (program: string) => {
@@ -246,7 +255,7 @@ const Schedule = () => {
 							<ul className="divide-y divide-white/5">
 								{groupedSchedules.map((item) => (
 									<li
-										key={item.section}
+										key={item.key}
 										className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-4 hover:bg-white/[0.02] transition-colors"
 									>
 										<div className="flex flex-wrap items-center gap-2">

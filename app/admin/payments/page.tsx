@@ -115,12 +115,24 @@ export default function PaymentsPage() {
     fetchMetadata();
   }, [fetchMetadata]);
 
-  // Unique sections for dropdown
+  // Unique sections for dropdown (cascading from selected program)
   const uniqueSections = useMemo(() => {
-    const fromSecList = sections.map((s) => s.section).filter(Boolean);
-    const fromStuds = students.map((s) => s.section).filter(Boolean);
+    const targetSections = filterProgram
+      ? sections.filter(
+          (s) => s.program?.toLowerCase() === filterProgram.toLowerCase()
+        )
+      : sections;
+    const fromSecList = targetSections.map((s) => s.section).filter(Boolean);
+
+    const targetStudents = filterProgram
+      ? students.filter(
+          (s) => s.program?.toLowerCase() === filterProgram.toLowerCase()
+        )
+      : students;
+    const fromStuds = targetStudents.map((s) => s.section).filter(Boolean);
+
     return Array.from(new Set([...fromSecList, ...fromStuds])).sort();
-  }, [sections, students]);
+  }, [sections, students, filterProgram]);
 
   // Compute payment status for each student in the selected month
   const studentRoster = useMemo<StudentWithStatus[]>(() => {
@@ -462,7 +474,25 @@ export default function PaymentsPage() {
           </div>
         )}
 
-        {/* Section Dropdown */}
+        {/* Program Dropdown (Parent filter) */}
+        <div className="w-auto min-w-[150px]">
+          <CustomSelect
+            value={filterProgram}
+            onChange={(val) => {
+              setFilterProgram(val);
+              setFilterSection("");
+            }}
+            options={[
+              { value: "", label: "ሁሉም ፕሮግራሞች" },
+              ...programs.map((p) => ({
+                value: p.name,
+                label: p.name,
+              })),
+            ]}
+          />
+        </div>
+
+        {/* Section Dropdown (Cascaded from Program) */}
         <div className="w-auto min-w-[140px]">
           <CustomSelect
             value={filterSection}
@@ -472,21 +502,6 @@ export default function PaymentsPage() {
               ...uniqueSections.map((sec) => ({
                 value: sec,
                 label: sec,
-              })),
-            ]}
-          />
-        </div>
-
-        {/* Program Dropdown */}
-        <div className="w-auto min-w-[140px]">
-          <CustomSelect
-            value={filterProgram}
-            onChange={(val) => setFilterProgram(val)}
-            options={[
-              { value: "", label: "ሁሉም ፕሮግራሞች" },
-              ...programs.map((p) => ({
-                value: p.name,
-                label: p.name,
               })),
             ]}
           />

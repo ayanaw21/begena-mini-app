@@ -53,7 +53,14 @@ export default function SectionsPage() {
   const fetchPrograms = useCallback(async () => {
     try {
       const res = await api.get("/programs");
-      setPrograms(res.data.programs || []);
+      const fetchedProgs = res.data.programs || [];
+      setPrograms(fetchedProgs);
+      if (fetchedProgs.length > 0) {
+        setFormData((prev) => ({
+          ...prev,
+          program: prev.program === "Begena" ? fetchedProgs[0].name : prev.program,
+        }));
+      }
     } catch (error) {
       console.error(error);
     }

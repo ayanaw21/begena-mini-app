@@ -358,7 +358,26 @@ export default function StudentsPage() {
   const uniqueBatches = Array.from(
     new Set(["Batch 8", ...students.map((s) => s.batch || "Batch 8")])
   );
-  const uniqueSections = Array.from(new Set(students.map((s) => s.section)));
+  const uniqueSections = useMemo(() => {
+    const fromSecs = (
+      filterProgram
+        ? sections.filter(
+            (s) => s.program?.toLowerCase() === filterProgram.toLowerCase()
+          )
+        : sections
+    )
+      .map((s) => s.section)
+      .filter(Boolean);
+
+    const targetStudents = filterProgram
+      ? students.filter(
+          (s) => s.program?.toLowerCase() === filterProgram.toLowerCase()
+        )
+      : students;
+    const fromStuds = targetStudents.map((s) => s.section).filter(Boolean);
+
+    return Array.from(new Set([...fromSecs, ...fromStuds])).sort();
+  }, [filterProgram, sections, students]);
 
   const batchCandidates = useMemo(() => {
     return students.filter(
@@ -664,9 +683,14 @@ export default function StudentsPage() {
                     <CustomSelect
                       id="studentProgram"
                       value={formData.program}
-                      onChange={(val) =>
-                        setFormData({ ...formData, program: val })
-                      }
+                      onChange={(val) => {
+                        const matching = getSectionsForProgram(val);
+                        setFormData({
+                          ...formData,
+                          program: val,
+                          section: matching.length > 0 ? matching[0].section : "",
+                        });
+                      }}
                       options={programs.map((prog) => ({
                         value: prog.name,
                         label: `${prog.name} (${prog.code})`,
@@ -694,7 +718,7 @@ export default function StudentsPage() {
                       onChange={(val) =>
                         setFormData({ ...formData, section: val })
                       }
-                      options={sections.map((sec) => ({
+                      options={getSectionsForProgram(formData.program).map((sec) => ({
                         value: sec.section,
                         label: sec.section,
                       }))}
@@ -805,7 +829,10 @@ export default function StudentsPage() {
         <CustomSelect
           className="w-auto min-w-[170px]"
           value={filterProgram}
-          onChange={(val) => setFilterProgram(val)}
+          onChange={(val) => {
+            setFilterProgram(val);
+            setFilterSection("");
+          }}
           options={[
             { value: "", label: "All programs" },
             ...programs.map((p) => ({

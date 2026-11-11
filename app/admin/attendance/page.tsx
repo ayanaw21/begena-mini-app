@@ -766,7 +766,10 @@ export default function AttendancePage() {
             <CustomSelect
               className="w-auto min-w-[170px]"
               value={selectedProgFilter}
-              onChange={(val) => setSelectedProgFilter(val)}
+              onChange={(val) => {
+                setSelectedProgFilter(val);
+                setSelectedSecFilter("All");
+              }}
               options={[
                 { value: "All", label: "All programs" },
                 ...programs.map((p) => ({
@@ -781,9 +784,15 @@ export default function AttendancePage() {
               onChange={(val) => setSelectedSecFilter(val)}
               options={[
                 { value: "All", label: "All sections" },
-                ...sections.map((sec) => ({
+                ...(selectedProgFilter !== "All"
+                  ? sections.filter((s) => s.program === selectedProgFilter)
+                  : sections
+                ).map((sec) => ({
                   value: sec.section,
-                  label: sec.section,
+                  label:
+                    selectedProgFilter === "All" && sec.program
+                      ? `${sec.section} (${sec.program})`
+                      : sec.section,
                 })),
               ]}
             />
