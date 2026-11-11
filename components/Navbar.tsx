@@ -88,7 +88,35 @@ const Navbar = () => {
         </nav>
 
         <div className="flex items-center gap-2">
-          {isStudentLoggedIn ? (
+          {pathname.startsWith("/admin") && (isTeacherLoggedIn || isAdminLoggedIn) ? (
+            <>
+              <Button
+                asChild
+                size="sm"
+                className={cn(
+                  "font-semibold text-xs sm:text-sm shadow-sm",
+                  isTeacherLoggedIn
+                    ? "bg-amber-400 text-slate-950 hover:bg-amber-300"
+                    : "bg-primary text-primary-foreground hover:bg-primary/90"
+                )}
+              >
+                <Link href="/admin">
+                  {isTeacherLoggedIn ? "Staff Portal" : "Admin Portal"}
+                </Link>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  removeToken();
+                  window.location.href = "/admin/login";
+                }}
+                className="text-muted-foreground hover:text-foreground text-xs"
+              >
+                Logout
+              </Button>
+            </>
+          ) : pathname.startsWith("/student") && isStudentLoggedIn ? (
             <>
               <Button asChild size="sm" className="bg-primary text-primary-foreground font-semibold">
                 <Link href="/student/dashboard">Portal</Link>
@@ -127,6 +155,23 @@ const Navbar = () => {
                 onClick={() => {
                   removeToken();
                   window.location.href = "/admin/login";
+                }}
+                className="text-muted-foreground hover:text-foreground text-xs"
+              >
+                Logout
+              </Button>
+            </>
+          ) : isStudentLoggedIn ? (
+            <>
+              <Button asChild size="sm" className="bg-primary text-primary-foreground font-semibold">
+                <Link href="/student/dashboard">Student Portal</Link>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  removeStudentToken();
+                  window.location.href = "/student/login";
                 }}
                 className="text-muted-foreground hover:text-foreground text-xs"
               >

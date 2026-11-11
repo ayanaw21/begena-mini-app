@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import api from "@/lib/api";
-import DataCards from "@/components/DataCards";
 import ModalForm from "@/components/ModalForm";
 import ConfirmModal from "@/components/ConfirmModal";
 import EditModal from "@/components/EditModal";
@@ -11,10 +10,20 @@ import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { Field, PageHeader } from "@/components/ui/page";
 import CustomSelect from "@/components/ui/custom-select";
-import { siteImages, adminCardBackgrounds } from "@/lib/images";
+import { siteImages } from "@/lib/images";
 import { Program } from "@/types";
 import toast from "react-hot-toast";
-import { Upload, Download, FileSpreadsheet } from "lucide-react";
+import {
+  Upload,
+  Download,
+  FileSpreadsheet,
+  Search,
+  ShieldCheck,
+  GraduationCap,
+  Users,
+  UserCheck,
+  X,
+} from "lucide-react";
 
 interface StaffMember {
   _id?: string;
@@ -131,6 +140,12 @@ export default function StaffPage() {
   const [importFileText, setImportFileText] = useState("");
   const [parsedStaff, setParsedStaff] = useState<ParsedStaffRow[]>([]);
   const [isImporting, setIsImporting] = useState(false);
+
+  // Filters & Search
+  const [searchQuery, setSearchQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
+  const [programFilter, setProgramFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
 
   useEffect(() => {
     if (importFileText) {
@@ -303,6 +318,69 @@ export default function StaffPage() {
     ];
   }, [programs]);
 
+  const teachersCount = useMemo(
+    () => staff.filter((s) => s.role === "teacher").length,
+    [staff]
+  );
+  const adminsCount = useMemo(
+    () => staff.filter((s) => s.role === "admin").length,
+    [staff]
+  );
+  const activeCount = useMemo(
+    () => staff.filter((s) => s.status !== "Inactive").length,
+    [staff]
+  );
+
+  const filteredStaff = useMemo(() => {
+    return staff.filter((s) => {
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        const matchName = s.fullName?.toLowerCase().includes(q);
+        const matchPhone = s.phoneNumber?.toLowerCase().includes(q);
+        const matchDept = s.department?.toLowerCase().includes(q);
+        const matchProg = s.specialization?.toLowerCase().includes(q);
+        if (!matchName && !matchPhone && !matchDept && !matchProg) return false;
+      }
+      if (roleFilter && s.role !== roleFilter) return false;
+      if (programFilter && s.specialization !== programFilter) return false;
+      if (statusFilter && (s.status || "Active") !== statusFilter) return false;
+      return true;
+    });
+  }, [staff, searchQuery, roleFilter, programFilter, statusFilter]);
+
+  const hasActiveFilters = Boolean(
+    searchQuery || roleFilter || programFilter || statusFilter
+  );
+
+  const handleResetFilters = () => {
+    setSearchQuery("");
+    setRoleFilter("");
+    setProgramFilter("");
+    setStatusFilter("");
+  };
+
+  const handleOpenEdit = (s: StaffMember) => {
+    const normalizedProg =
+      s.specialization?.includes("መሰረታዊ") || s.specialization?.includes("Basic")
+        ? "Basic በገና"
+        : s.specialization || (programs[0]?.name || "Basic በገና");
+
+    setStaffToEdit(s);
+    setFormData({
+      ...s,
+      department: s.department || "የበገና ንዑስ ክፍል",
+      specialization: normalizedProg,
+      status: s.status || "Active",
+      password: "",
+    });
+    setEditModalOpen(true);
+  };
+
+  const handleOpenDelete = (s: StaffMember) => {
+    setStaffToDelete(s);
+    setDeleteModalOpen(true);
+  };
+
   useEffect(() => {
     fetchStaff();
     fetchPrograms();
@@ -447,49 +525,239 @@ export default function StaffPage() {
       }
     />
 
-    <DataCards
-      emptyTitle="No staff members registered"
-      emptyDescription="Create a staff member to grant access."
-      items={staff.map((s, idx) => ({
-        id: s._id || s.fullName,
-        title: s.fullName,
-        subtitle: s.specialization
-          ? `${s.specialization} · ${s.department || "General"}`
-          : (s.department || "General"),
-        image: adminCardBackgrounds[idx % adminCardBackgrounds.length],
-          fields: [
-            { label: "Program", value: s.specialization || "Basic በገና" },
-            { label: "Department", value: s.department || "General" },
-            { label: "Phone", value: s.phoneNumber || "—" },
-            { label: "Status", value: s.status || "Active" },
-          ],
-          actions: (
-            <RowActions
-              key={s._id}
-              onEdit={() => {
-                const normalizedProg =
-                  s.specialization?.includes("መሰረታዊ") || s.specialization?.includes("Basic")
-                    ? "Basic በገና"
-                    : s.specialization || (programs[0]?.name || "Basic በገና");
+      {/* Quick Stats Strip */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3.5 shadow-sm">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>Total Staff</span>
+            <Users size={14} className="text-primary" />
+          </div>
+          <div className="mt-1 text-2xl font-bold tracking-tight text-foreground">
+            {staff.length}
+          </div>
+        </div>
 
-                setStaffToEdit(s);
-                setFormData({
-                  ...s,
-                  department: s.department || "የበገና ንዑስ ክፍል",
-                  specialization: normalizedProg,
-                  status: s.status || "Active",
-                  password: "",
-                });
-                setEditModalOpen(true);
-              }}
-              onDelete={() => {
-                setStaffToDelete(s);
-                setDeleteModalOpen(true);
-              }}
-            />
-          ),
-        }))}
-      />
+        <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.04] p-3.5 shadow-sm">
+          <div className="flex items-center justify-between text-xs text-amber-300">
+            <span>Teachers</span>
+            <GraduationCap size={14} />
+          </div>
+          <div className="mt-1 text-2xl font-bold tracking-tight text-amber-200">
+            {teachersCount}
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-purple-500/20 bg-purple-500/[0.04] p-3.5 shadow-sm">
+          <div className="flex items-center justify-between text-xs text-purple-300">
+            <span>Admins</span>
+            <ShieldCheck size={14} />
+          </div>
+          <div className="mt-1 text-2xl font-bold tracking-tight text-purple-200">
+            {adminsCount}
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.04] p-3.5 shadow-sm">
+          <div className="flex items-center justify-between text-xs text-emerald-300">
+            <span>Active</span>
+            <UserCheck size={14} />
+          </div>
+          <div className="mt-1 text-2xl font-bold tracking-tight text-emerald-200">
+            {activeCount}
+          </div>
+        </div>
+      </div>
+
+      {/* Filter and Search Bar */}
+      <div className="flex flex-wrap items-center gap-2.5">
+        <div className="relative min-w-56 flex-1">
+          <Search
+            size={14}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+          />
+          <input
+            type="search"
+            placeholder="Search teachers by name, phone, dept..."
+            className="w-full pl-9 pr-8 text-xs sm:text-sm py-2 rounded-lg bg-surface border border-white/10 focus:border-primary/50 focus:outline-none"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 cursor-pointer"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
+
+        <CustomSelect
+          className="w-auto min-w-[130px]"
+          value={roleFilter}
+          onChange={(val) => setRoleFilter(val)}
+          options={[
+            { value: "", label: "All Roles" },
+            { value: "teacher", label: "Teachers only" },
+            { value: "admin", label: "Admins only" },
+          ]}
+        />
+
+        <CustomSelect
+          className="w-auto min-w-[150px]"
+          value={programFilter}
+          onChange={(val) => setProgramFilter(val)}
+          options={[
+            { value: "", label: "All Programs" },
+            ...programOptions,
+          ]}
+        />
+
+        <CustomSelect
+          className="w-auto min-w-[130px]"
+          value={statusFilter}
+          onChange={(val) => setStatusFilter(val)}
+          options={[
+            { value: "", label: "All Statuses" },
+            { value: "Active", label: "Active" },
+            { value: "Inactive", label: "Inactive" },
+          ]}
+        />
+
+        {hasActiveFilters && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleResetFilters}
+            className="text-xs text-muted-foreground hover:text-foreground h-9"
+          >
+            Clear
+          </Button>
+        )}
+      </div>
+
+      {/* Compact High-Density Table */}
+      <div className="bg-surface relative w-full overflow-hidden rounded-xl border border-white/10 shadow-sm">
+        <div className="relative z-10 w-full overflow-x-auto">
+          <table className="w-full min-w-[700px] text-left text-sm">
+            <thead>
+              <tr className="text-muted-foreground border-b border-white/10 bg-white/[0.02] text-xs font-semibold tracking-wider uppercase">
+                <th className="px-3 py-3 w-10 text-center">#</th>
+                <th className="px-4 py-3">Full Name</th>
+                <th className="px-3 py-3">Role</th>
+                <th className="px-3 py-3">Assigned Program</th>
+                <th className="px-3 py-3">Department</th>
+                <th className="px-3 py-3">Phone</th>
+                <th className="px-3 py-3 text-center">Status</th>
+                <th className="px-4 py-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {filteredStaff.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={8}
+                    className="text-muted-foreground px-4 py-12 text-center text-sm"
+                  >
+                    {hasActiveFilters
+                      ? "No staff members match the selected filters."
+                      : "No staff members registered yet. Click 'Add Staff' or 'Import CSV' above to start."}
+                  </td>
+                </tr>
+              ) : (
+                filteredStaff.map((s, idx) => (
+                  <tr
+                    key={s._id || idx}
+                    className="hover:bg-white/[0.03] transition-colors"
+                  >
+                    <td className="px-3 py-3 text-center font-mono text-xs text-muted-foreground">
+                      {idx + 1}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className="size-8 rounded-full bg-primary/10 border border-primary/20 text-primary font-bold text-xs flex items-center justify-center shrink-0">
+                          {s.fullName ? s.fullName.charAt(0).toUpperCase() : "?"}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-medium text-foreground text-sm truncate">
+                            {s.fullName}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground sm:hidden truncate">
+                            {s.phoneNumber || s.department}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-3 py-3 whitespace-nowrap">
+                      {s.role === "admin" ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-500/10 text-purple-300 border border-purple-500/30">
+                          <ShieldCheck size={12} />
+                          Admin
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                          <GraduationCap size={12} />
+                          Teacher
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-3 py-3 whitespace-nowrap">
+                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-white/5 border border-white/10 text-foreground">
+                        {s.specialization || "Basic በገና"}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3 text-xs text-muted-foreground whitespace-nowrap">
+                      {s.department || "General"}
+                    </td>
+                    <td className="px-3 py-3 whitespace-nowrap">
+                      {s.phoneNumber ? (
+                        <a
+                          href={`tel:${s.phoneNumber}`}
+                          className="font-mono text-xs text-primary hover:underline"
+                        >
+                          {s.phoneNumber}
+                        </a>
+                      ) : (
+                        <span className="text-muted-foreground text-xs">—</span>
+                      )}
+                    </td>
+                    <td className="px-3 py-3 text-center whitespace-nowrap">
+                      <Badge
+                        tone={s.status === "Inactive" ? "neutral" : "success"}
+                      >
+                        {s.status || "Active"}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3 text-right whitespace-nowrap">
+                      <RowActions
+                        key={s._id}
+                        onEdit={() => handleOpenEdit(s)}
+                        onDelete={() => handleOpenDelete(s)}
+                      />
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+        <div className="flex items-center justify-between px-4 py-2.5 border-t border-white/10 text-xs text-muted-foreground bg-white/[0.01]">
+          <span>
+            Showing <strong className="text-foreground">{filteredStaff.length}</strong> of {staff.length} staff members
+          </span>
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="text-primary hover:underline cursor-pointer"
+            >
+              Reset filters
+            </button>
+          )}
+        </div>
+      </div>
 
       {staffToEdit && (
         <EditModal
