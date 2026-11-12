@@ -7,7 +7,7 @@ import { Modal } from "@/components/ui/modal";
 import { PageHeader, PanelHeader } from "@/components/ui/page";
 import CustomSelect from "@/components/ui/custom-select";
 import PhotoPanel from "@/components/ui/photo-panel";
-import { siteImages, adminCardBackgrounds } from "@/lib/images";
+import { siteImages } from "@/lib/images";
 import { cn } from "@/lib/utils";
 import {
   Copy,

@@ -8,10 +8,8 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Field, PageHeader, Panel } from "@/components/ui/page";
 import CustomSelect from "@/components/ui/custom-select";
 import { Modal } from "@/components/ui/modal";
-import PhotoPanel from "@/components/ui/photo-panel";
-import { siteImages, adminCardBackgrounds } from "@/lib/images";
 import { cn } from "@/lib/utils";
-import { Loader2, CalendarDays, Clock, CheckCircle2, AlertCircle, Calendar } from "lucide-react";
+import { Loader2, CalendarDays, Clock, CheckCircle2, AlertCircle } from "lucide-react";
 import { isAdmin } from "@/lib/auth";
 import toast from "react-hot-toast";
 
@@ -185,7 +183,7 @@ export default function AttendancePage() {
       });
       const allAtt = res.data.attendance || [];
       const dateMap = new Map<string, { date: string; day: string; count: number }>();
-      allAtt.forEach((item: any) => {
+      allAtt.forEach((item: { date?: string; day?: string }) => {
         const dStr = item.date ? new Date(item.date).toISOString().split("T")[0] : null;
         if (dStr) {
           const prev = dateMap.get(dStr);
