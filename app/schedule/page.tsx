@@ -60,8 +60,11 @@ const Schedule = () => {
 		(secVal: string) => {
 			if (!secVal) return "Section";
 			const mapped = sectionsMap[secVal];
-			const name = mapped || secVal;
-			if (name.toLowerCase().includes("section") || name.startsWith("ምድብ")) {
+			const name = (mapped || secVal).trim();
+			if (/^sec[- ]/i.test(name)) {
+				return `Section ${name.replace(/^sec[- ]+/i, "").trim()}`;
+			}
+			if (name.toLowerCase().startsWith("section") || name.startsWith("ምድብ")) {
 				return name;
 			}
 			return `Section ${name}`;
