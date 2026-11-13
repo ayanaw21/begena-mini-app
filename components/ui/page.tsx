@@ -7,10 +7,25 @@ import { cn } from "@/lib/utils";
  * these instead of re-declaring its own container, heading and panel styles.
  */
 
-function PageContainer({ className, ...props }: React.ComponentProps<"div">) {
+interface PageContainerProps extends React.ComponentProps<"div"> {
+  size?: "default" | "wide" | "full" | "narrow";
+}
+
+function PageContainer({
+  className,
+  size = "default",
+  ...props
+}: PageContainerProps) {
+  const sizeClasses = {
+    default: "max-w-7xl px-4 sm:px-6 lg:px-8",
+    wide: "max-w-7xl px-4 sm:px-6 lg:px-8",
+    full: "max-w-full px-4 sm:px-6 lg:px-10",
+    narrow: "max-w-3xl px-4 sm:px-6",
+  };
+
   return (
     <div
-      className={cn("mx-auto w-full max-w-3xl px-4 sm:px-6", className)}
+      className={cn("mx-auto w-full", sizeClasses[size], className)}
       {...props}
     />
   );

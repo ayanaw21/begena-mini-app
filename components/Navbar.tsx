@@ -47,10 +47,11 @@ const Navbar = () => {
   }, [pathname]);
 
   return (
-    <header className="bg-background/85 sticky top-0 z-50 border-b border-white/5 backdrop-blur">
-      <PageContainer className="flex h-14 items-center justify-between gap-4">
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="relative h-9 w-6 shrink-0 flex items-center justify-center">
+    <header className="bg-background/90 sticky top-0 z-50 border-b border-white/10 backdrop-blur-md">
+      <PageContainer size="wide" className="flex h-16 items-center justify-between gap-4 lg:gap-8">
+        {/* Brand logo & title - strictly on a single horizontal line */}
+        <Link href="/" className="flex items-center gap-3 group shrink-0 whitespace-nowrap">
+          <div className="relative h-10 w-7 shrink-0 flex items-center justify-center">
             <Image
               src="/logo.jpg"
               alt="የበገና አርማ"
@@ -60,23 +61,24 @@ const Navbar = () => {
               priority
             />
           </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-primary text-base sm:text-lg font-bold tracking-wide">
+          <div className="flex items-baseline gap-2 whitespace-nowrap shrink-0">
+            <span className="text-primary text-base sm:text-lg font-bold tracking-wide whitespace-nowrap">
               አ/አ/ሳ/ቴ/ዩ
             </span>
-            <span className="text-foreground text-xs sm:text-sm font-semibold">
+            <span className="text-foreground text-xs sm:text-sm font-semibold whitespace-nowrap">
               በገና ንዑስ ክፍል
             </span>
           </div>
         </Link>
 
-        <nav className="hidden items-center gap-1 md:flex">
+        {/* Center Desktop Navigation */}
+        <nav className="hidden items-center gap-1 lg:gap-2 md:flex">
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               className={cn(
-                "rounded-md px-2.5 py-1.5 text-sm transition-colors",
+                "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors whitespace-nowrap",
                 pathname === link.href
                   ? "text-primary bg-primary/10 font-semibold"
                   : "text-muted-foreground hover:text-foreground hover:bg-white/5"
@@ -87,7 +89,8 @@ const Navbar = () => {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2">
+        {/* Right side auth buttons */}
+        <div className="flex items-center gap-2.5 shrink-0">
           {pathname.startsWith("/admin") && (isTeacherLoggedIn || isAdminLoggedIn) ? (
             <>
               <Button
@@ -193,7 +196,7 @@ const Navbar = () => {
 
       {/* On small screens the primary links move to a scrollable strip under the bar. */}
       <nav className="w-full max-w-full overflow-hidden border-t border-white/5 md:hidden bg-background/95">
-        <PageContainer className="flex items-center gap-1.5 overflow-x-auto py-2 scrollbar-none">
+        <PageContainer size="wide" className="flex items-center gap-1.5 overflow-x-auto py-2 scrollbar-none">
           {links.map((link) => (
             <Link
               key={link.href}
