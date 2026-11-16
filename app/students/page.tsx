@@ -248,8 +248,8 @@ const StudentsPage = () => {
 							</div>
 
 							{/* Dropdowns Filter Row: 2-column on all viewports */}
-							<div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 bg-surface/80 p-3 sm:p-4 rounded-xl border border-white/5 shadow-sm">
-								<div className="space-y-1">
+							<div className="relative z-20 grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 bg-surface/80 p-3 sm:p-4 rounded-xl border border-white/5 shadow-sm">
+								<div className="space-y-1 relative z-20">
 									<label
 										htmlFor="programSelect"
 										className="text-muted-foreground text-[10px] sm:text-xs font-semibold tracking-wider uppercase"
@@ -267,7 +267,7 @@ const StudentsPage = () => {
 									/>
 								</div>
 
-								<div className="space-y-1">
+								<div className="space-y-1 relative z-10">
 									<label
 										htmlFor="sectionSelect"
 										className="text-muted-foreground text-[10px] sm:text-xs font-semibold tracking-wider uppercase"
