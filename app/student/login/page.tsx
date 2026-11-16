@@ -75,7 +75,12 @@ export default function StudentLogin() {
           </span>
         </Link>
 
-        <PhotoPanel src={siteImages.authPanel} sizes="(max-width: 640px) 100vw, 420px" priority>
+        <PhotoPanel
+          src={siteImages.authPanel}
+          sizes="(max-width: 640px) 100vw, 420px"
+          priority
+          contentClassName="p-6 sm:p-8"
+        >
           <div className="space-y-1">
             <h1 className="text-xl font-bold">🎓 የተማሪዎች ፖርታል</h1>
             <p className="text-muted-foreground text-sm">

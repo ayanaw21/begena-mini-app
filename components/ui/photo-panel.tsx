@@ -49,7 +49,7 @@ export default function PhotoPanel({
         </div>
       ) : null}
 
-      <div className={cn("relative z-10", contentClassName)}>{children}</div>
+      <div className={cn("relative z-10 p-5 sm:p-6", contentClassName)}>{children}</div>
     </div>
   );
 }
