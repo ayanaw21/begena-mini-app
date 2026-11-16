@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 export interface CustomSelectOption {
 	value: string;
 	label: string;
+	disabled?: boolean;
 }
 
 export interface CustomSelectProps {
@@ -39,9 +40,9 @@ export function CustomSelect({
 
 	const selectedOption = normalizedOptions.find((opt) => opt.value === value);
 
-	// Close on click outside
+	// Close on click / touch outside
 	useEffect(() => {
-		const handleClickOutside = (event: MouseEvent) => {
+		const handleOutside = (event: MouseEvent | TouchEvent) => {
 			if (
 				containerRef.current &&
 				!containerRef.current.contains(event.target as Node)
@@ -57,12 +58,14 @@ export function CustomSelect({
 		};
 
 		if (isOpen) {
-			document.addEventListener("mousedown", handleClickOutside);
+			document.addEventListener("mousedown", handleOutside);
+			document.addEventListener("touchstart", handleOutside);
 			document.addEventListener("keydown", handleKeyDown);
 		}
 
 		return () => {
-			document.removeEventListener("mousedown", handleClickOutside);
+			document.removeEventListener("mousedown", handleOutside);
+			document.removeEventListener("touchstart", handleOutside);
 			document.removeEventListener("keydown", handleKeyDown);
 		};
 	}, [isOpen]);
@@ -77,31 +80,61 @@ export function CustomSelect({
 			)}
 			id={id}
 		>
-			<button
-				type="button"
-				disabled={disabled}
-				onClick={() => setIsOpen((prev) => !prev)}
+			{/* Visible styled trigger button */}
+			<div
 				className={cn(
-					"bg-surface-raised text-foreground border border-white/10 rounded-lg px-3.5 py-2.5 text-sm w-full flex items-center justify-between gap-2 transition-colors cursor-pointer",
-					"focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20",
-					isOpen && "border-primary/60 ring-2 ring-primary/20",
+					"bg-[#11223e] text-foreground border border-white/15 rounded-xl px-3.5 py-2.5 text-sm w-full flex items-center justify-between gap-2 transition-all shadow-sm",
+					"hover:border-primary/50 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20",
+					isOpen && "border-primary ring-2 ring-primary/20 bg-[#162a4d]",
 					disabled && "opacity-50 cursor-not-allowed"
 				)}
 			>
-				<span className="truncate">
+				<span className="truncate font-medium text-xs sm:text-sm">
 					{selectedOption ? selectedOption.label : placeholder}
 				</span>
 				<ChevronDown
 					size={16}
 					className={cn(
-						"text-muted-foreground shrink-0 transition-transform duration-200",
+						"text-muted-foreground shrink-0 transition-transform duration-200 pointer-events-none",
 						isOpen && "rotate-180 text-primary"
 					)}
 				/>
-			</button>
+			</div>
+
+			{/* NATIVE SELECT FOR MOBILE (< md): 
+			    Invisible overlay that opens the phone's native wheel/sheet picker. 
+			    Works 100% on iOS Safari & Android Chrome without clipping or keyboard overlay bugs. */}
+			<select
+				disabled={disabled}
+				value={value}
+				onChange={(e) => onChange(e.target.value)}
+				aria-label={placeholder}
+				className="absolute inset-0 w-full h-full opacity-0 cursor-pointer md:hidden z-20 disabled:cursor-not-allowed"
+			>
+				{normalizedOptions.map((opt) => (
+					<option
+						key={opt.value}
+						value={opt.value}
+						disabled={opt.disabled}
+						className="bg-slate-900 text-white"
+					>
+						{opt.label}
+					</option>
+				))}
+			</select>
+
+			{/* DESKTOP CUSTOM DROPDOWN (>= md): 
+			    Opens elegant desktop menu when clicked */}
+			<button
+				type="button"
+				disabled={disabled}
+				onClick={() => setIsOpen((prev) => !prev)}
+				aria-expanded={isOpen}
+				className="hidden md:block absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+			/>
 
 			{isOpen && (
-				<div className="bg-[#122340] border border-white/15 rounded-xl shadow-2xl absolute left-0 right-0 top-full mt-1.5 z-50 max-h-60 overflow-y-auto py-1.5 backdrop-blur-md transition-all">
+				<div className="hidden md:block bg-[#122340] border border-white/20 rounded-xl shadow-2xl absolute left-0 right-0 top-full mt-1.5 z-50 max-h-64 overflow-y-auto py-1.5 backdrop-blur-xl animate-in fade-in-50 zoom-in-95 duration-100">
 					{normalizedOptions.length > 0 ? (
 						normalizedOptions.map((opt) => {
 							const isSelected = opt.value === value;
@@ -109,15 +142,17 @@ export function CustomSelect({
 								<button
 									key={opt.value}
 									type="button"
+									disabled={opt.disabled}
 									onClick={() => {
 										onChange(opt.value);
 										setIsOpen(false);
 									}}
 									className={cn(
-										"w-full text-left px-3.5 py-2 text-sm flex items-center justify-between transition-colors cursor-pointer",
+										"w-full text-left px-3.5 py-2.5 text-xs sm:text-sm flex items-center justify-between transition-colors cursor-pointer",
 										isSelected
-											? "bg-primary/20 text-primary font-medium"
-											: "text-foreground hover:bg-white/10 hover:text-primary"
+											? "bg-primary/20 text-primary font-semibold"
+											: "text-foreground hover:bg-white/10 hover:text-primary",
+										opt.disabled && "opacity-40 cursor-not-allowed"
 									)}
 								>
 									<span className="truncate">{opt.label}</span>
@@ -137,4 +172,3 @@ export function CustomSelect({
 }
 
 export default CustomSelect;
-

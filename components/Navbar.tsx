@@ -47,11 +47,11 @@ const Navbar = () => {
   }, [pathname]);
 
   return (
-    <header className="bg-background/90 sticky top-0 z-50 border-b border-white/10 backdrop-blur-md">
-      <PageContainer size="wide" className="flex h-16 items-center justify-between gap-4 lg:gap-8">
-        {/* Brand logo & title - strictly on a single horizontal line */}
-        <Link href="/" className="flex items-center gap-3 group shrink-0 whitespace-nowrap">
-          <div className="relative h-10 w-7 shrink-0 flex items-center justify-center">
+    <header className="bg-background/95 sticky top-0 z-50 border-b border-white/10 backdrop-blur-md">
+      <PageContainer size="wide" className="flex h-14 sm:h-16 items-center justify-between gap-2 sm:gap-4 lg:gap-8 px-3 sm:px-6">
+        {/* Brand logo & title - adaptive sizing for mobile */}
+        <Link href="/" className="flex items-center gap-2 sm:gap-3 group shrink-0 whitespace-nowrap">
+          <div className="relative h-8 w-6 sm:h-10 sm:w-7 shrink-0 flex items-center justify-center">
             <Image
               src="/logo.jpg"
               alt="የበገና አርማ"
@@ -61,12 +61,15 @@ const Navbar = () => {
               priority
             />
           </div>
-          <div className="flex items-baseline gap-2 whitespace-nowrap shrink-0">
-            <span className="text-primary text-base sm:text-lg font-bold tracking-wide whitespace-nowrap">
+          <div className="flex items-baseline gap-1.5 sm:gap-2 whitespace-nowrap shrink-0">
+            <span className="text-primary text-sm sm:text-lg font-bold tracking-wide whitespace-nowrap">
               አ/አ/ሳ/ቴ/ዩ
             </span>
-            <span className="text-foreground text-xs sm:text-sm font-semibold whitespace-nowrap">
+            <span className="text-foreground text-xs sm:text-sm font-semibold whitespace-nowrap hidden min-[370px]:inline">
               በገና ንዑስ ክፍል
+            </span>
+            <span className="text-foreground text-xs font-semibold whitespace-nowrap min-[370px]:hidden">
+              በገና
             </span>
           </div>
         </Link>
@@ -89,22 +92,22 @@ const Navbar = () => {
           ))}
         </nav>
 
-        {/* Right side auth buttons */}
-        <div className="flex items-center gap-2.5 shrink-0">
+        {/* Right side auth buttons - compact & touch-friendly on mobile */}
+        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
           {pathname.startsWith("/admin") && (isTeacherLoggedIn || isAdminLoggedIn) ? (
             <>
               <Button
                 asChild
                 size="sm"
                 className={cn(
-                  "font-semibold text-xs sm:text-sm shadow-sm",
+                  "font-semibold text-xs sm:text-sm shadow-sm h-8 sm:h-9 px-2.5 sm:px-3",
                   isTeacherLoggedIn
                     ? "bg-amber-400 text-slate-950 hover:bg-amber-300"
                     : "bg-primary text-primary-foreground hover:bg-primary/90"
                 )}
               >
                 <Link href="/admin">
-                  {isTeacherLoggedIn ? "Staff Portal" : "Admin Portal"}
+                  {isTeacherLoggedIn ? "Staff" : "Admin"}
                 </Link>
               </Button>
               <Button
@@ -114,15 +117,18 @@ const Navbar = () => {
                   removeToken();
                   window.location.href = "/admin/login";
                 }}
-                className="text-muted-foreground hover:text-foreground text-xs"
+                className="text-muted-foreground hover:text-foreground text-xs h-8 sm:h-9 px-2 sm:px-3"
               >
                 Logout
               </Button>
             </>
           ) : pathname.startsWith("/student") && isStudentLoggedIn ? (
             <>
-              <Button asChild size="sm" className="bg-primary text-primary-foreground font-semibold">
-                <Link href="/student/dashboard">Portal</Link>
+              <Button asChild size="sm" className="bg-primary text-primary-foreground font-semibold h-8 sm:h-9 px-2.5 sm:px-3 text-xs sm:text-sm">
+                <Link href="/student/dashboard">
+                  <span className="hidden sm:inline">Portal</span>
+                  <span className="sm:hidden">🎓 ፖርታል</span>
+                </Link>
               </Button>
               <Button
                 variant="ghost"
@@ -131,7 +137,7 @@ const Navbar = () => {
                   removeStudentToken();
                   window.location.href = "/student/login";
                 }}
-                className="text-muted-foreground hover:text-foreground text-xs"
+                className="text-muted-foreground hover:text-foreground text-xs h-8 sm:h-9 px-2 sm:px-3"
               >
                 Logout
               </Button>
@@ -142,14 +148,14 @@ const Navbar = () => {
                 asChild
                 size="sm"
                 className={cn(
-                  "font-semibold text-xs sm:text-sm shadow-sm",
+                  "font-semibold text-xs sm:text-sm shadow-sm h-8 sm:h-9 px-2.5 sm:px-3",
                   isTeacherLoggedIn
                     ? "bg-amber-400 text-slate-950 hover:bg-amber-300"
                     : "bg-primary text-primary-foreground hover:bg-primary/90"
                 )}
               >
                 <Link href="/admin">
-                  {isTeacherLoggedIn ? "Staff Portal" : "Admin Portal"}
+                  {isTeacherLoggedIn ? "Staff" : "Admin"}
                 </Link>
               </Button>
               <Button
@@ -159,15 +165,18 @@ const Navbar = () => {
                   removeToken();
                   window.location.href = "/admin/login";
                 }}
-                className="text-muted-foreground hover:text-foreground text-xs"
+                className="text-muted-foreground hover:text-foreground text-xs h-8 sm:h-9 px-2 sm:px-3"
               >
                 Logout
               </Button>
             </>
           ) : isStudentLoggedIn ? (
             <>
-              <Button asChild size="sm" className="bg-primary text-primary-foreground font-semibold">
-                <Link href="/student/dashboard">Student Portal</Link>
+              <Button asChild size="sm" className="bg-primary text-primary-foreground font-semibold h-8 sm:h-9 px-2.5 sm:px-3 text-xs sm:text-sm">
+                <Link href="/student/dashboard">
+                  <span className="hidden sm:inline">Student Portal</span>
+                  <span className="sm:hidden">🎓 ፖርታል</span>
+                </Link>
               </Button>
               <Button
                 variant="ghost"
@@ -176,17 +185,17 @@ const Navbar = () => {
                   removeStudentToken();
                   window.location.href = "/student/login";
                 }}
-                className="text-muted-foreground hover:text-foreground text-xs"
+                className="text-muted-foreground hover:text-foreground text-xs h-8 sm:h-9 px-2 sm:px-3"
               >
                 Logout
               </Button>
             </>
           ) : (
             <>
-              <Button asChild variant="ghost" size="sm" className="text-xs sm:text-sm">
+              <Button asChild variant="ghost" size="sm" className="text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3">
                 <Link href="/student/login">🎓 ተማሪ</Link>
               </Button>
-              <Button asChild size="sm" className="text-xs sm:text-sm">
+              <Button asChild size="sm" className="text-xs sm:text-sm h-8 sm:h-9 px-2.5 sm:px-3 font-semibold">
                 <Link href={adminHref}>Admin</Link>
               </Button>
             </>
@@ -195,17 +204,17 @@ const Navbar = () => {
       </PageContainer>
 
       {/* On small screens the primary links move to a scrollable strip under the bar. */}
-      <nav className="w-full max-w-full overflow-hidden border-t border-white/5 md:hidden bg-background/95">
-        <PageContainer size="wide" className="flex items-center gap-1.5 overflow-x-auto py-2 scrollbar-none">
+      <nav className="w-full max-w-full overflow-hidden border-t border-white/5 md:hidden bg-background/95 backdrop-blur-md">
+        <PageContainer size="wide" className="flex items-center gap-1.5 overflow-x-auto py-2 px-3 scrollbar-none touch-pan-x">
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               className={cn(
-                "rounded-full px-3 py-1 text-xs whitespace-nowrap transition-colors font-medium border",
+                "rounded-full px-3 py-1 text-xs whitespace-nowrap transition-colors font-medium border shrink-0",
                 pathname === link.href
-                  ? "border-primary/40 bg-primary/15 text-primary font-semibold"
-                  : "border-white/5 text-muted-foreground hover:text-foreground bg-white/[0.02]"
+                  ? "border-primary/50 bg-primary/20 text-primary font-semibold shadow-sm"
+                  : "border-white/10 text-muted-foreground hover:text-foreground bg-white/[0.03]"
               )}
             >
               {link.label}

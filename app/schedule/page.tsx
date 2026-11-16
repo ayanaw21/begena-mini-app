@@ -192,19 +192,19 @@ const Schedule = () => {
 					/>
 
 					{/* Filters */}
-					<div className="flex flex-col gap-4">
+					<div className="flex flex-col gap-3 sm:gap-4 bg-surface/70 p-3.5 sm:p-4 rounded-2xl border border-white/5">
 						{/* Program dropdown */}
 						{uniquePrograms.length > 1 && (
-							<div className="flex items-center gap-3">
-								<span className="text-muted-foreground text-xs font-semibold tracking-[0.18em] uppercase">
-									ፕሮግራም
+							<div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3">
+								<span className="text-muted-foreground text-[11px] sm:text-xs font-semibold tracking-wider uppercase">
+									ፕሮግራም (Program)
 								</span>
-								<div className="w-64">
+								<div className="w-full sm:w-64">
 									<CustomSelect
 										value={selectedProgram}
 										onChange={selectProgram}
 										options={[
-											{ value: "All", label: "ሁሉም ፕሮግራሞች" },
+											{ value: "All", label: "ሁሉም ፕሮግራሞች (All Programs)" },
 											...uniquePrograms.map((prog) => ({ value: prog, label: prog })),
 										]}
 									/>
@@ -213,19 +213,19 @@ const Schedule = () => {
 						)}
 
 						{availableSections.length > 0 && (
-							<div className="flex flex-wrap items-center gap-2">
-								<span className="text-muted-foreground text-xs font-semibold tracking-[0.18em] uppercase">
-									ምድብ
+							<div className="flex items-center gap-1.5 overflow-x-auto py-1 scrollbar-none touch-pan-x">
+								<span className="text-muted-foreground text-[11px] sm:text-xs font-semibold tracking-wider uppercase shrink-0 mr-1">
+									ምድብ:
 								</span>
 								{["All", ...availableSections].map((section) => (
 									<button
 										key={section}
 										onClick={() => setSelectedSection(section)}
 										className={cn(
-											"cursor-pointer rounded-full border px-3 py-1 text-sm transition-colors",
+											"cursor-pointer rounded-full border px-3 py-1 text-xs sm:text-sm font-semibold transition-all shrink-0",
 											selectedSection === section
-												? "border-primary/40 bg-primary/15 text-primary"
-												: "text-muted-foreground hover:text-foreground border-white/10 hover:border-white/20"
+												? "border-primary/50 bg-primary/20 text-primary shadow-sm"
+												: "text-muted-foreground hover:text-foreground border-white/10 hover:border-white/20 bg-white/[0.02]"
 										)}
 									>
 										{section === "All" ? "ሁሉም" : section}

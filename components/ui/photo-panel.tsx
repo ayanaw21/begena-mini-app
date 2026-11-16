@@ -14,6 +14,7 @@ type PhotoPanelProps = {
 
 /**
  * Card panel component with optional atmospheric photo background and high text contrast.
+ * The background image is clipped to rounded-xl, while children (e.g. dropdowns) are not clipped.
  */
 export default function PhotoPanel({
   src,
@@ -26,12 +27,12 @@ export default function PhotoPanel({
   return (
     <div
       className={cn(
-        "bg-surface relative w-full max-w-full min-w-0 rounded-xl border border-white/10 shadow-sm overflow-hidden transition-all",
+        "bg-surface relative w-full max-w-full min-w-0 rounded-xl border border-white/10 shadow-sm transition-all",
         className
       )}
     >
       {src ? (
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 overflow-hidden rounded-xl pointer-events-none">
           <Image
             src={src}
             alt=""
@@ -48,7 +49,7 @@ export default function PhotoPanel({
         </div>
       ) : null}
 
-      <div className={cn("relative z-10 p-5", contentClassName)}>{children}</div>
+      <div className={cn("relative z-10", contentClassName)}>{children}</div>
     </div>
   );
 }
