@@ -136,26 +136,32 @@ export default function AttendancePage() {
 
   const getSectionSchedule = useCallback(
     (secName: string, progName?: string) => {
-      const matching = schedules.filter(
-        (s) =>
-          s.section === secName &&
-          (!progName || !s.program || s.program === progName)
+      let matching = schedules.filter(
+        (s) => s.section === secName && Boolean(progName) && s.program === progName
       );
+      if (matching.length === 0) {
+        matching = schedules.filter(
+          (s) =>
+            s.section === secName &&
+            (!progName || !s.program || s.program === "Begena" || s.program === progName)
+        );
+      }
       if (matching.length === 0) return null;
 
       const days: string[] = [];
       const times: string[] = [];
 
       matching.forEach((m) => {
-        if (m.date) days.push(m.date);
-        if (m.time) times.push(m.time);
-        if (Array.isArray(m.sessions)) {
+        if (Array.isArray(m.sessions) && m.sessions.length > 0) {
           m.sessions.forEach((sess) => {
             if (sess.day) days.push(sess.day);
             if (sess.startTime && sess.endTime) {
               times.push(`${sess.startTime} - ${sess.endTime}`);
             }
           });
+        } else {
+          if (m.date) days.push(m.date);
+          if (m.time) times.push(m.time);
         }
       });
 
@@ -178,9 +184,15 @@ export default function AttendancePage() {
     }
     try {
       const token = localStorage.getItem("token");
-      const res = await api.get(`/attendance?section=${selectedSection}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const progParam = selectedDailyProgram
+        ? `&program=${encodeURIComponent(selectedDailyProgram)}`
+        : "";
+      const res = await api.get(
+        `/attendance?section=${encodeURIComponent(selectedSection)}${progParam}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       const allAtt = res.data.attendance || [];
       const dateMap = new Map<string, { date: string; day: string; count: number }>();
       allAtt.forEach((item: { date?: string; day?: string }) => {
@@ -199,7 +211,7 @@ export default function AttendancePage() {
     } catch (err) {
       console.error("Failed to fetch section attendance history", err);
     }
-  }, [selectedSection]);
+  }, [selectedSection, selectedDailyProgram]);
 
   const fetchSectionStudentsAndAttendance = useCallback(async () => {
     if (!selectedSection) return;
@@ -224,8 +236,11 @@ export default function AttendancePage() {
         return idA.localeCompare(idB, undefined, { numeric: true, sensitivity: "base" });
       });
 
+      const progParam = selectedDailyProgram
+        ? `&program=${encodeURIComponent(selectedDailyProgram)}`
+        : "";
       const attRes = await api.get(
-        `/attendance?section=${selectedSection}&date=${selectedDate}`,
+        `/attendance?section=${encodeURIComponent(selectedSection)}&date=${selectedDate}${progParam}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       const existingAtt = attRes.data.attendance || [];
@@ -288,6 +303,7 @@ export default function AttendancePage() {
   }, [
     selectedSection,
     selectedDate,
+    selectedDailyProgram,
     activeTab,
     fetchSectionStudentsAndAttendance,
     fetchSectionHistory,
@@ -375,9 +391,13 @@ export default function AttendancePage() {
     0
   );
 
-  const currentSectionObj = sections.find((s) => s.section === selectedSection);
+  const currentSectionObj = sections.find(
+    (s) =>
+      s.section === selectedSection &&
+      (!selectedDailyProgram || s.program === selectedDailyProgram)
+  );
   const currentSchedule = selectedSection
-    ? getSectionSchedule(selectedSection, currentSectionObj?.program)
+    ? getSectionSchedule(selectedSection, currentSectionObj?.program || selectedDailyProgram)
     : null;
 
   const dateParts = selectedDate.split("-").map(Number);

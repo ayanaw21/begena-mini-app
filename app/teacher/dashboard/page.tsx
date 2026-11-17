@@ -54,6 +54,7 @@ export default function TeacherDashboard() {
 
   // Attendance state
   const [selectedSectionForAttendance, setSelectedSectionForAttendance] = useState<string>("");
+  const [selectedProgramForAttendance, setSelectedProgramForAttendance] = useState<string>("");
   const [attendanceDate, setAttendanceDate] = useState<string>(
     new Date().toISOString().split("T")[0]
   );
@@ -116,6 +117,7 @@ export default function TeacherDashboard() {
       setAssignedSections(mySections);
       if (mySections.length > 0 && !selectedSectionForAttendance) {
         setSelectedSectionForAttendance(mySections[0].section);
+        setSelectedProgramForAttendance(mySections[0].program || "");
       }
 
       // Students
@@ -154,10 +156,11 @@ export default function TeacherDashboard() {
     if (!selectedSectionForAttendance) return [];
     return students.filter(
       (st) =>
-        st.section === selectedSectionForAttendance ||
-        st.section?.includes(selectedSectionForAttendance)
+        (st.section === selectedSectionForAttendance ||
+        st.section?.includes(selectedSectionForAttendance)) &&
+        (!selectedProgramForAttendance || st.program === selectedProgramForAttendance)
     );
-  }, [students, selectedSectionForAttendance]);
+  }, [students, selectedSectionForAttendance, selectedProgramForAttendance]);
 
   // Handle setting individual student attendance
   const setStudentStatus = (studentId: string, status: "Present" | "Absent" | "Permission") => {
@@ -187,6 +190,7 @@ export default function TeacherDashboard() {
 
       await api.post("/attendance", {
         section: selectedSectionForAttendance,
+        program: selectedProgramForAttendance || undefined,
         date: attendanceDate,
         records,
       });
@@ -210,7 +214,7 @@ export default function TeacherDashboard() {
       try {
         setLoadingAttendanceData(true);
         const res = await api.get(
-          `/attendance?section=${encodeURIComponent(selectedSectionForAttendance)}&date=${attendanceDate}`,
+          `/attendance?section=${encodeURIComponent(selectedSectionForAttendance)}&date=${attendanceDate}${selectedProgramForAttendance ? `&program=${encodeURIComponent(selectedProgramForAttendance)}` : ""}`,
           { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
         );
         if (res.data?.attendance && isMounted) {
@@ -235,7 +239,7 @@ export default function TeacherDashboard() {
     return () => {
       isMounted = false;
     };
-  }, [selectedSectionForAttendance, attendanceDate]);
+  }, [selectedSectionForAttendance, selectedProgramForAttendance, attendanceDate]);
 
   // Attendance stats for selected date
   const attendanceStats = useMemo(() => {
@@ -505,6 +509,7 @@ export default function TeacherDashboard() {
                       size="sm"
                       onClick={() => {
                         setSelectedSectionForAttendance(sec.section);
+                        setSelectedProgramForAttendance(sec.program || "");
                         setActiveTab("attendance");
                       }}
                       className="bg-amber-400 text-slate-950 hover:bg-amber-300 text-xs font-semibold"
@@ -598,12 +603,16 @@ export default function TeacherDashboard() {
                       ክፍል ይምረጡ (Section)
                     </label>
                     <select
-                      value={selectedSectionForAttendance}
-                      onChange={(e) => setSelectedSectionForAttendance(e.target.value)}
+                      value={`${selectedSectionForAttendance}:::${selectedProgramForAttendance}`}
+                      onChange={(e) => {
+                        const [sec, prog] = e.target.value.split(":::");
+                        setSelectedSectionForAttendance(sec || "");
+                        setSelectedProgramForAttendance(prog || "");
+                      }}
                       className="w-full h-11 px-3 rounded-xl bg-[#101e36] border border-[#234578] text-white text-sm focus:outline-none focus:border-amber-400"
                     >
                       {(assignedSections.length > 0 ? assignedSections : allSections).map((s) => (
-                        <option key={s.section} value={s.section}>
+                        <option key={s._id || `${s.program}-${s.section}`} value={`${s.section}:::${s.program || ""}`}>
                           {s.section} ({s.program || "Basic በገና"})
                         </option>
                       ))}
@@ -735,7 +744,7 @@ export default function TeacherDashboard() {
               <div className="grid gap-3 sm:grid-cols-2">
                 {(assignedSections.length > 0 ? assignedSections : allSections.slice(0, 2)).map((sec) => (
                   <div
-                    key={sec.section}
+                    key={sec._id || `${sec.program}-${sec.section}`}
                     className="bg-[#172b4c] border border-[#234578] rounded-2xl p-4 space-y-2"
                   >
                     <div className="flex items-center justify-between">
