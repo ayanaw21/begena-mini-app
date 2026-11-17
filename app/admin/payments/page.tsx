@@ -526,14 +526,12 @@ export default function PaymentsPage() {
       {activeTab === "roster" && (
         <div className="bg-surface overflow-hidden rounded-xl border border-white/10 shadow-sm">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[700px] text-left text-sm">
+            <table className="w-full text-left text-sm">
               <thead>
                 <tr className="text-muted-foreground border-b border-white/10 bg-white/[0.02] text-xs font-semibold tracking-wider uppercase">
                   <th className="px-4 py-3 w-12 text-center">#</th>
                   <th className="px-4 py-3 font-medium">መለያ (ID)</th>
                   <th className="px-4 py-3 font-medium">ሙሉ ስም</th>
-                  <th className="px-4 py-3 font-medium">ክፍል</th>
-                  <th className="px-4 py-3 font-medium">ስልክ</th>
                   <th className="px-4 py-3 font-medium text-center">
                     የ{selectedMonth} ሁኔታ
                   </th>
@@ -544,7 +542,7 @@ export default function PaymentsPage() {
                 {filteredStudents.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={7}
+                      colSpan={5}
                       className="text-muted-foreground py-10 text-center text-sm"
                     >
                       የተገኘ ተማሪ የለም (No students match this filter).
@@ -573,14 +571,6 @@ export default function PaymentsPage() {
                               {st.christianName}
                             </div>
                           )}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className="inline-block rounded bg-white/5 px-2 py-0.5 text-xs font-medium">
-                            {st.section || "—"}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-xs text-muted-foreground font-mono">
-                          {st.phoneNumber || "—"}
                         </td>
                         <td className="px-4 py-3 text-center">
                           {st.monthStatus === "Paid" ? (
@@ -618,6 +608,22 @@ export default function PaymentsPage() {
                         </td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex items-center justify-end gap-1.5">
+                            {pay?._id && pay?.status !== "Approved" && (
+                              <button
+                                type="button"
+                                disabled={isUpdatingStatus === pay._id}
+                                onClick={() => handleUpdateStatus(pay._id!, "Approved")}
+                                title="ክፍያውን አጽድቅ (Approve Payment)"
+                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 border border-emerald-500/30 transition-all disabled:opacity-50 cursor-pointer shrink-0"
+                              >
+                                {isUpdatingStatus === pay._id ? (
+                                  <span className="size-3 animate-spin border-2 border-emerald-400 border-t-transparent rounded-full" />
+                                ) : (
+                                  <CheckCircle2 size={13} />
+                                )}
+                                <span>Approve</span>
+                              </button>
+                            )}
                             {pay?.screenshot && (
                               <button
                                 type="button"
@@ -793,30 +799,124 @@ export default function PaymentsPage() {
         className="max-w-2xl"
         footer={
           selectedPayment ? (
-            <>
-              <Button
-                variant="outline"
-                disabled={isUpdatingStatus === selectedPayment._id}
-                onClick={() =>
-                  handleUpdateStatus(selectedPayment._id!, "Rejected")
-                }
-              >
-                Reject (ውድቅ አድርግ)
-              </Button>
-              <Button
-                disabled={isUpdatingStatus === selectedPayment._id}
-                onClick={() =>
-                  handleUpdateStatus(selectedPayment._id!, "Approved")
-                }
-              >
-                Approve (አጽድቅ)
-              </Button>
-            </>
+            selectedPayment.status === "Approved" ? (
+              <div className="flex items-center justify-between w-full">
+                <Badge tone="success" className="gap-1.5 py-1 px-3 text-xs font-semibold">
+                  <CheckCircle2 size={14} />
+                  <span>ክፍያው ጸድቋል (Approved)</span>
+                </Badge>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={isUpdatingStatus === selectedPayment._id}
+                    onClick={() =>
+                      handleUpdateStatus(selectedPayment._id!, "Rejected")
+                    }
+                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10 text-xs"
+                  >
+                    Reject (ውድቅ አድርግ)
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => setImageModalOpen(false)}
+                  >
+                    Close (ዝጋ)
+                  </Button>
+                </div>
+              </div>
+            ) : selectedPayment.status === "Rejected" ? (
+              <div className="flex items-center justify-between w-full">
+                <Badge tone="danger" className="gap-1.5 py-1 px-3 text-xs font-semibold">
+                  <XCircle size={14} />
+                  <span>ክፍያው ውድቅ ተደርጓል (Rejected)</span>
+                </Badge>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    disabled={isUpdatingStatus === selectedPayment._id}
+                    onClick={() =>
+                      handleUpdateStatus(selectedPayment._id!, "Approved")
+                    }
+                    className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs"
+                  >
+                    {isUpdatingStatus === selectedPayment._id ? "በማጽደቅ ላይ..." : "Re-approve (አጽድቅ)"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setImageModalOpen(false)}
+                  >
+                    Close (ዝጋ)
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-end gap-2 w-full">
+                <Button
+                  variant="outline"
+                  disabled={isUpdatingStatus === selectedPayment._id}
+                  onClick={() =>
+                    handleUpdateStatus(selectedPayment._id!, "Rejected")
+                  }
+                  className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                >
+                  Reject (ውድቅ አድርግ)
+                </Button>
+                <Button
+                  disabled={isUpdatingStatus === selectedPayment._id}
+                  onClick={() =>
+                    handleUpdateStatus(selectedPayment._id!, "Approved")
+                  }
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white"
+                >
+                  {isUpdatingStatus === selectedPayment._id ? (
+                    <span className="flex items-center gap-1.5">
+                      <span className="size-3 animate-spin border-2 border-white border-t-transparent rounded-full" />
+                      <span>በማጽደቅ ላይ...</span>
+                    </span>
+                  ) : (
+                    "Approve (አጽድቅ)"
+                  )}
+                </Button>
+              </div>
+            )
           ) : null
         }
       >
         {selectedPayment && (
           <div className="space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <span className="text-xs text-muted-foreground font-medium">የደረሰኝ ሁኔታ (Status):</span>
+              <Badge
+                tone={
+                  selectedPayment.status === "Approved"
+                    ? "success"
+                    : selectedPayment.status === "Rejected"
+                      ? "danger"
+                      : "warning"
+                }
+                className="gap-1 inline-flex items-center text-xs font-semibold"
+              >
+                {selectedPayment.status === "Approved" ? (
+                  <>
+                    <CheckCircle2 size={12} />
+                    <span>Approved (ጸድቋል)</span>
+                  </>
+                ) : selectedPayment.status === "Rejected" ? (
+                  <>
+                    <XCircle size={12} />
+                    <span>Rejected (ውድቅ የተደረገ)</span>
+                  </>
+                ) : (
+                  <>
+                    <Clock size={12} />
+                    <span>Pending (በመጠባበቅ ላይ)</span>
+                  </>
+                )}
+              </Badge>
+            </div>
+
             <div className="bg-background flex max-h-80 justify-center overflow-hidden rounded-lg border border-white/10">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
