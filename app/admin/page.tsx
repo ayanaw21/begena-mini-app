@@ -59,7 +59,7 @@ const sections = [
       {
         href: "/admin/staff",
         icon: UserCog,
-        title: "Staff & Teachers",
+        title: "Teachers & Admins",
         description: "Admins, lead instructors, and assistant teachers.",
         image: siteImages.adminPhoto2,
       },
@@ -105,8 +105,12 @@ export default function AdminHome() {
       toast.error("Please log in to continue");
       router.push("/admin/login");
     } else {
-      setUserName(getUserName() || "Staff Member");
-      setUserIsTeacher(isTeacher());
+      if (isTeacher()) {
+        router.replace("/teacher/dashboard");
+        return;
+      }
+      setUserName(getUserName() || "Admin");
+      setUserIsTeacher(false);
       setIsChecking(false);
     }
   }, [router]);

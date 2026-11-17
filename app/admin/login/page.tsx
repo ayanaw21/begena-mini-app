@@ -42,7 +42,7 @@ export default function AdminLogin() {
       const role = res.data.user?.role;
       if (role === "teacher") {
         toast.success(`እንኳን ደህና መጡ መምህር ${res.data.user.fullName || ""}`);
-        router.push("/admin");
+        router.push("/teacher/dashboard");
       } else {
         toast.success(`እንኳን ደህና መጡ አስተዳዳሪ ${res.data.user.fullName || ""}`);
         router.push("/admin");
@@ -85,7 +85,7 @@ export default function AdminLogin() {
           contentClassName="p-6 sm:p-8"
         >
           <div className="space-y-1">
-            <h1 className="text-xl font-bold">Admin & Staff Login</h1>
+            <h1 className="text-xl font-bold">Admin & Teacher Login</h1>
             <p className="text-muted-foreground text-sm">
               የአስተዳዳሪ እና የመምህራን መግቢያ ፖርታል (Sign in to access dashboard).
             </p>

@@ -40,7 +40,7 @@ export const adminMenu = [
     heading: "People",
     items: [
       { href: "/admin/students", label: "Students", icon: Users },
-      { href: "/admin/staff", label: "Staff & Teachers", icon: UserCog },
+      { href: "/admin/staff", label: "Teachers & Admins", icon: UserCog },
       { href: "/admin/attendance", label: "Attendance", icon: ClipboardCheck },
     ],
   },

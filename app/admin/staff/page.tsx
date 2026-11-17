@@ -389,8 +389,8 @@ export default function StaffPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Staff & Teachers"
-        description="Administrators, instructors, and assistant teachers."
+        title="Teachers & Admins"
+        description="Instructors, assistant teachers, and administrators."
         action={
           <div className="flex flex-wrap items-center gap-2">
             <button
@@ -408,8 +408,8 @@ export default function StaffPage() {
             </button>
 
             <ModalForm
-              title="Add New Staff Member"
-              triggerText="Add Staff"
+              title="Add New Teacher or Admin"
+              triggerText="Add Teacher / Admin"
               onSubmit={handleCreateStaff}
               image={siteImages.adminTeacher}
             >

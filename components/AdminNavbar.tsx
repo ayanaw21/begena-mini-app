@@ -31,7 +31,7 @@ export default function AdminNavbar({
   const [changingPassword, setChangingPassword] = useState(false);
 
   useEffect(() => {
-    setUserName(getUserName() || "Staff Member");
+    setUserName(getUserName() || "Admin");
   }, []);
 
   const currentLabel =

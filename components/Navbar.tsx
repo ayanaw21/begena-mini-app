@@ -33,7 +33,7 @@ const Navbar = () => {
       if (isTeacher()) {
         setIsTeacherLoggedIn(true);
         setIsAdminLoggedIn(false);
-        setAdminHref("/admin");
+        setAdminHref("/teacher/dashboard");
       } else {
         setIsTeacherLoggedIn(false);
         setIsAdminLoggedIn(true);
@@ -106,8 +106,8 @@ const Navbar = () => {
                     : "bg-primary text-primary-foreground hover:bg-primary/90"
                 )}
               >
-                <Link href="/admin">
-                  {isTeacherLoggedIn ? "Staff" : "Admin"}
+                <Link href={isTeacherLoggedIn ? "/teacher/dashboard" : "/admin"}>
+                  {isTeacherLoggedIn ? "መምህር (Teacher)" : "Admin"}
                 </Link>
               </Button>
               <Button
@@ -154,8 +154,8 @@ const Navbar = () => {
                     : "bg-primary text-primary-foreground hover:bg-primary/90"
                 )}
               >
-                <Link href="/admin">
-                  {isTeacherLoggedIn ? "Staff" : "Admin"}
+                <Link href={isTeacherLoggedIn ? "/teacher/dashboard" : "/admin"}>
+                  {isTeacherLoggedIn ? "መምህር (Teacher)" : "Admin"}
                 </Link>
               </Button>
               <Button
